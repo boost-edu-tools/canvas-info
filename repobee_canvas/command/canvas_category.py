@@ -18,6 +18,7 @@ CANVAS_CATEGORY = plug.cli.category(
         action_names    = [
             "create_canvas_git_mapping",
             "create_students_file",
+            "create_students_yaml_file",
             "init_assignment",
             "init_course",
             "prepare_assignment",
