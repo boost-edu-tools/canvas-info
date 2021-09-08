@@ -40,6 +40,7 @@ CANVAS_ID               = "canvas_id"
 CANVAS_LOGIN_ID         = "login_id"
 FIELD_SEP               = ","
 GIT_ID                  = "git_id"
+EMAIL                   = "email"
 HEAD                    = 5
 
 class Table:
@@ -92,21 +93,27 @@ class CanvasGitMap(Table):
     data table with at least two columns, "git_id" and "canvas_id", to perform
     the mapping."""
 
+    """Added: Map Canvas IDs to Email (column "email") for student YAML file"""
+
     def __init__(self, data : List):
         super().__init__(data)
 
         self._canvas2git = {}
         self._git2canvas = {}
+        self._canvas2email = {}
 
         for row in self.rows():
             canvas_id   = row[CANVAS_ID]
             git_id      = row[GIT_ID]
+            email       = row[EMAIL]
 
             _check_id("Canvas", canvas_id, self._canvas2git)
             _check_id("Git", git_id, self._git2canvas)
+            _check_id("Email", email, self._canvas2email)
 
             self._canvas2git[canvas_id] = row[GIT_ID]
             self._git2canvas[git_id]    = row[CANVAS_ID]
+            self._canvas2email[canvas_id] = row[EMAIL]
 
     def canvas2git(self, canvas_id : str) -> str:
         """Convert a Canvas ID to the correspondibg Git ID."""
@@ -121,6 +128,13 @@ class CanvasGitMap(Table):
             return self._git2canvas[git_id]
 
         raise ValueError(f"Git ID '{git_id}' not mapped to a Canvas ID.")
+
+    def canvas2email(self, canvas_id : str) -> str:
+        """Convert a Canvas ID to the correspondibg Sis User ID."""
+        if canvas_id in self._canvas2email:
+            return self._canvas2email[canvas_id]
+
+        raise ValueError(f"Canvas ID '{canvas_id}' not mapped to a Sis User ID.")
 
 # Guide the user in creating a potential Canvas-Git mapping table for a
 # Canvas course.
