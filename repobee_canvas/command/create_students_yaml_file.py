@@ -83,33 +83,42 @@ class CreateStudentsYAMLFile(plug.Plugin, plug.cli.Command):
     canvas_students_file     = CANVAS_STUDENTS_FILE_OPTION
     canvas_git_map           = CANVAS_GIT_MAP_OPTION
 
-    canvas_include_groupless = plug.cli.flag(
-        help = "Include students who are not assigned to a group for group assignments.",
-        )
-
     def command(self):
         CanvasAPI().setup(self.canvas_base_url, self.canvas_access_token)
         assignment = Assignment.load(self.canvas_course_id, self.canvas_assignment_id)
         canvas_git_mapping_table = CanvasGitMap.load(Path(self.canvas_git_map))
-        create_students_yaml_file(
+        groupless_submissions = create_students_yaml_file(
                 assignment,
                 canvas_git_mapping_table,
-                Path(self.canvas_students_file),
-                self.canvas_include_groupless
+                Path(self.canvas_students_file)
                 )
         inform(f"Students file written to '{self.canvas_students_file}'.")
+        
+        print ("The following students were not in a group (prefixes from @student.tue.nl):")
+        for submission in groupless_submissions:
+            canvas_id   = submission.submitter().login_id
+            email       = canvas_git_mapping_table.canvas2email(canvas_id)[:-15]
+            print (email)
+
 
 def create_students_yaml_file(
         assignment                  : Assignment,
         canvas_git_mapping_table    : CanvasGitMap,
-        students_file               : Path,
-        include_groupless_students  : bool = False
+        students_file               : Path
     ):
     """Create a students file for a Canvas assignment."""
-    include_groupless = not assignment.is_group_assignment() or include_groupless_students
 
     submissions = assignment.submissions()
-    group_submissions = [s for s in submissions if s.is_group_submission()]
+
+    group_submissions = []
+    groupless_submissions = []
+    for s in submissions:
+        if s.is_group_submission():
+            group_submissions.append(s)
+        else:
+            groupless_submissions.append(s)
+
+    group_submissions = sorted(group_submissions, key = lambda s: s.group().name)
 
     # Students who are not assigned to a group in a group assignment are
     # ignored by default when creating a students file. Most likely these
@@ -123,36 +132,12 @@ def create_students_yaml_file(
                 "Please run command 'repobee canvas prepare-assignment' to "
                 "resolve this issue. Or configure this assignment as an "
                 "individual assignment."))
-
-        if len(group_submissions) < len(submissions):
-            message = ((
-                f"The number of group submissions ({len(group_submissions)}) "
-                f"is smaller than the number of submissions "
-                f"({len(submissions)}). This means that not all students "
-                 "in this assignment are assigned to a group. "
-                ))
-
-            if include_groupless:
-                message += ((
-                    "These groupless students are included in "
-                    "the created students list file."
-                    ))
-            else:
-                message += ((
-                    "These groupless students are NOT included in the "
-                    "created students list file."
-                    "Use option '--canvas-include-groupless' to include "
-                    "these groupless students."
-                    ))
-
-            warn(message)
-
+    
     with students_file.open("w") as outfile:
 
-        for submission in submissions:
-
-            if submission.is_group_submission():
+        for submission in group_submissions:
                 team = submission.group().name
+
                 group = []
                 for u in submission.group().members():
                     team += '_' + canvas_git_mapping_table.canvas2email(u.login_id)[:-15].replace('.', '')
@@ -162,16 +147,4 @@ def create_students_yaml_file(
                 outfile.write("\tmembers:"+str(group))
                 outfile.write("\n")
 
-            elif include_groupless:
-                # Individual students
-
-                canvas_id   = submission.submitter().login_id
-                email       = canvas_git_mapping_table.canvas2email(canvas_id)[:-15]
-                git_id      = int(canvas_git_mapping_table.canvas2git(canvas_id))
-                outfile.write(email.replace('.', '')+":\n")
-                outfile.write("\tmembers:["+git_id+"]")
-                outfile.write("\n")
-
-            else:
-                # Skip individual students in a group assignment
-                pass
+    return groupless_submissions
