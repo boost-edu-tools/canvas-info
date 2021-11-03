@@ -94,11 +94,11 @@ class CreateStudentsYAMLFile(plug.Plugin, plug.cli.Command):
                 )
         inform(f"Students file written to '{self.canvas_students_file}'.")
         
-        print ("The following students were not in a group (prefixes from @student.tue.nl):")
+        inform("The following students were not in a group (prefixes from @student.tue.nl):")
         for submission in groupless_submissions:
             canvas_id   = submission.submitter().login_id
             email       = canvas_git_mapping_table.canvas2email(canvas_id)[:-15]
-            print (email)
+            inform(email)
 
 
 def create_students_yaml_file(
