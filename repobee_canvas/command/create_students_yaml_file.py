@@ -14,99 +14,76 @@
 
 """
 from pathlib                    import Path
-import repobee_plug as plug
 
 from ..canvas_api.api           import CanvasAPI
 from ..canvas_api.assignment    import Assignment
 from ..canvas_git_map           import CanvasGitMap
 
-from .canvas_category           import CANVAS_CATEGORY
+from ..common                   import inform, warn
 
-from ..common_options           import CANVAS_ACCESS_TOKEN_OPTION
-from ..common_options           import CANVAS_API_BASE_URL_OPTION
-from ..common_options           import CANVAS_ASSIGNMENT_ID_OPTION
-from ..common_options           import CANVAS_COURSE_ID_OPTION
-from ..common_options           import CANVAS_GIT_MAP_OPTION
-from ..common_options           import CANVAS_STUDENTS_FILE_OPTION
+"""Command to create a students file from a Canvas assignment.
 
-from ..tui                      import inform, warn
+The create_students_yaml_file is a function to create a students file
+for a Canvas assignment: All students assigned to this assignment are
+listed and written to the students file. If the assignment is a group
+assignment, the student groups are written instead.
 
-class CreateStudentsYAMLFile(plug.Plugin, plug.cli.Command):
-    """RepoBee command to create a students file from a Canvas assignment.
+You have to use this function first to create the students file and then use
+the student file to create and manage student repositories.
 
-    The CanvasStudentsFile class is a RepoBee plugin to create a students file
-    for a Canvas assignment: All students assigned to this assignment are
-    listed and written to the students file. If the assignment is a group
-    assignment, the student groups are written instead.
-
-    You have to use this plugin first to create the students file and then use
-    the student file to create and manage student repositories. See the Canvas
-    plugin below for more information.
-
-    Because the login ids of students can be different in Canvas and git, a
-    mapping needs to be made via a database containing both login ids for each
-    student. This database should be a csv file and have a canvas_id and git_id
-    column.
+Because the login ids of students can be different in Canvas and git, a
+mapping needs to be made via a database containing both login ids for each
+student. This database should be a csv file and have a canvas_id and git_id
+column.
 
 
-    Usage:
+Usage:
 
-    Assunming the course id, Canvas API URL, and Canvas API key have been
-    configured, the command
+Assunming the course id, Canvas API URL, and Canvas API key have been
+configured, the command
 
-    ```
-    repobee -p canvas canvas create-students-yaml-file \
-            --canvas-assignment-id 23 \
-            --canvas-git-map student_data.csv
-    ```
+```
+repobee -p canvas canvas create-students-yaml-file \
+        --canvas-assignment-id 23 \
+        --canvas-git-map student_data.csv
+```
 
-    will create file `students.lst` with all Git account names of the
-    students involved in assignment with ID=23.
+will create file `students.yaml` with all Git account names of the
+students involved in assignment with ID=23.
 
-    If you want to use a different output filename use option
-    `--canvas-students-file output.lst`.
+If you want to use a different output filename, set the filename in the GUI.
 
-    """
-    __settings__ = plug.cli.command_settings(
-            action      = CANVAS_CATEGORY.create_students_yaml_file,
-            help        = "create students file in YAML format",
-            description = (
-                "Create the students file in YAML format for a Canvas assignment for use "
-                "with RepoBee."
-                )
-            )
+"""
 
-    canvas_access_token      = CANVAS_ACCESS_TOKEN_OPTION
-    canvas_base_url          = CANVAS_API_BASE_URL_OPTION
-    canvas_course_id         = CANVAS_COURSE_ID_OPTION
-    canvas_assignment_id     = CANVAS_ASSIGNMENT_ID_OPTION
-    canvas_students_file     = CANVAS_STUDENTS_FILE_OPTION
-    canvas_git_map           = CANVAS_GIT_MAP_OPTION
+# __settings__ = plug.cli.command_settings(
+#     action      = CANVAS_CATEGORY.create_students_yaml_file,
+#     help        = "create students file in YAML format",
+#     description = (
+#         "Create the students file in YAML format for a Canvas assignment for use "
+#         "with RepoBee."
+#         )
+#     )
 
-    def command(self):
-        CanvasAPI().setup(self.canvas_base_url, self.canvas_access_token)
-        assignment = Assignment.load(self.canvas_course_id, self.canvas_assignment_id)
-        canvas_git_mapping_table = CanvasGitMap.load(Path(self.canvas_git_map))
-        groupless_submissions = create_students_yaml_file(
-                assignment,
-                canvas_git_mapping_table,
-                Path(self.canvas_students_file)
-                )
-        inform(f"Students file written to '{self.canvas_students_file}'.")
-        
-        inform("The following students were not in a group (prefixes from @student.tue.nl):")
-        for submission in groupless_submissions:
-            canvas_id   = submission.submitter().login_id
-            email       = canvas_git_mapping_table.canvas2email(canvas_id)[:-15]
-            inform(email)
+# canvas_access_token      = "Bearer 7542~2cglyCk9h3Bz8CH1ZVJGWcVHAszZBmgAoiG5C13wxpIWk3PgkC4UgYOklIHNzQQV" #CANVAS_ACCESS_TOKEN_OPTION
+# canvas_base_url          = "" #CANVAS_API_BASE_URL_OPTION
+# canvas_course_id         = 17752 #CANVAS_COURSE_ID_OPTION
+# canvas_assignment_id     = 57807 #CANVAS_ASSIGNMENT_ID_OPTION
+# canvas_students_file     = "students.yaml" #CANVAS_STUDENTS_FILE_OPTION
+# canvas_git_map           = "canvas-git-map.csv" #CANVAS_GIT_MAP_OPTION
 
+def CreateStudentsYAMLFile(
+    canvas_base_url: str,
+    canvas_access_token: str,
+    canvas_course_id: int,
+    canvas_assignment_id: int,
+    canvas_git_map: str,
+    canvas_students_file: str):
 
-def create_students_yaml_file(
-        assignment                  : Assignment,
-        canvas_git_mapping_table    : CanvasGitMap,
-        students_file               : Path
-    ):
     """Create a students file for a Canvas assignment."""
+
+    CanvasAPI().setup(canvas_base_url, canvas_access_token)
+    assignment = Assignment.load(canvas_course_id, canvas_assignment_id)
+    canvas_git_mapping_table = CanvasGitMap.load(Path(canvas_git_map))
 
     submissions = assignment.submissions()
 
@@ -132,8 +109,8 @@ def create_students_yaml_file(
                 "Please run command 'repobee canvas prepare-assignment' to "
                 "resolve this issue. Or configure this assignment as an "
                 "individual assignment."))
-    
-    with students_file.open("w") as outfile:
+
+    with Path(canvas_students_file).open("w") as outfile:
 
         for submission in group_submissions:
                 team = submission.group().name
@@ -147,4 +124,10 @@ def create_students_yaml_file(
                 outfile.write("\tmembers:"+str(group))
                 outfile.write("\n")
 
-    return groupless_submissions
+    inform(f"Students file written to '{canvas_students_file}'.")
+
+    inform("The following students were not in a group (prefixes from @student.tue.nl):")
+    for submission in groupless_submissions:
+        canvas_id   = submission.submitter().login_id
+        email       = canvas_git_mapping_table.canvas2email(canvas_id)[:-15]
+        inform(email)
