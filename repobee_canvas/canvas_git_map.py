@@ -40,6 +40,8 @@ CANVAS_ID               = "canvas_id"
 CANVAS_LOGIN_ID         = "login_id"
 FIELD_SEP               = ","
 GIT_ID                  = "git_id"
+GROUP                   = "group"
+ID                      = "id"
 EMAIL                   = "email"
 HEAD                    = 5
 
@@ -154,38 +156,19 @@ def canvas_git_map_table_wizard(course : Course) -> Table:
         warn((f"No students found for course '{course.name}'."))
         return Table([])
 
+    group_members = course.group_members()
+
     number_of_students  = len(students)
     head                = min(number_of_students, HEAD)
     number_shown        = head if head < number_of_students else "all"
     table               = tabulate([s.fields() for s in students[:head]], headers = "keys")
 
-    inform((f"Found {len(students)} students for this course. "
-            f"Showing available data for {number_shown} of them: \n\n"
-            f"{table}\n"))
+    inform((f"Found {len(students)} students for this course. "))
 
     canvas_id_key = CANVAS_LOGIN_ID
-    inform((f"The column '{canvas_id_key}' contains students' Canvas ID."))
 
-    cli = VerticalPrompt([
-        Bullet(
-            prompt  = ASK_GIT_ID,
-            choices = PUBLIC_USER_FIELDS,
-            bullet  = " >",
-            margin  = 2,
-            align   = 1,
-            shift   = 1,
-        ),
-        Check(
-            prompt  = ASK_EXTRA_COLUMNS,
-            choices = PUBLIC_USER_FIELDS,
-            check   = " >",
-            margin  = 2,
-            align   = 1,
-            shift   = 1,
-        ),
-    ])
-
-    git_id_key, extra_columns = [r for (p, r) in cli.launch()]
+    git_id_key = 'sis_user_id'
+    extra_column = EMAIL
 
     data = []
 
@@ -203,11 +186,20 @@ def canvas_git_map_table_wizard(course : Course) -> Table:
         else:
             row[GIT_ID] = ""
 
-        for column in extra_columns:
-            if column in fields:
-                row[column] = fields[column]
+        if ID in fields:
+            user_id = fields[ID]
+            if user_id in group_members:
+                row[GROUP] = group_members[user_id]
             else:
-                row[column] = ""
+                row[GROUP] = ""
+        else:
+            row[GROUP] = ""
+
+        if extra_column in fields:
+            row[extra_column] = fields[extra_column]
+        else:
+            row[extra_column] = ""
+
 
         data.append(row)
 
