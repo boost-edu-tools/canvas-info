@@ -188,6 +188,13 @@ class CanvasAPI:
         """Get group memberships"""
         return self.__get({GROUPS: group_id, MEMBERSHIPS: EMPTY})
 
+    def groups_per_course(self, course_id):
+        """List the groups available in in a course."""
+        return self.__get({
+            COURSES: course_id,
+            GROUPS: EMPTY
+            })
+
     def peer_reviews(self, course_id, assignment_id, submission_id):
         """Get peer reviews"""
         return self.__get({
