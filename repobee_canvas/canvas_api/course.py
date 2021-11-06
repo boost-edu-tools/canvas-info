@@ -17,6 +17,10 @@ from .api               import CanvasAPI, ID, SECTIONS, ASSIGNMENTS
 from .canvas_object     import CanvasObject
 from .section           import Section
 from .user              import User
+from .group              import Group
+
+HAS_SUBMISSION          = "has_submission"
+NAME                    = "name"
 
 class Course (CanvasObject):
     """Canvas course.
@@ -76,3 +80,19 @@ class Course (CanvasObject):
             self._students = [User(s) for s in students]
 
         return self._students
+
+    def group_members(self) -> dict():
+        """The groups with memberships in this course.
+
+        Returns:
+        A dict [user id: gruop name]. The key 'has_submission' of the groups
+        are True in this course.
+        """
+        if not self._group_members:
+            groups = CanvasAPI().groups_per_course(self.id)
+            self._group_members = {}
+            for g in groups:
+                if g[HAS_SUBMISSION]:
+                    self._group_members.update(Group(g).members_userid(g[NAME]))
+
+        return self._group_members
