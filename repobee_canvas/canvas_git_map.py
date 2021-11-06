@@ -29,12 +29,10 @@ import csv
 from pathlib            import Path
 from typing             import List
 
-from bullet             import Bullet, Check, VerticalPrompt
 from tabulate           import tabulate
 from .canvas_api.course import Course
 from .canvas_api.user   import PUBLIC_USER_FIELDS
-from .common_options    import CANVAS_GIT_MAP_FILENAME
-from .tui               import warn, inform
+from .common            import warn, inform
 
 CANVAS_ID               = "canvas_id"
 CANVAS_LOGIN_ID         = "login_id"
