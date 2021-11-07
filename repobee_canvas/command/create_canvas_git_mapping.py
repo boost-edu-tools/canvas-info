@@ -41,11 +41,10 @@ def CreateCanvasGitMapping(
     canvas_base_url: str,
     canvas_access_token: str,
     canvas_course_id: int,
-    canvas_assignment_id : int,
-    canvas_git_map : str,
-    canvas_students_file : Path):
+    canvas_git_map : str):
     """Command to create a Canvas-Git mapping table and write it to a file."""
     CanvasAPI().setup(canvas_base_url, canvas_access_token)
+    inform("Loading course...")
     course = Course.load(canvas_course_id)
     canvas_git_mapping_table = canvas_git_map_table_wizard(course)
 
