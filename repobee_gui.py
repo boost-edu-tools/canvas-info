@@ -22,7 +22,6 @@ if __name__ == '__main__':
         sg.user_settings_set_entry(KEY_STU_FILE_FOLDER, resource_path())
 
     window = make_window()
-    # window = settings_window()
     while True:
         event, values = window.read()
 
@@ -36,6 +35,6 @@ if __name__ == '__main__':
             git_map_window()
 
         elif event == KEY_STU_FILE:
-            student_file_window()
+            students_file_window()
 
     window.close()
