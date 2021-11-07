@@ -148,13 +148,12 @@ ASK_EXTRA_COLUMNS   = ("Which extra columns to you want to add to the "
 
 def canvas_git_map_table_wizard(course : Course) -> Table:
     """Create a Canvas-Git map CSV file."""
+    inform("Getting the students' infomation...")
     students = course.students()
 
     if len(students) <= 0:
         warn((f"No students found for course '{course.name}'."))
         return Table([])
-
-    group_members = course.group_members()
 
     number_of_students  = len(students)
     head                = min(number_of_students, HEAD)
@@ -162,6 +161,9 @@ def canvas_git_map_table_wizard(course : Course) -> Table:
     table               = tabulate([s.fields() for s in students[:head]], headers = "keys")
 
     inform((f"Found {len(students)} students for this course. "))
+
+    inform("Getting the information of groups...")
+    group_members = course.group_members()
 
     canvas_id_key = CANVAS_LOGIN_ID
 
