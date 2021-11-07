@@ -20,6 +20,7 @@ from ..canvas_api.assignment    import Assignment
 from ..canvas_git_map           import CanvasGitMap
 
 from ..common                   import inform, warn
+from ..                         import gui
 
 """Command to create a students file from a Canvas assignment.
 
@@ -64,13 +65,6 @@ If you want to use a different output filename, set the filename in the GUI.
 #         )
 #     )
 
-# canvas_access_token      = "Bearer 7542~2cglyCk9h3Bz8CH1ZVJGWcVHAszZBmgAoiG5C13wxpIWk3PgkC4UgYOklIHNzQQV" #CANVAS_ACCESS_TOKEN_OPTION
-# canvas_base_url          = "" #CANVAS_API_BASE_URL_OPTION
-# canvas_course_id         = 17752 #CANVAS_COURSE_ID_OPTION
-# canvas_assignment_id     = 57807 #CANVAS_ASSIGNMENT_ID_OPTION
-# canvas_students_file     = "students.yaml" #CANVAS_STUDENTS_FILE_OPTION
-# canvas_git_map           = "canvas-git-map.csv" #CANVAS_GIT_MAP_OPTION
-
 def CreateStudentsYAMLFile(
     canvas_base_url: str,
     canvas_access_token: str,
@@ -82,9 +76,11 @@ def CreateStudentsYAMLFile(
     """Create a students file for a Canvas assignment."""
 
     CanvasAPI().setup(canvas_base_url, canvas_access_token)
+    inform("Loading assignment...")
     assignment = Assignment.load(canvas_course_id, canvas_assignment_id)
     canvas_git_mapping_table = CanvasGitMap.load(Path(canvas_git_map))
 
+    inform("Loading submissions of this assignment...")
     submissions = assignment.submissions()
 
     group_submissions = []
@@ -104,12 +100,15 @@ def CreateStudentsYAMLFile(
     # include_groupless_students, you can override this default behavior.
     if assignment.is_group_assignment():
         if len(group_submissions) == 0:
-            raise ValueError(
+            warn(
                 ("No group submissions found for this group assignment. "
                 "Please run command 'repobee canvas prepare-assignment' to "
                 "resolve this issue. Or configure this assignment as an "
                 "individual assignment."))
 
+    inform("Create students YAML file...")
+    total = len(group_submissions)
+    cnt = 1
     with Path(canvas_students_file).open("w") as outfile:
 
         for submission in group_submissions:
@@ -123,6 +122,8 @@ def CreateStudentsYAMLFile(
                 outfile.write(team +":\n")
                 outfile.write("\tmembers:"+str(group))
                 outfile.write("\n")
+                gui.update_progress(cnt, total)
+                cnt += 1
 
     inform(f"Students file written to '{canvas_students_file}'.")
 
