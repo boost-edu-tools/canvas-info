@@ -17,7 +17,8 @@ from .api               import CanvasAPI, ID, SECTIONS, ASSIGNMENTS
 from .canvas_object     import CanvasObject
 from .section           import Section
 from .user              import User
-from .group              import Group
+from .group             import Group
+from ..                 import gui
 
 HAS_SUBMISSION          = "has_submission"
 NAME                    = "name"
@@ -46,7 +47,7 @@ class Course (CanvasObject):
                                     Assignment.load(self.id, a[ID]) for a in
                                     CanvasAPI().assignments_per_course(self.id)
                                 ]
-        
+
         return self._assignments
 
     def sections(self, names : List[str] = []) -> List[Section]:
@@ -90,9 +91,13 @@ class Course (CanvasObject):
         """
         if not self._group_members:
             groups = CanvasAPI().groups_per_course(self.id)
+            total = len(groups)
+            cnt = 1
             self._group_members = {}
             for g in groups:
                 if g[HAS_SUBMISSION]:
                     self._group_members.update(Group(g).members_userid(g[NAME]))
+                gui.update_progress(cnt, total)
+                cnt += 1
 
         return self._group_members
