@@ -16,6 +16,7 @@ from .api                   import CanvasAPI, OVERRIDES
 from .assignment_override   import AssignmentOverride
 from .canvas_object         import CanvasObject
 from .submission            import Submission
+from ..                     import gui
 
 class Assignment (CanvasObject):
     """Canvas assignment.
@@ -105,7 +106,16 @@ class Assignment (CanvasObject):
 
             # Filter out the test student
             if skip_test_student:
-                submissions = [s for s in submissions if not s.submitter().is_test_student()]
+                # submissions = [s for s in submissions if not s.submitter().is_test_student()]
+                total = len(submissions)
+                cnt = 1
+                subs = submissions
+                submissions = []
+                for s in subs:
+                    if not s.submitter().is_test_student():
+                        submissions.append(s)
+                    gui.update_progress(cnt, total)
+                    cnt += 1
 
             self._submissions = submissions
 
@@ -130,7 +140,6 @@ class Assignment (CanvasObject):
                 override_students += override.students()
 
             submissions = [s for s in submissions if any([u in override_students for u in s.students()])]
-
 
         include = lambda s : all([f(s) for f in all_filters])
 
