@@ -9,3 +9,6 @@
 *.pyc
 __pycache__
 build
+
+*.csv
+*.yaml
