@@ -8,29 +8,30 @@ Functions:
 from pathlib            import Path
 import re
 import sys
+import PySimpleGUI as sg
 
 def warn(msg : str, error : BaseException = None) -> None:
     """Warn the user."""
-    print(f"WARNING: {msg}")
+    sg.cprint(f"WARNING: {msg}", c="white on yellow")
     if error:
-        print(f"\t{str(error)}")
+        sg.cprint(f"\t{str(error)}", c='white on red')
 
 def fault(msg : str, error : BaseException = None) -> None:
     """Warn the user about a fault in using repobee-canvas."""
-    print(f"ERROR: {msg}")
+    sg.cprint(f"ERROR: {msg}", c='white on red')
     if error:
-        print(f"\t{str(error)}")
+        sg.cprint(f"\t{str(error)}", c='white on red')
 
 def inform(msg : str, spacing : int = 0) -> None:
     """Inform the user."""
-    print(msg)
+    sg.cprint(msg)
 
     if spacing > 0:
         vspace(spacing - 1)
 
 def vspace(size : int = 0)  -> None:
     """Add a vertical space of size lines."""
-    print("\n" * size)
+    sg.cprint("\n" * size)
 
 def ask_password(question : str) -> str:
     """Ask for a password"""
