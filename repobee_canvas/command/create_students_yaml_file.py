@@ -82,7 +82,7 @@ def CreateStudentsYAMLFile(
     except Exception as e:
         fault(e)
         if "Unauthorized" in str(e):
-            warn("Repobee-canvas was not authorized to access your Canvas information. Please check the tooltip of the access token in the settings window.")
+            warn("Repobee-canvas was not authorized to access your Canvas information. Please check the tooltip of the access token in the Settings Window.")
     else:
         canvas_git_mapping_table = CanvasGitMap.load(Path(canvas_git_map))
 
