@@ -21,6 +21,9 @@ if __name__ == '__main__':
         sg.user_settings_set_entry(KEY_STU_FILE, resource_path("students.yaml"))
         sg.user_settings_set_entry(KEY_STU_FILE_FOLDER, resource_path())
 
+    access_token = sg.user_settings_get_entry(KEY_ACCESS_TOKEN)
+    base_url = sg.user_settings_get_entry(KEY_BASE_URL)
+
     window = make_window()
     while True:
         event, values = window.read()
@@ -29,12 +32,14 @@ if __name__ == '__main__':
             break
 
         elif event == KEY_SETTINGS:
-            settings_window()
+            (access_token, base_url) = settings_window(access_token, base_url)
 
         elif event == KEY_GIT_MAP:
-            git_map_window()
+            if is_ready(access_token, base_url):
+                git_map_window(access_token, base_url)
 
         elif event == KEY_STU_FILE:
-            students_file_window()
+            if is_ready(access_token, base_url):
+                students_file_window(access_token, base_url)
 
     window.close()
