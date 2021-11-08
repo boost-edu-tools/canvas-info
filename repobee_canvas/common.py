@@ -12,7 +12,7 @@ import PySimpleGUI as sg
 
 def warn(msg : str, error : BaseException = None) -> None:
     """Warn the user."""
-    sg.cprint(f"WARNING: {msg}", c="white on yellow")
+    sg.cprint(f"WARNING: {msg}", c="white on red")
     if error:
         sg.cprint(f"\t{str(error)}", c='white on red')
 
