@@ -61,7 +61,7 @@ def getParent(path: str) -> bool:
 def popup(message: str):
     sg.popup("Reminder", message, keep_on_top=True)
 
-def isNumber(value: str, name: str) -> bool:
+def is_number(value: str, name: str) -> bool:
     try:
         if value != "":
             int(value)
@@ -71,11 +71,21 @@ def isNumber(value: str, name: str) -> bool:
         return False
     return True
 
-def isEmpty(value: str, name: str):
+def is_empty(value: str, name: str):
     if value == "":
         popup("Please fill in the " + name)
         return True
     return False
+
+def is_ready(access_token: str, base_url: str) -> bool:
+    if access_token is None or access_token == "":
+        popup("Please set access token in the settings.")
+        return False
+    if base_url is None or base_url == "":
+        popup("Please set the base url in the settings.")
+        return False
+    return True
+
 
 def add_help_button(key: str, tooltip: str) -> sg.Button:
     return sg.Button(key=key, button_color=(sg.theme_background_color(), sg.theme_background_color()),
@@ -87,11 +97,8 @@ def update_progress(pos: int, length: int):
     progress_bar.UpdateBar(percent)
     progress_text.update("{}%".format(percent))
 
-def students_file_window():
-    sg.theme('DarkAmber')
-    access_token = sg.user_settings_get_entry(KEY_ACCESS_TOKEN)
-    base_url = urlparse(sg.user_settings_get_entry(KEY_BASE_URL))
-
+def students_file_window(access_token: str, base_url: str):
+    base_url = urlparse(base_url)
     layout = [
         [
             sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True, pad=((34,0), 0))
@@ -115,7 +122,7 @@ def students_file_window():
             sg.Multiline(size=(70, 21), key=KEY_ML, reroute_cprint=True, expand_y=True, expand_x=True, auto_refresh=True)
         ],
         [
-            sg.B('Execute'), sg.B('Cancel'), sg.B('Clear History', pad=((348, 0), 0))
+            sg.B('Execute'), sg.B('Exit'), sg.B('Clear History', pad=((348, 0), 0))
         ]
     ]
     window = sg.Window('CREATE STUDENT FILE', layout, icon=icon, finalize=True, keep_on_top=True)
@@ -124,7 +131,7 @@ def students_file_window():
 
     while True:
         event, values = window.read()
-        if event in (sg.WINDOW_CLOSED, "Cancel"):
+        if event in (sg.WINDOW_CLOSED, "Exit"):
             break
 
         elif event == KEY_GIT_MAP:
@@ -135,20 +142,20 @@ def students_file_window():
 
         elif event == "Execute":
             course_id = values[KEY_COURSE_ID]
-            if isEmpty(course_id, "Course ID") or not isNumber(course_id, "Course ID"):
-                return
+            if is_empty(course_id, "Course ID") or not is_number(course_id, "Course ID"):
+                continue
 
             assignment_id = values[KEY_ASSIGNMENT_ID]
-            if isEmpty(assignment_id, "Assignment ID") or not isNumber(assignment_id, "Assignment ID"):
-                return
+            if is_empty(assignment_id, "Assignment ID") or not is_number(assignment_id, "Assignment ID"):
+                continue
 
             git_map = values[KEY_GIT_MAP]
-            if isEmpty(git_map, "Git Map"):
-                return
+            if is_empty(git_map, "Git Map"):
+                continue
 
             students_file = values[KEY_STU_FILE]
-            if isEmpty(students_file, "Students File"):
-                return
+            if is_empty(students_file, "Students File"):
+                continue
 
             sg.user_settings_set_entry(KEY_COURSE_ID, values[KEY_COURSE_ID])
             sg.user_settings_set_entry(KEY_ASSIGNMENT_ID, values[KEY_ASSIGNMENT_ID])
@@ -161,10 +168,8 @@ def students_file_window():
 
     window.close()
 
-def git_map_window():
-    access_token = sg.user_settings_get_entry(KEY_ACCESS_TOKEN)
-    base_url = urlparse(sg.user_settings_get_entry(KEY_BASE_URL))
-
+def git_map_window(access_token: str, base_url: str):
+    base_url = urlparse(base_url)
     layout = [
         [
             sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True)
@@ -181,7 +186,7 @@ def git_map_window():
             sg.Multiline(size=(70, 21), key=KEY_ML, reroute_cprint=True, expand_y=True, expand_x=True, auto_refresh=True)
         ],
         [
-            sg.B('Execute'), sg.B('Cancel'), sg.B('Clear History', pad=((348, 0), 0))
+            sg.B('Execute'), sg.B('Exit'), sg.B('Clear History', pad=((348, 0), 0))
         ]
     ]
 
@@ -191,7 +196,7 @@ def git_map_window():
 
     while True:
         event, values = window.read()
-        if event in (sg.WINDOW_CLOSED, "Cancel"):
+        if event in (sg.WINDOW_CLOSED, "Exit"):
             break
 
         elif event == KEY_GIT_MAP:
@@ -199,11 +204,11 @@ def git_map_window():
 
         elif event == "Execute":
             course_id = values[KEY_COURSE_ID]
-            if isEmpty(course_id, "Course ID") or not isNumber(course_id, "Course ID"):
-                return
+            if is_empty(course_id, "Course ID") or not is_number(course_id, "Course ID"):
+                continue
             git_map = values[KEY_GIT_MAP]
-            if isEmpty(git_map, "Git Map"):
-                return
+            if is_empty(git_map, "Git Map"):
+                continue
 
             sg.user_settings_set_entry(KEY_COURSE_ID, values[KEY_COURSE_ID])
             CreateCanvasGitMapping(base_url, access_token, course_id, git_map)
@@ -214,14 +219,14 @@ def git_map_window():
 
     window.close()
 
-def settings_window():
+def settings_window(access_token: str, base_url: str) -> (str, str):
     layout = [
             [
-                sg.Text('Access Token', pad=(0, 3)), sg.InputText(k=KEY_ACCESS_TOKEN, default_text=sg.user_settings_get_entry(KEY_ACCESS_TOKEN), expand_x = True, pad=(2, 0), tooltip=token_tip),
+                sg.Text('Access Token', pad=(0, 3)), sg.InputText(k=KEY_ACCESS_TOKEN, default_text=access_token, expand_x = True, pad=(2, 0), tooltip=token_tip),
                 add_help_button('token_tip', token_tip)
             ],
             [
-                sg.Text('Base URL', pad=(0, 3)), sg.InputText(k=KEY_BASE_URL, default_text=sg.user_settings_get_entry(KEY_BASE_URL), expand_x = True, pad=((26, 25), 0))
+                sg.Text('Base URL', pad=(0, 3)), sg.InputText(k=KEY_BASE_URL, default_text=base_url, expand_x = True, pad=((26, 25), 0))
             ],
             [
                 sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True, pad=((28, 25), 0))
@@ -259,15 +264,18 @@ def settings_window():
             window[event].TooltipObject.showtip()
 
         elif event == 'Save':
-            if isEmpty(values[KEY_ACCESS_TOKEN], "Access Token"):
-                return
-            if isEmpty(values[KEY_BASE_URL], "Base URL"):
-                return
-            if not isNumber(values[KEY_COURSE_ID], "Course ID"):
-                return
-            if not isNumber(values[KEY_ASSIGNMENT_ID], "Assignment ID"):
-                return
+            if is_empty(values[KEY_ACCESS_TOKEN], "Access Token"):
+                continue
+            if is_empty(values[KEY_BASE_URL], "Base URL"):
+                continue
+            if not is_number(values[KEY_COURSE_ID], "Course ID"):
+                continue
+            if not is_number(values[KEY_ASSIGNMENT_ID], "Assignment ID"):
+                continue
+            access_token = values[KEY_ACCESS_TOKEN]
+            base_url = values[KEY_BASE_URL]
             for key, val in values.items():
                 sg.user_settings_set_entry(key, val)
             break
     window.close()
+    return (access_token, base_url)
