@@ -4,7 +4,7 @@ from repobee_canvas.gui import *
 def make_window():
     sg.theme('DarkAmber')
 
-    layout = [  [sg.Button('Settings', k=KEY_SETTINGS), sg.Button('Create git map', k=KEY_GIT_MAP), sg.Button('Create student file', k=KEY_STU_FILE)] ]
+    layout = [  [sg.Button('Settings', k=KEY_SETTINGS), sg.Button('Create git map', k=KEY_GIT_MAP), sg.Button('Create student file', k=KEY_STU_FILE), sg.B('Exit')] ]
 
     window = sg.Window('Repobee Canvas', layout, icon=icon, finalize=True)
     return window
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     while True:
         event, values = window.read()
 
-        if event == sg.WIN_CLOSED: # if user closes window
+        if event in ('Exit', sg.WIN_CLOSED): # if user closes window
             break
 
         elif event == KEY_SETTINGS:
