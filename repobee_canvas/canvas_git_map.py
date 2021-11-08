@@ -29,7 +29,6 @@ import csv
 from pathlib            import Path
 from typing             import List
 
-from tabulate           import tabulate
 from .canvas_api.course import Course
 from .canvas_api.user   import PUBLIC_USER_FIELDS
 from .common            import warn, inform
@@ -154,11 +153,6 @@ def canvas_git_map_table_wizard(course : Course) -> Table:
     if len(students) <= 0:
         warn((f"No students found for course '{course.name}'."))
         return Table([])
-
-    number_of_students  = len(students)
-    head                = min(number_of_students, HEAD)
-    number_shown        = head if head < number_of_students else "all"
-    table               = tabulate([s.fields() for s in students[:head]], headers = "keys")
 
     inform((f"Found {len(students)} students for this course. "))
 
