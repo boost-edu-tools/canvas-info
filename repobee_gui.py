@@ -13,11 +13,11 @@ if __name__ == '__main__':
     if sg.user_settings_get_entry(KEY_BASE_URL) == None:
         sg.user_settings_set_entry(KEY_BASE_URL, "https://canvas.tue.nl/api/v1")
 
-    if sg.user_settings_get_entry(KEY_GIT_MAP) == None:
+    if is_invalid(sg.user_settings_get_entry(KEY_GIT_MAP)) or is_invalid(sg.user_settings_get_entry(KEY_GIT_MAP_FOLDER)):
         sg.user_settings_set_entry(KEY_GIT_MAP, resource_path("canvas-git-map.csv"))
         sg.user_settings_set_entry(KEY_GIT_MAP_FOLDER, resource_path())
 
-    if sg.user_settings_get_entry(KEY_STU_FILE) == None:
+    if is_invalid(sg.user_settings_get_entry(KEY_STU_FILE)) or is_invalid(sg.user_settings_get_entry(KEY_STU_FILE_FOLDER)):
         sg.user_settings_set_entry(KEY_STU_FILE, resource_path("students.yaml"))
         sg.user_settings_set_entry(KEY_STU_FILE_FOLDER, resource_path())
 

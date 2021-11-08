@@ -88,6 +88,8 @@ def is_ready(access_token: str, base_url: str) -> bool:
         return False
     return True
 
+def is_invalid(string: str) -> bool:
+    return string is None or string == ""
 
 def add_help_button(key: str, tooltip: str) -> sg.Button:
     return sg.Button(key=key, button_color=(sg.theme_background_color(), sg.theme_background_color()),
