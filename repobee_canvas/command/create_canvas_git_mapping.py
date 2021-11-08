@@ -18,7 +18,7 @@ from ..canvas_api.course        import Course
 
 from ..canvas_git_map           import canvas_git_map_table_wizard
 
-from ..common                   import inform, warn
+from ..common                   import inform, warn, fault
 
 # class CreateCanvasGitMapping(plug.Plugin, plug.cli.Command):
 #     """Create a Canvas-Git mapping table and write to file.
@@ -45,12 +45,18 @@ def CreateCanvasGitMapping(
     """Command to create a Canvas-Git mapping table and write it to a file."""
     CanvasAPI().setup(canvas_base_url, canvas_access_token)
     inform("Loading course...")
-    course = Course.load(canvas_course_id)
-    canvas_git_mapping_table = canvas_git_map_table_wizard(course)
-
-    if canvas_git_mapping_table.empty():
-        warn("Canvas-Git mapping table CSV is not created.")
+    try:
+        course = Course.load(canvas_course_id)
+    except Exception as e:
+        fault(e)
+        if "Unauthorized" in str(e):
+            warn("Repobee-canvas was not authorized to access your Canvas information. Please check the tooltip of the access token in the settings window.")
     else:
-        path = Path(canvas_git_map)
-        canvas_git_mapping_table.write(path)
-        inform(f"Created file:  {str(path)}     ⇝  the Canvas-Git mapping table CSV file")
+        canvas_git_mapping_table = canvas_git_map_table_wizard(course)
+
+        if canvas_git_mapping_table.empty():
+            warn("Canvas-Git mapping table CSV is not created.")
+        else:
+            path = Path(canvas_git_map)
+            canvas_git_mapping_table.write(path)
+            inform(f"Created file:  {str(path)}     ⇝  the Canvas-Git mapping table CSV file")
