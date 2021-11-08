@@ -194,8 +194,11 @@ def canvas_git_map_table_wizard(course : Course) -> Table:
         else:
             row[extra_column] = ""
 
-
         data.append(row)
+
+    data = sorted(data, key=lambda d: d[GROUP])
+    for d in data:
+        print (d)
 
     return Table(data)
 
