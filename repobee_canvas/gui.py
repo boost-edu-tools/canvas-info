@@ -49,11 +49,13 @@ def progressBar(bar: sg.ProgressBar, text: sg.Text):
     progress_bar = bar
     progress_text = text
 
-def update_browser(key: str, path: str, file_type: str, button: sg.B):
+def update_browser(key: str, path: str, file_type: str, button: sg.B, input: sg.InputText):
     if not path.endswith(file_type):
         path = path + file_type
     sg.user_settings_set_entry(key, path)
     button.InitialFolder = getParent(path)
+    input.update(value=path)
+    return path
 
 def getParent(path: str) -> bool:
     return os.path.dirname(os.path.abspath(path))
@@ -139,14 +141,12 @@ def students_file_window(access_token: str, base_url: str):
         elif event == KEY_GIT_MAP:
             if git_map == values[event]:
                 continue
-            update_browser(event, values[event], '.csv', window[KEY_GIT_MAP_FOLDER])
-            git_map = values[event]
+            git_map = update_browser(event, values[event], '.csv', window[KEY_GIT_MAP_FOLDER], window[KEY_GIT_MAP])
 
         elif event == KEY_STU_FILE:
             if student_file == values[event]:
                 continue
-            update_browser(event, values[event], '.yaml', window[KEY_STU_FILE_FOLDER])
-            student_file = values[event]
+            student_file = update_browser(event, values[event], '.yaml', window[KEY_STU_FILE_FOLDER], window[KEY_STU_FILE])
 
         elif event == "Execute":
             course_id = values[KEY_COURSE_ID]
@@ -211,8 +211,7 @@ def git_map_window(access_token: str, base_url: str):
         elif event == KEY_GIT_MAP:
             if git_map == values[event]:
                 continue
-            update_browser(event, values[event], '.csv', window[KEY_GIT_MAP_FOLDER])
-            git_map = values[event]
+            git_map = update_browser(event, values[event], '.csv', window[KEY_GIT_MAP_FOLDER], window[KEY_GIT_MAP])
 
         elif event == "Execute":
             course_id = values[KEY_COURSE_ID]
@@ -271,14 +270,12 @@ def settings_window(access_token: str, base_url: str) -> (str, str):
         elif event == KEY_GIT_MAP:
             if git_map == values[event]:
                 continue
-            update_browser(event, values[event], '.csv', window[KEY_GIT_MAP_FOLDER])
-            git_map = values[event]
+            git_map = update_browser(event, values[event], '.csv', window[KEY_GIT_MAP_FOLDER], window[KEY_GIT_MAP])
 
         elif event == KEY_STU_FILE:
             if student_file == values[event]:
                 continue
-            update_browser(event, values[event], '.yaml', window[KEY_STU_FILE_FOLDER])
-            student_file = values[event]
+            student_file = update_browser(event, values[event], '.yaml', window[KEY_STU_FILE_FOLDER], window[KEY_STU_FILE])
 
         elif event.endswith("_tip"):
             window[event].TooltipObject.showtip()
