@@ -55,6 +55,10 @@ def progressBar(bar: sg.ProgressBar, text: sg.Text):
     progress_text = text
 
 
+def update_browse(file_path: str, save_as: bool, file_types: str, extension: str) -> str:
+    (folder, filename) = os.path.split(file_path)
+    return sg.popup_get_file("", save_as=save_as, file_types=file_types, no_window=True, default_path=filename, default_extension=extension, initial_folder=folder, history=True)
+
 def getParent(path: str) -> bool:
     return os.path.dirname(os.path.abspath(path))
 
@@ -114,11 +118,11 @@ def students_file_window(access_token: str, base_url: str, main_window: sg.Windo
         ],
         [
             sg.Text('Git Map', pad=(0, 3)), sg.InputText(k=KEY_GIT_MAP, default_text=git_map, expand_x = True, pad=((42, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
-            sg.FileBrowse(k=KEY_GIT_MAP_FOLDER, initial_folder=sg.user_settings_get_entry(KEY_GIT_MAP_FOLDER), file_types=(("Text Files", "*.csv"),), pad=((5, 0), 0), target=KEY_GIT_MAP)
+            sg.B("Browse", k=KEY_GIT_MAP_FOLDER, pad=((5, 0), 0))
         ],
         [
             sg.Text('Students File', pad=(0, 3)), sg.InputText(k=KEY_STU_FILE, default_text=student_file, expand_x = True, pad=((10, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
-            sg.FileSaveAs("Browse", k=KEY_STU_FILE_FOLDER, initial_folder=sg.user_settings_get_entry(KEY_STU_FILE_FOLDER), file_types=(("Text Files", "*.yaml"),), pad=((5, 0), 0), default_extension="yaml", target=KEY_STU_FILE)
+            sg.B("Browse", k=KEY_STU_FILE_FOLDER, pad=((5, 0), 0))
         ],
         [
             sg.ProgressBar(max_value=100, orientation='h', size=(63, 20), key=KEY_PRO_BAR),
@@ -140,6 +144,16 @@ def students_file_window(access_token: str, base_url: str, main_window: sg.Windo
         if event in (sg.WINDOW_CLOSED, "Exit"):
             break
 
+        if event == KEY_GIT_MAP_FOLDER:
+            file_path = update_browse(values[KEY_GIT_MAP], False, (("Text Files", "*.csv"),), "csv")
+            if file_path != "":
+                window[KEY_GIT_MAP].update(file_path)
+
+        elif event == KEY_STU_FILE_FOLDER:
+            file_path = update_browse(values[KEY_STU_FILE], True, (("Text Files", "*.yaml"),), "yaml")
+            print (file_path)
+            if file_path != "":
+                window[KEY_STU_FILE].update(file_path)
 
         elif event == "Execute":
             course_id = values[KEY_COURSE_ID]
@@ -184,7 +198,7 @@ def git_map_window(access_token: str, base_url: str, main_window: sg.Window):
         ],
         [
             sg.Text('Git Map', pad=(0, 3)), sg.InputText(k=KEY_GIT_MAP, default_text=git_map, expand_x = True, pad=((14, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
-            sg.FileSaveAs("Browse", k=KEY_GIT_MAP_FOLDER, initial_folder=sg.user_settings_get_entry(KEY_GIT_MAP_FOLDER), file_types=(("Text Files", "*.csv"),), default_extension="csv", target=KEY_GIT_MAP)
+            sg.B("Browse", k=KEY_GIT_MAP_FOLDER)
         ],
         [
             sg.ProgressBar(max_value=100, orientation='h', size=(63, 20), key=KEY_PRO_BAR),
@@ -206,6 +220,11 @@ def git_map_window(access_token: str, base_url: str, main_window: sg.Window):
         event, values = window.read()
         if event in (sg.WINDOW_CLOSED, "Exit"):
             break
+
+        if event == KEY_GIT_MAP_FOLDER:
+            file_path = update_browse(values[KEY_GIT_MAP], True, (("Text Files", "*.csv"),), "csv")
+            if file_path != "":
+                window[KEY_GIT_MAP].update(file_path)
 
         elif event == "Execute":
             course_id = values[KEY_COURSE_ID]
@@ -253,11 +272,11 @@ def settings_window(access_token: str, base_url: str, main_window: sg.Window) ->
             ],
             [
                 sg.Text('Git Map', pad=(0, 3)), sg.InputText(k=KEY_GIT_MAP, default_text=git_map, expand_x = True, pad=((38, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
-                sg.FileSaveAs("Browse", k=KEY_GIT_MAP_FOLDER, initial_folder=sg.user_settings_get_entry(KEY_GIT_MAP_FOLDER), file_types=(("Text Files", "*.csv"),), default_extension="csv", target=KEY_GIT_MAP)
+                sg.B("Browse", k=KEY_GIT_MAP_FOLDER)
             ],
             [
                 sg.Text('Students File', pad=(0, 3)), sg.InputText(k=KEY_STU_FILE, default_text=student_file, expand_x = True, pad=((6, 1), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
-                sg.FileSaveAs("Browse", k=KEY_STU_FILE_FOLDER, initial_folder=sg.user_settings_get_entry(KEY_STU_FILE_FOLDER), file_types=(("Text Files", "*.yaml"),), default_extension="yaml", target=KEY_STU_FILE)
+                sg.B("Browse", k=KEY_STU_FILE_FOLDER)
             ],
             [
                 sg.Multiline(size=(70, 20), key=KEY_ML, reroute_cprint=True, expand_y=True, expand_x=True, auto_refresh=True)
@@ -274,6 +293,15 @@ def settings_window(access_token: str, base_url: str, main_window: sg.Window) ->
         if event in ('Cancel', sg.WIN_CLOSED):
             break
 
+        elif event == KEY_GIT_MAP_FOLDER:
+            file_path = update_browse(values[KEY_GIT_MAP], True, (("Text Files", "*.csv"),), "csv")
+            if file_path != "":
+                window[KEY_GIT_MAP].update(file_path)
+
+        elif event == KEY_STU_FILE_FOLDER:
+            file_path = update_browse(values[KEY_STU_FILE], True, (("Text Files", "*.yaml"),), "yaml")
+            if file_path != "":
+                window[KEY_STU_FILE].update(file_path)
 
         elif event.endswith("_tip"):
             window[event].TooltipObject.showtip()
@@ -314,11 +342,11 @@ def students_info_file_window(main_window: sg.Window):
     layout = [
         [
             sg.Text('Git Map', pad=(0, 3)), sg.InputText(k=KEY_GIT_MAP, default_text=git_map, expand_x = True, pad=((5, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
-            sg.FileBrowse(k=KEY_GIT_MAP_FOLDER, initial_folder=sg.user_settings_get_entry(KEY_GIT_MAP_FOLDER), file_types=(("Text Files", "*.csv"),), pad=((5, 0), 0), target=KEY_GIT_MAP)
+            sg.B("Browse", k=KEY_GIT_MAP_FOLDER, pad=((5, 0), 0))
         ],
         [
             sg.Text('Info File', pad=(0, 3)), sg.InputText(k=KEY_INFO_FILE, default_text=students_info_file, expand_x = True, pad=((5, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
-            sg.FileSaveAs("Browse", k=KEY_INFO_FILE_FOLDER, initial_folder=sg.user_settings_get_entry(KEY_INFO_FILE_FOLDER), file_types=(("Excel Workbook", "*.xlsx"),), pad=((5, 0), 0), default_extension="xlsx", target=KEY_INFO_FILE)
+            sg.B("Browse", k=KEY_INFO_FILE_FOLDER, pad=((5, 0), 0))
         ],
         [
             sg.Multiline(size=(70, 21), key=KEY_ML, reroute_cprint=True, expand_y=True, expand_x=True, auto_refresh=True)
@@ -334,6 +362,15 @@ def students_info_file_window(main_window: sg.Window):
         if event in (sg.WINDOW_CLOSED, "Exit"):
             break
 
+        elif event == KEY_GIT_MAP_FOLDER:
+            file_path = update_browse(values[KEY_GIT_MAP], False, (("Text Files", "*.csv"),), "csv")
+            if file_path != "":
+                window[KEY_GIT_MAP].update(file_path)
+
+        elif event == KEY_INFO_FILE_FOLDER:
+            file_path = update_browse(values[KEY_INFO_FILE], True, (("Excel Workbook", "*.xlsx"),), "xlsx")
+            if file_path != "":
+                window[KEY_INFO_FILE].update(file_path)
 
         elif event == "Execute":
             git_map = values[KEY_GIT_MAP]
