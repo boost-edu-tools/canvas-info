@@ -98,7 +98,7 @@ def is_invalid(string: str) -> bool:
 
 def add_help_button(key: str, tooltip: str) -> sg.Button:
     return sg.Button(key=key, button_color=(sg.theme_background_color(), sg.theme_background_color()),
-               image_filename=help, image_subsample=60, border_width=0, tooltip = tooltip, pad=(1, 0))
+               image_filename=help, image_subsample=60, border_width=0, tooltip = tooltip, pad=(2, 0))
 
 def update_progress(pos: int, length: int):
     global progress_bar, progress_text
@@ -262,11 +262,11 @@ def settings_window(access_token: str, base_url: str, main_window: sg.Window) ->
                 sg.Text('Base URL', pad=(0, 3)), sg.InputText(k=KEY_BASE_URL, default_text=base_url, expand_x = True, pad=((26, 25), 0))
             ],
             [
-                sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True, pad=((28, 25), 0), tooltip=course_id_tip),
+                sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True, pad=((28, 0), 0), tooltip=course_id_tip),
                 add_help_button('course_id_tip', course_id_tip)
             ],
             [
-                sg.Text('Assignment ID', pad=(0, 3)), sg.InputText(k=KEY_ASSIGNMENT_ID, default_text=sg.user_settings_get_entry(KEY_ASSIGNMENT_ID), expand_x = True, pad=((0, 25), 0), tooltip=ass_id_tip),
+                sg.Text('Assignment ID', pad=(0, 3)), sg.InputText(k=KEY_ASSIGNMENT_ID, default_text=sg.user_settings_get_entry(KEY_ASSIGNMENT_ID), expand_x = True, pad=(0, 0), tooltip=ass_id_tip),
                 add_help_button('ass_id_tip', ass_id_tip)
             ],
             [
