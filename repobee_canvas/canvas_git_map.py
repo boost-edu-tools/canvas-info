@@ -100,6 +100,7 @@ class CanvasGitMap(Table):
         self._canvas2git = {}
         self._git2canvas = {}
         self._canvas2email = {}
+        self._student_info = []
 
         for row in self.rows():
             canvas_id   = row[CANVAS_ID]
@@ -113,6 +114,8 @@ class CanvasGitMap(Table):
             self._canvas2git[canvas_id] = row[GIT_ID]
             self._git2canvas[git_id]    = row[CANVAS_ID]
             self._canvas2email[canvas_id] = row[EMAIL]
+
+            self._student_info.append([row[GROUP], email[:-15].split(".")[-1], canvas_id, git_id, email])
 
     def canvas2git(self, canvas_id : str) -> str:
         """Convert a Canvas ID to the correspondibg Git ID."""
