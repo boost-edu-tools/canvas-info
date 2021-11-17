@@ -200,8 +200,6 @@ def canvas_git_map_table_wizard(course : Course) -> Table:
         data.append(row)
 
     data = sorted(data, key=lambda d: d[GROUP])
-    for d in data:
-        print (d)
 
     return Table(data)
 
