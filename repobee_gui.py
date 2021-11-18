@@ -1,10 +1,10 @@
 import PySimpleGUI as sg
 from repobee_canvas.gui import *
 
-settings_tip = "Please complete the settings before clicking the rest buttons."
+settings_tip = "Please complete the settings before clicking the other buttons."
 git_map_tip = "This is used to generate a Canvas-Git mapping table in a CSV file unless there are no students."
-stu_yaml_tip = "This is used to generate the students file in Yaml format used by RepoBee. RepoBee uses the students file to create a GitHub team or GitLab suborganization for groups of students or individual student participating in an assignment, and then create a repository for this team or sub group."
-stu_info_tip = "This is used to generate an excel info file that is converted from the Canvas-Git mapping table."
+stu_yaml_tip = "This is used to generate the students file in Yaml format used by RepoBee. RepoBee uses the students file to create a GitHub team or GitLab subgroup for groups of students or an individual student participating in an assignment, and then create a repository for this team or subgroup."
+stu_info_tip = "This is used to generate an Excel info file that is converted from the Canvas-Git mapping table."
 
 def make_window():
     sg.theme('DarkAmber')
