@@ -105,11 +105,11 @@ def students_file_window(access_token: str, base_url: str, main_window: sg.Windo
     student_file = sg.user_settings_get_entry(KEY_STU_FILE)
     layout = [
         [
-            sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True, pad=((34,0), 0), tooltip=course_id_tip),
+            sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True, pad=((34,0), 0)),
             add_help_button('course_id_tip', course_id_tip)
         ],
         [
-            sg.Text('Assignment ID', pad=(0, 3)), sg.InputText(k=KEY_ASSIGNMENT_ID, default_text=sg.user_settings_get_entry(KEY_ASSIGNMENT_ID), expand_x = True, pad=((5, 0), 0), tooltip=ass_id_tip),
+            sg.Text('Assignment ID', pad=(0, 3)), sg.InputText(k=KEY_ASSIGNMENT_ID, default_text=sg.user_settings_get_entry(KEY_ASSIGNMENT_ID), expand_x = True, pad=((5, 0), 0)),
             add_help_button('ass_id_tip', ass_id_tip)
         ],
         [
@@ -179,7 +179,7 @@ def git_map_window(access_token: str, base_url: str, main_window: sg.Window):
     git_map = sg.user_settings_get_entry(KEY_GIT_MAP)
     layout = [
         [
-            sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True, tooltip=course_id_tip),
+            sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True),
             add_help_button('course_id_tip', course_id_tip)
         ],
         [
@@ -237,18 +237,18 @@ def settings_window(access_token: str, base_url: str, main_window: sg.Window) ->
     student_file = sg.user_settings_get_entry(KEY_STU_FILE)
     layout = [
             [
-                sg.Text('Access Token', pad=(0, 3)), sg.InputText(k=KEY_ACCESS_TOKEN, default_text=access_token, expand_x = True, pad=(2, 0), tooltip=token_tip),
+                sg.Text('Access Token', pad=(0, 3)), sg.InputText(k=KEY_ACCESS_TOKEN, default_text=access_token, expand_x = True, pad=(2, 0)),
                 add_help_button('token_tip', token_tip)
             ],
             [
                 sg.Text('Base URL', pad=(0, 3)), sg.InputText(k=KEY_BASE_URL, default_text=base_url, expand_x = True, pad=((26, 25), 0))
             ],
             [
-                sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True, pad=((28, 0), 0), tooltip=course_id_tip),
+                sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True, pad=((28, 0), 0)),
                 add_help_button('course_id_tip', course_id_tip)
             ],
             [
-                sg.Text('Assignment ID', pad=(0, 3)), sg.InputText(k=KEY_ASSIGNMENT_ID, default_text=sg.user_settings_get_entry(KEY_ASSIGNMENT_ID), expand_x = True, pad=(0, 0), tooltip=ass_id_tip),
+                sg.Text('Assignment ID', pad=(0, 3)), sg.InputText(k=KEY_ASSIGNMENT_ID, default_text=sg.user_settings_get_entry(KEY_ASSIGNMENT_ID), expand_x = True, pad=(0, 0)),
                 add_help_button('ass_id_tip', ass_id_tip)
             ],
             [

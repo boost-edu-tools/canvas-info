@@ -11,10 +11,10 @@ def make_window():
 
     layout = [
         [
-            sg.Button('Settings', k=KEY_SETTINGS, tooltip=settings_tip), add_help_button('settings_tip', settings_tip),
-            sg.Button('Create git map', k=KEY_GIT_MAP, tooltip=git_map_tip), add_help_button('course_id_tip', git_map_tip),
-            sg.Button('Create student yaml file', k=KEY_STU_FILE, tooltip=stu_yaml_tip), add_help_button('stu_yaml_tip', stu_yaml_tip),
-            sg.Button('Create student xlsx info file', k=KEY_INFO_FILE, tooltip=stu_info_tip), add_help_button('stu_info_tip', stu_info_tip)
+            sg.Button('Settings', k=KEY_SETTINGS), add_help_button('settings_tip', settings_tip),
+            sg.Button('Create git map', k=KEY_GIT_MAP), add_help_button('course_id_tip', git_map_tip),
+            sg.Button('Create student yaml file', k=KEY_STU_FILE), add_help_button('stu_yaml_tip', stu_yaml_tip),
+            sg.Button('Create student xlsx info file', k=KEY_INFO_FILE), add_help_button('stu_info_tip', stu_info_tip)
         ],
         [
             sg.Multiline(size=(70, 20), key=KEY_ML, reroute_cprint=True, expand_y=True, expand_x=True, auto_refresh=True)
