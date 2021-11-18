@@ -393,7 +393,6 @@ def students_info_file_window(main_window: sg.Window):
 
         elif event == 'Clear History':
             window[KEY_ML].update('')
-            update_progress(0, 100)
 
     window.close()
     sg.cprint_set_output_destination(main_window, KEY_ML)
