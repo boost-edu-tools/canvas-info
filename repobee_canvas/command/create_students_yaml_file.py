@@ -86,7 +86,7 @@ def CreateStudentsYAMLFile(
     else:
         canvas_git_mapping_table = CanvasGitMap.load(Path(canvas_git_map))
 
-        inform("Loading submissions of this assignment...")
+        inform("Loading submissions of this assignment...(1 of 2)")
         submissions = assignment.submissions()
 
         group_submissions = []
@@ -112,7 +112,7 @@ def CreateStudentsYAMLFile(
                     "resolve this issue. Or configure this assignment as an "
                     "individual assignment."))
 
-        inform("Create students YAML file...")
+        inform("Create students YAML file...(2 of 2)")
         total = len(group_submissions)
         cnt = 1
         with Path(canvas_students_file).open("w") as outfile:
