@@ -20,7 +20,7 @@ from .user              import User
 from .group             import Group
 from ..                 import gui
 
-HAS_SUBMISSION          = "has_submission"
+MAX_MEMBERSHIP          = "max_membership"
 NAME                    = "name"
 
 class Course (CanvasObject):
@@ -95,7 +95,7 @@ class Course (CanvasObject):
             cnt = 1
             self._group_members = {}
             for g in groups:
-                if g[HAS_SUBMISSION]:
+                if g[MAX_MEMBERSHIP] < 5:
                     self._group_members.update(Group(g).members_userid(g[NAME]))
                 gui.update_progress(cnt, total)
                 cnt += 1
