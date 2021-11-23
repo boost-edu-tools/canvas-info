@@ -37,6 +37,7 @@ GROUP                   = "group"
 GROUP_COMMENT           = "group_comment"
 GROUPS                  = "groups"
 GROUPED                 = "grouped"
+GROUP_CATEGORIES        = "group_categories"
 ID                      = "id"
 INCLUDE                 = "include[]"
 MEMBERSHIPS             = "memberships"
@@ -106,7 +107,7 @@ class CanvasAPI:
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = object.__new__(cls, *args, **kwargs)
-            
+
         return cls._instance
 
     def setup(self, api_url : str = None, access_token : str = None) -> None:
@@ -194,6 +195,14 @@ class CanvasAPI:
             COURSES: course_id,
             GROUPS: EMPTY
             })
+
+    def group_categories_per_course(self, course_id):
+        """List the group categories available in in a course."""
+        return self.__get({
+            COURSES: course_id,
+            GROUP_CATEGORIES: EMPTY
+            })
+
 
     def peer_reviews(self, course_id, assignment_id, submission_id):
         """Get peer reviews"""

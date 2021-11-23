@@ -20,7 +20,9 @@ from .user              import User
 from .group             import Group
 from ..                 import gui
 
-MAX_MEMBERSHIP          = "max_membership"
+ID                      = "id"
+NAME                    = "name"
+GROUP_CATEGORY_ID       = "group_category_id"
 NAME                    = "name"
 
 class Course (CanvasObject):
@@ -82,7 +84,7 @@ class Course (CanvasObject):
 
         return self._students
 
-    def group_members(self) -> dict():
+    def group_members(self, name: str) -> dict():
         """The groups with memberships in this course.
 
         Returns:
@@ -90,14 +92,21 @@ class Course (CanvasObject):
         are True in this course.
         """
         if not self._group_members:
-            groups = CanvasAPI().groups_per_course(self.id)
-            total = len(groups)
-            cnt = 1
+            group_categories = CanvasAPI().group_categories_per_course(self.id)
+            gc_id = None
             self._group_members = {}
-            for g in groups:
-                if g[MAX_MEMBERSHIP] < 5:
-                    self._group_members.update(Group(g).members_userid(g[NAME]))
-                gui.update_progress(cnt, total)
-                cnt += 1
+            for gc in group_categories:
+                if gc[NAME] == name:
+                    gc_id = gc[ID]
+
+            if gc_id:
+                groups = CanvasAPI().groups_per_course(self.id)
+                total = len(groups)
+                cnt = 1
+                for g in groups:
+                    if g[GROUP_CATEGORY_ID] == gc_id:
+                        self._group_members.update(Group(g).members_userid(g[NAME]))
+                    gui.update_progress(cnt, total)
+                    cnt += 1
 
         return self._group_members

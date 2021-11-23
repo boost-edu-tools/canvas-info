@@ -148,7 +148,7 @@ ASK_EXTRA_COLUMNS   = ("Which extra columns to you want to add to the "
                         "Press SPACE to select an item; multiple items "
                         "can be selected. Press ENTER to confirm your choice.")
 
-def canvas_git_map_table_wizard(course : Course) -> Table:
+def canvas_git_map_table_wizard(course : Course, group_category : str = None) -> Table:
     """Create a Canvas-Git map CSV file."""
     inform("Getting the students' infomation...")
     students = course.students()
@@ -160,7 +160,7 @@ def canvas_git_map_table_wizard(course : Course) -> Table:
     inform((f"Found {len(students)} students for this course. "))
 
     inform("Getting the information of groups...")
-    group_members = course.group_members()
+    group_members = course.group_members(group_category)
 
     canvas_id_key = CANVAS_LOGIN_ID
 

@@ -13,6 +13,7 @@ KEY_BASE_URL = 'canvas_base_url'
 KEY_COURSE_ID = 'canvas_course_id'
 KEY_ASSIGNMENT_ID = 'canvas_assignment_id'
 KEY_GIT_MAP = 'canvas_git_map'
+KEY_GROUP_CATEGORY = 'group_category_name'
 KEY_STU_FILE = 'students_file'
 KEY_INFO_FILE = 'students_info_file'
 KEY_GIT_MAP_FOLDER = 'canvas_git_map_folder'
@@ -27,6 +28,7 @@ DEFAULT_INPUT_BG = "#000000" #"#705e52"
 token_tip = "To generate a Canvas API key via 'Account', 'Settings', '+ New Access Token'."
 course_id_tip = "The course ID is a number."
 ass_id_tip = "The assignment ID is a number."
+group_category_tip = "Name of the Canvas Group Set (see Canvas tab People) that contains the student groups."
 
 def resource_path(relative_path = None):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -197,6 +199,10 @@ def git_map_window(access_token: str, base_url: str, main_window: sg.Window):
             add_help_button('course_id_tip', course_id_tip)
         ],
         [
+            sg.Text('Category', pad=(0, 3)), sg.InputText(k=KEY_GROUP_CATEGORY, default_text=sg.user_settings_get_entry(KEY_GROUP_CATEGORY), expand_x = True, pad=((10, 0), 0)),
+            add_help_button('group_category_tip', group_category_tip)
+        ],
+        [
             sg.Text('Git Map', pad=(0, 3)), sg.InputText(k=KEY_GIT_MAP, default_text=git_map, expand_x = True, pad=((14, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
             sg.B("Browse", k=KEY_GIT_MAP_FOLDER)
         ],
@@ -228,17 +234,21 @@ def git_map_window(access_token: str, base_url: str, main_window: sg.Window):
 
         elif event == "Execute":
             course_id = values[KEY_COURSE_ID]
+            group_category_name = values[KEY_GROUP_CATEGORY]
             if is_empty(course_id, "Course ID") or not is_number(course_id, "Course ID"):
                 continue
 
             if is_empty(git_map, "Git Map"):
                 continue
 
+            if is_empty(group_category_name, "Group Category"):
+                continue
+
             del(values[KEY_ML])
             for key, val in values.items():
                 sg.user_settings_set_entry(key, val)
 
-            CreateCanvasGitMapping(base_url, access_token, course_id, git_map)
+            CreateCanvasGitMapping(base_url, access_token, course_id, git_map, group_category_name)
 
         elif event.endswith("_tip"):
             window[event].TooltipObject.showtip()
