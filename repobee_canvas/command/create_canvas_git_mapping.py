@@ -46,6 +46,7 @@ def CreateCanvasGitMapping(
     """Command to create a Canvas-Git mapping table and write it to a file."""
     CanvasAPI().setup(canvas_base_url, canvas_access_token)
     inform("Loading course...")
+    print (canvas_git_map)
     try:
         course = Course.load(canvas_course_id)
     except Exception as e:

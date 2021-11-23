@@ -149,12 +149,13 @@ def students_file_window(access_token: str, base_url: str, main_window: sg.Windo
         if event == KEY_GIT_MAP_FOLDER:
             file_path = update_browse(values[KEY_GIT_MAP], False, (("Text Files", "*.csv"),), "csv")
             if file_path != "":
+                git_map = file_path
                 window[KEY_GIT_MAP].update(file_path)
 
         elif event == KEY_STU_FILE_FOLDER:
             file_path = update_browse(values[KEY_STU_FILE], True, (("Text Files", "*.yaml"),), "yaml")
-            print (file_path)
             if file_path != "":
+                students_file = file_path
                 window[KEY_STU_FILE].update(file_path)
 
         elif event == "Execute":
@@ -166,11 +167,9 @@ def students_file_window(access_token: str, base_url: str, main_window: sg.Windo
             if is_empty(assignment_id, "Assignment ID") or not is_number(assignment_id, "Assignment ID"):
                 continue
 
-            git_map = values[KEY_GIT_MAP]
             if is_empty(git_map, "Git Map"):
                 continue
 
-            students_file = values[KEY_STU_FILE]
             if is_empty(students_file, "Students File"):
                 continue
 
@@ -193,13 +192,18 @@ def students_file_window(access_token: str, base_url: str, main_window: sg.Windo
 def git_map_window(access_token: str, base_url: str, main_window: sg.Window):
     base_url = urlparse(base_url)
     git_map = sg.user_settings_get_entry(KEY_GIT_MAP)
+    group_category_name = sg.user_settings_get_entry(KEY_GROUP_CATEGORY)
+    if group_category_name is None:
+        group_category_name = "Project Groups"
+        sg.user_settings_set_entry(KEY_GROUP_CATEGORY, group_category_name)
+
     layout = [
         [
             sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True),
             add_help_button('course_id_tip', course_id_tip)
         ],
         [
-            sg.Text('Category', pad=(0, 3)), sg.InputText(k=KEY_GROUP_CATEGORY, default_text=sg.user_settings_get_entry(KEY_GROUP_CATEGORY), expand_x = True, pad=((10, 0), 0)),
+            sg.Text('Group Set', pad=(0, 3)), sg.InputText(k=KEY_GROUP_CATEGORY, default_text=group_category_name, expand_x = True),
             add_help_button('group_category_tip', group_category_tip)
         ],
         [
@@ -229,18 +233,20 @@ def git_map_window(access_token: str, base_url: str, main_window: sg.Window):
 
         if event == KEY_GIT_MAP_FOLDER:
             file_path = update_browse(values[KEY_GIT_MAP], True, (("Text Files", "*.csv"),), "csv")
-            if file_path != "":
-                window[KEY_GIT_MAP].update(file_path)
+            if git_map != "":
+                git_map = file_path
+                window[KEY_GIT_MAP].update(git_map)
 
         elif event == "Execute":
             course_id = values[KEY_COURSE_ID]
-            group_category_name = values[KEY_GROUP_CATEGORY]
+
             if is_empty(course_id, "Course ID") or not is_number(course_id, "Course ID"):
                 continue
 
             if is_empty(git_map, "Git Map"):
                 continue
 
+            group_category_name = values[KEY_GROUP_CATEGORY]
             if is_empty(group_category_name, "Group Category"):
                 continue
 
@@ -375,19 +381,19 @@ def students_info_file_window(main_window: sg.Window):
         elif event == KEY_GIT_MAP_FOLDER:
             file_path = update_browse(values[KEY_GIT_MAP], False, (("Text Files", "*.csv"),), "csv")
             if file_path != "":
+                git_map = file_path
                 window[KEY_GIT_MAP].update(file_path)
 
         elif event == KEY_INFO_FILE_FOLDER:
             file_path = update_browse(values[KEY_INFO_FILE], True, (("Excel Workbook", "*.xlsx"),), "xlsx")
             if file_path != "":
+                students_info_file = file_path
                 window[KEY_INFO_FILE].update(file_path)
 
         elif event == "Execute":
-            git_map = values[KEY_GIT_MAP]
             if is_empty(git_map, "Git Map"):
                 continue
 
-            students_info_file = values[KEY_INFO_FILE]
             if is_empty(students_info_file, "Students Info File"):
                 continue
 
