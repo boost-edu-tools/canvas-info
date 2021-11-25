@@ -17,9 +17,6 @@ if __name__ == '__main__':
         sg.user_settings_set_entry(KEY_XLSX_INFO_FILE, resource_path("students_info.xlsx"))
         sg.user_settings_set_entry(KEY_INFO_FILE_FOLDER, resource_path())
 
-    if not sg.user_settings_get_entry(CSV) and not sg.user_settings_get_entry(XLSX):
-        sg.user_settings_set_entry(CSV, True)
-
     if sg.user_settings_get_entry(KEY_GROUP_CATEGORY) is None:
         sg.user_settings_set_entry(KEY_GROUP_CATEGORY, "Project Groups")
 
@@ -32,31 +29,41 @@ if __name__ == '__main__':
             break
 
         elif event == KEY_CSV_INFO_FILE_FOLDER:
-            file_path = update_browse(values[KEY_CSV_INFO_FILE], True, ((TYPE_CSV),), CSV)
+            file_path = update_browse(values[KEY_CSV_INFO_FILE], True, ((TYPE_CSV),)) #, CSV)
             if file_path != "":
                 window[KEY_CSV_INFO_FILE].update(file_path)
                 file_path = os.path.splitext(file_path)[0]
-                window[KEY_XLSX_INFO_FILE].update(file_path+DXLSX)
+                window[KEY_XLSX_INFO_FILE].update(file_path+".xlsx")
 
         elif event == CSV:
             window[KEY_CSV_INFO_FILE_FOLDER].update(disabled=not values[CSV])
 
         elif event == KEY_XLSX_INFO_FILE_FOLDER:
-            file_path = update_browse(values[KEY_XLSX_INFO_FILE], True, ((TYPE_XLSX),), XLSX)
+            file_path = update_browse(values[KEY_XLSX_INFO_FILE], True, ((TYPE_XLSX),)) #, XLSX)
             if file_path != "":
                 window[KEY_XLSX_INFO_FILE].update(file_path)
                 file_path = os.path.splitext(file_path)[0]
-                window[KEY_CSV_INFO_FILE].update(file_path+DCSV)
+                window[KEY_CSV_INFO_FILE].update(file_path+".csv")
 
         elif event == XLSX:
             window[KEY_XLSX_INFO_FILE_FOLDER].update(disabled=not values[XLSX])
 
         elif event == KEY_STU_FILE_FOLDER:
-            file_path = update_browse(values[KEY_STU_FILE], True, (TYPE_YAML,), YAML)
+            file_path = update_browse(values[KEY_STU_FILE], True, (TYPE_YAML,)) #, YAML)
             if file_path != "":
                 window[KEY_STU_FILE].update(file_path)
 
+        elif event == YAML:
+            window[KEY_STU_FILE_FOLDER].update(disabled=not values[YAML])
+
         elif event == "Execute":
+            csv = values[CSV]
+            xlsx = values[XLSX]
+            yaml = values[YAML]
+            if not csv and not xlsx and not yaml:
+                popup("Please at least select one file to create.")
+                continue
+
             access_token = values[KEY_ACCESS_TOKEN]
             if is_empty(access_token, "Access Token"):
                 continue
@@ -73,32 +80,37 @@ if __name__ == '__main__':
             if is_empty(group_category_name, "Group Category"):
                 continue
 
-            students_info_file = os.path.splitext(values[KEY_XLSX_INFO_FILE])[0]
-            if is_empty(students_info_file, "Students Info File"):
-                continue
+            stu_csv_info_file = None
+            if csv:
+                stu_csv_info_file = values[KEY_CSV_INFO_FILE]
+                if is_empty(stu_csv_info_file, "Students Info CSV File"):
+                    continue
 
-            students_yaml_file = values[KEY_STU_FILE]
-            if is_empty(students_yaml_file, "Students File"):
-                continue
+            stu_xlsx_info_file = None
+            if xlsx:
+                stu_xlsx_info_file = values[KEY_XLSX_INFO_FILE]
+                if is_empty(stu_xlsx_info_file, "Students Info Excel File"):
+                    continue
 
-            file_csv = values[CSV]
-            file_xlsx = values[XLSX]
-            if not file_csv and not file_xlsx:
-                popup("Please select at least one file type")
-                continue
-
-            extensions = []
-            if file_csv:
-                extensions.append(CSV)
-
-            if file_xlsx:
-                extensions.append(XLSX)
+            students_yaml_file = None
+            if yaml:
+                students_yaml_file = values[KEY_STU_FILE]
+                if is_empty(students_yaml_file, "Students YAML File"):
+                    continue
 
             del(values[KEY_ML])
             for key, val in values.items():
                 sg.user_settings_set_entry(key, val)
 
-            CreateStudentsiles(urlparse(base_url), access_token, course_id, group_category_name, students_info_file, extensions, students_yaml_file)
+            CreateStudentsiles(urlparse(base_url), access_token, course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file)
+
+        elif event == "token_tip":
+            window[event].TooltipObject.showtip()
+            sg.cprint(token_tip_ml)
+
+        elif event == "info_file_tip":
+            window[event].TooltipObject.showtip()
+            sg.cprint(info_file_tip_ml)
 
         elif event.endswith("_tip"):
             window[event].TooltipObject.showtip()
