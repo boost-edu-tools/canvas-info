@@ -1,29 +1,8 @@
 import PySimpleGUI as sg
-from repobee_canvas.gui import *
-
-settings_tip = "Please complete the settings before clicking the other buttons."
-stu_yaml_tip = "This is used to generate the students file in Yaml format used by RepoBee. RepoBee uses the students file to create a GitHub team or GitLab subgroup for groups of students or an individual student participating in an assignment, and then create a repository for this team or subgroup."
-stu_info_tip = "This is used to generate an Excel info file that is converted from the Canvas-Git mapping table."
-
-def make_window():
-    sg.theme('DarkAmber')
-
-    layout = [
-        [
-            sg.Button('Settings', k=KEY_SETTINGS), add_help_button('settings_tip', settings_tip),
-            sg.Button('Create student info file', k=KEY_CSV_INFO_FILE), add_help_button('stu_info_tip', stu_info_tip),
-            sg.Button('Create student yaml file', k=KEY_STU_FILE), add_help_button('stu_yaml_tip', stu_yaml_tip)
-        ],
-        [
-            sg.Multiline(size=(70, 20), key=KEY_ML, reroute_cprint=True, expand_y=True, expand_x=True, auto_refresh=True)
-        ],
-        [
-            sg.B('Exit'), sg.B('Clear History')
-        ]
-    ]
-
-    window = sg.Window('Repobee Canvas', layout, icon=icon, finalize=True)
-    return window
+import os
+from urllib.parse                                 import urlparse
+from repobee_canvas.gui                           import *
+from repobee_canvas.command.create_students_files  import CreateStudentsiles
 
 if __name__ == '__main__':
     if sg.user_settings_get_entry(KEY_BASE_URL) == None:
@@ -33,7 +12,7 @@ if __name__ == '__main__':
         sg.user_settings_set_entry(KEY_STU_FILE, resource_path("students.yaml"))
         sg.user_settings_set_entry(KEY_STU_FILE_FOLDER, resource_path())
 
-    if is_invalid(sg.user_settings_get_entry(KEY_XLSX_INFO_FILE)) or is_invalid(sg.user_settings_get_entry(KEY_INFO_FILE_FOLDER)):
+    if is_invalid(sg.user_settings_get_entry(KEY_XLSX_INFO_FILE)) or is_invalid(sg.user_settings_get_entry(KEY_CSV_INFO_FILE)):
         sg.user_settings_set_entry(KEY_CSV_INFO_FILE, resource_path("students_info.csv"))
         sg.user_settings_set_entry(KEY_XLSX_INFO_FILE, resource_path("students_info.xlsx"))
         sg.user_settings_set_entry(KEY_INFO_FILE_FOLDER, resource_path())
@@ -41,26 +20,85 @@ if __name__ == '__main__':
     if not sg.user_settings_get_entry(CSV) and not sg.user_settings_get_entry(XLSX):
         sg.user_settings_set_entry(CSV, True)
 
-    access_token = sg.user_settings_get_entry(KEY_ACCESS_TOKEN)
-    base_url = sg.user_settings_get_entry(KEY_BASE_URL)
+    if sg.user_settings_get_entry(KEY_GROUP_CATEGORY) is None:
+        sg.user_settings_set_entry(KEY_GROUP_CATEGORY, "Project Groups")
 
     window = make_window()
+
     while True:
         event, values = window.read()
 
         if event in ('Exit', sg.WIN_CLOSED): # if user closes window
             break
 
-        elif event == KEY_SETTINGS:
-            (access_token, base_url) = settings_window(access_token, base_url, window)
+        elif event == KEY_CSV_INFO_FILE_FOLDER:
+            file_path = update_browse(values[KEY_CSV_INFO_FILE], True, ((TYPE_CSV),), CSV)
+            if file_path != "":
+                window[KEY_CSV_INFO_FILE].update(file_path)
+                file_path = os.path.splitext(file_path)[0]
+                window[KEY_XLSX_INFO_FILE].update(file_path+DXLSX)
 
-        elif event == KEY_STU_FILE:
-            if is_ready(access_token, base_url):
-                students_yaml_file_window(window)
+        elif event == CSV:
+            window[KEY_CSV_INFO_FILE_FOLDER].update(disabled=not values[CSV])
 
-        elif event == KEY_CSV_INFO_FILE:
-            if is_ready(access_token, base_url):
-                students_info_file_window(access_token, base_url, window)
+        elif event == KEY_XLSX_INFO_FILE_FOLDER:
+            file_path = update_browse(values[KEY_XLSX_INFO_FILE], True, ((TYPE_XLSX),), XLSX)
+            if file_path != "":
+                window[KEY_XLSX_INFO_FILE].update(file_path)
+                file_path = os.path.splitext(file_path)[0]
+                window[KEY_CSV_INFO_FILE].update(file_path+DCSV)
+
+        elif event == XLSX:
+            window[KEY_XLSX_INFO_FILE_FOLDER].update(disabled=not values[XLSX])
+
+        elif event == KEY_STU_FILE_FOLDER:
+            file_path = update_browse(values[KEY_STU_FILE], True, (TYPE_YAML,), YAML)
+            if file_path != "":
+                window[KEY_STU_FILE].update(file_path)
+
+        elif event == "Execute":
+            access_token = values[KEY_ACCESS_TOKEN]
+            if is_empty(access_token, "Access Token"):
+                continue
+
+            base_url = values[KEY_BASE_URL]
+            if is_empty(base_url, "Base URL"):
+                continue
+
+            course_id = values[KEY_COURSE_ID]
+            if is_empty(course_id, "Course ID") or not is_number(course_id, "Course ID"):
+                    continue
+
+            group_category_name = values[KEY_GROUP_CATEGORY]
+            if is_empty(group_category_name, "Group Category"):
+                continue
+
+            students_info_file = os.path.splitext(values[KEY_XLSX_INFO_FILE])[0]
+            if is_empty(students_info_file, "Students Info File"):
+                continue
+
+            students_yaml_file = values[KEY_STU_FILE]
+            if is_empty(students_yaml_file, "Students File"):
+                continue
+
+            file_csv = values[CSV]
+            file_xlsx = values[XLSX]
+            if not file_csv and not file_xlsx:
+                popup("Please select at least one file type")
+                continue
+
+            extensions = []
+            if file_csv:
+                extensions.append(CSV)
+
+            if file_xlsx:
+                extensions.append(XLSX)
+
+            del(values[KEY_ML])
+            for key, val in values.items():
+                sg.user_settings_set_entry(key, val)
+
+            CreateStudentsiles(urlparse(base_url), access_token, course_id, group_category_name, students_info_file, extensions, students_yaml_file)
 
         elif event.endswith("_tip"):
             window[event].TooltipObject.showtip()
