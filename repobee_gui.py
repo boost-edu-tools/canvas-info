@@ -32,7 +32,7 @@ if __name__ == '__main__':
             break
 
         elif event == 'token_bt':
-            text = sg.popup_get_text('Access Token', default_text=get_entry(KEY_ACCESS_TOKEN))
+            text = sg.popup_get_text('Access Token', default_text=get_entry(KEY_ACCESS_TOKEN), size=(80, 1))
             if text:
                 window[KEY_ACCESS_TOKEN].update(value=text)
                 set_entry(KEY_ACCESS_TOKEN, text)
