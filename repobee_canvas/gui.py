@@ -12,15 +12,19 @@ KEY_BASE_URL = 'canvas_base_url'
 KEY_COURSE_ID = 'canvas_course_id'
 KEY_GROUP_CATEGORY = 'group_category_name'
 KEY_STU_FILE = 'students_file'
-KEY_INFO_FILE = 'students_info_file'
+KEY_CSV_INFO_FILE = 'stu_csv_info_file'
+KEY_XLSX_INFO_FILE = 'stu_xlsx_info_file'
 KEY_INFO_FILE_EXT = 'students_info_file_ext'
 KEY_STU_FILE_FOLDER = 'students_file_folder'
 KEY_INFO_FILE_FOLDER = 'students_info_file_folder'
+KEY_CSV_INFO_FILE_FOLDER = 'stu_csv_info_file_folder'
+KEY_XLSX_INFO_FILE_FOLDER = 'stu_xlsx_info_file_folder'
 KEY_ML = '-ML-'
 KEY_PRO_BAR = 'progressbar'
 KEY_PRO_TEXT = 'progress'
 
 DEFAULT_INPUT_BG = "#000000" #"#705e52"
+DISABLED_COLOR = "grey"
 
 token_tip = "To generate a Canvas API key via 'Account', 'Settings', '+ New Access Token'."
 course_id_tip = "The course ID is a number."
@@ -30,9 +34,13 @@ CSV = "csv"
 YAML = "yaml"
 XLSX = "xlsx"
 
+DCSV = ".csv"
+DXLSX = ".xlsx"
+
 TYPE_CSV = ("Text Files", "*.csv")
 TYPE_YAML = ("Text Files", "*.yaml")
 TYPE_XLSX = ("Excel Workbook", "*.xlsx")
+TYPE_ALL = ("ALL Files", "*.* *")
 
 def resource_path(relative_path = None):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -137,12 +145,12 @@ def students_yaml_file_window(main_window: sg.Window):
             break
 
         if event == KEY_INFO_FILE_FOLDER:
-            if not students_info_file or students_info_file.endswith(".csv"):
+            if not students_info_file or students_info_file.endswith(DCSV):
                 file_type =  ((TYPE_CSV), (TYPE_XLSX), )
-            elif students_info_file.endswith(".xlsx"):
+            elif students_info_file.endswith(DXLSX):
                 file_type =  ((TYPE_XLSX), (TYPE_CSV), )
             else:
-                file_type = (("ALL Files", "*.* *"),)
+                file_type = ((TYPE_ALL),)
 
             file_path = update_browse(values[KEY_INFO_FILE_EXT], False, file_type, '')
             if file_path != "":
@@ -185,10 +193,12 @@ def students_yaml_file_window(main_window: sg.Window):
 def students_info_file_window(access_token: str, base_url: str, main_window: sg.Window):
     base_url = urlparse(base_url)
     group_category_name = sg.user_settings_get_entry(KEY_GROUP_CATEGORY)
-    students_info_file = sg.user_settings_get_entry(KEY_INFO_FILE)
     if group_category_name is None:
         group_category_name = "Project Groups"
         sg.user_settings_set_entry(KEY_GROUP_CATEGORY, group_category_name)
+
+    csv_checked = sg.user_settings_get_entry(CSV)
+    xlsx_checked = sg.user_settings_get_entry(XLSX)
 
     layout = [
         [
@@ -200,11 +210,14 @@ def students_info_file_window(access_token: str, base_url: str, main_window: sg.
             add_help_button('group_category_tip', group_category_tip)
         ],
         [
-            sg.Text('Info File', pad=(0, 3)), sg.InputText(k=KEY_INFO_FILE, default_text=students_info_file, expand_x = True, pad=((15, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
-            sg.B("Browse", k=KEY_INFO_FILE_FOLDER, pad=((5, 0), 0))
+            sg.Text('Info File', pad=(0, 3)), sg.InputText(k=KEY_CSV_INFO_FILE, default_text=sg.user_settings_get_entry(KEY_CSV_INFO_FILE), expand_x = True, pad=((15, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+            sg.B("Browse", k=KEY_CSV_INFO_FILE_FOLDER, pad=((5, 0), 0), disabled=not csv_checked, disabled_button_color=DISABLED_COLOR),
+            sg.Checkbox("", k=CSV, default=csv_checked, enable_events = True)
         ],
         [
-            sg.Text('File Type', pad=(0, 3)), sg.Checkbox(CSV, k=CSV, default=sg.user_settings_get_entry(CSV)), sg.Checkbox(XLSX, k=XLSX, default=sg.user_settings_get_entry(XLSX))
+            sg.InputText(k=KEY_XLSX_INFO_FILE, default_text=sg.user_settings_get_entry(KEY_XLSX_INFO_FILE), expand_x = True, pad=((25, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+            sg.B("Browse", k=KEY_XLSX_INFO_FILE_FOLDER, pad=((5, 0), 0), disabled=not xlsx_checked, disabled_button_color=DISABLED_COLOR),
+            sg.Checkbox("", k=XLSX, default=xlsx_checked, enable_events = True)
         ],
         [
             sg.ProgressBar(max_value=100, orientation='h', size=(63, 20), key=KEY_PRO_BAR),
@@ -227,19 +240,27 @@ def students_info_file_window(access_token: str, base_url: str, main_window: sg.
         if event in (sg.WINDOW_CLOSED, "Exit"):
             break
 
-        elif event == KEY_INFO_FILE_FOLDER:
-            file_type = ()
-            if values[CSV]:
-                file_type = file_type + (TYPE_CSV,)
-
-            if values[XLSX]:
-                file_type = file_type + (TYPE_XLSX,)
-
-            file_path = update_browse(values[KEY_INFO_FILE], True, file_type, '')
+        elif event == KEY_CSV_INFO_FILE_FOLDER:
+            file_path = update_browse(values[KEY_CSV_INFO_FILE], True, ((TYPE_CSV),), CSV)
             if file_path != "":
                 file_path = os.path.splitext(file_path)[0]
                 students_info_file = file_path
-                window[KEY_INFO_FILE].update(file_path)
+                window[KEY_CSV_INFO_FILE].update(file_path+DCSV)
+                window[KEY_XLSX_INFO_FILE].update(file_path+DXLSX)
+
+        elif event == KEY_XLSX_INFO_FILE_FOLDER:
+            file_path = update_browse(values[KEY_XLSX_INFO_FILE], True, ((TYPE_XLSX),), XLSX)
+            if file_path != "":
+                file_path = os.path.splitext(file_path)[0]
+                students_info_file = file_path
+                window[KEY_CSV_INFO_FILE].update(file_path+DCSV)
+                window[KEY_XLSX_INFO_FILE].update(file_path+DXLSX)
+
+        elif event == CSV:
+            window[KEY_CSV_INFO_FILE_FOLDER].update(disabled=not values[CSV])
+
+        elif event == XLSX:
+            window[KEY_XLSX_INFO_FILE_FOLDER].update(disabled=not values[XLSX])
 
         elif event == "Execute":
             course_id = values[KEY_COURSE_ID]
@@ -282,7 +303,6 @@ def students_info_file_window(access_token: str, base_url: str, main_window: sg.
     sg.cprint_set_output_destination(main_window, KEY_ML)
 
 def settings_window(access_token: str, base_url: str, main_window: sg.Window) -> (str, str):
-    students_info_file = sg.user_settings_get_entry(KEY_INFO_FILE)
     student_file = sg.user_settings_get_entry(KEY_STU_FILE)
     layout = [
             [

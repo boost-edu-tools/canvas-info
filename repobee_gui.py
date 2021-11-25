@@ -11,7 +11,7 @@ def make_window():
     layout = [
         [
             sg.Button('Settings', k=KEY_SETTINGS), add_help_button('settings_tip', settings_tip),
-            sg.Button('Create student info file', k=KEY_INFO_FILE), add_help_button('stu_info_tip', stu_info_tip),
+            sg.Button('Create student info file', k=KEY_CSV_INFO_FILE), add_help_button('stu_info_tip', stu_info_tip),
             sg.Button('Create student yaml file', k=KEY_STU_FILE), add_help_button('stu_yaml_tip', stu_yaml_tip)
         ],
         [
@@ -33,8 +33,9 @@ if __name__ == '__main__':
         sg.user_settings_set_entry(KEY_STU_FILE, resource_path("students.yaml"))
         sg.user_settings_set_entry(KEY_STU_FILE_FOLDER, resource_path())
 
-    if is_invalid(sg.user_settings_get_entry(KEY_INFO_FILE)) or is_invalid(sg.user_settings_get_entry(KEY_INFO_FILE_FOLDER)):
-        sg.user_settings_set_entry(KEY_INFO_FILE, resource_path("students_info.xlsx"))
+    if is_invalid(sg.user_settings_get_entry(KEY_XLSX_INFO_FILE)) or is_invalid(sg.user_settings_get_entry(KEY_INFO_FILE_FOLDER)):
+        sg.user_settings_set_entry(KEY_CSV_INFO_FILE, resource_path("students_info.csv"))
+        sg.user_settings_set_entry(KEY_XLSX_INFO_FILE, resource_path("students_info.xlsx"))
         sg.user_settings_set_entry(KEY_INFO_FILE_FOLDER, resource_path())
 
     if not sg.user_settings_get_entry(CSV) and not sg.user_settings_get_entry(XLSX):
@@ -57,7 +58,7 @@ if __name__ == '__main__':
             if is_ready(access_token, base_url):
                 students_yaml_file_window(window)
 
-        elif event == KEY_INFO_FILE:
+        elif event == KEY_CSV_INFO_FILE:
             if is_ready(access_token, base_url):
                 students_info_file_window(access_token, base_url, window)
 
