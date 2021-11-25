@@ -5,35 +5,65 @@ from repobee_canvas.gui                           import *
 from repobee_canvas.command.create_students_files  import CreateStudentsiles
 
 if __name__ == '__main__':
-    if sg.user_settings_get_entry(KEY_BASE_URL) == None:
-        sg.user_settings_set_entry(KEY_BASE_URL, "https://canvas.tue.nl/api/v1")
+    if get_entry(KEY_BASE_URL) == None:
+        set_entry(KEY_BASE_URL, "https://canvas.tue.nl/api/v1")
 
-    if is_invalid(sg.user_settings_get_entry(KEY_STU_FILE)) or is_invalid(sg.user_settings_get_entry(KEY_STU_FILE_FOLDER)):
-        sg.user_settings_set_entry(KEY_STU_FILE, resource_path("students.yaml"))
-        sg.user_settings_set_entry(KEY_STU_FILE_FOLDER, resource_path())
+    if is_invalid(get_entry(KEY_STU_FILE)) or is_invalid(get_entry(KEY_STU_FILE_FOLDER)):
+        set_entry(KEY_STU_FILE, resource_path("students.yaml"))
+        set_entry(KEY_STU_FILE_FOLDER, resource_path())
 
-    if is_invalid(sg.user_settings_get_entry(KEY_XLSX_INFO_FILE)) or is_invalid(sg.user_settings_get_entry(KEY_CSV_INFO_FILE)):
-        sg.user_settings_set_entry(KEY_CSV_INFO_FILE, resource_path("students_info.csv"))
-        sg.user_settings_set_entry(KEY_XLSX_INFO_FILE, resource_path("students_info.xlsx"))
-        sg.user_settings_set_entry(KEY_INFO_FILE_FOLDER, resource_path())
+    if is_invalid(get_entry(KEY_XLSX_INFO_FILE)) or is_invalid(get_entry(KEY_CSV_INFO_FILE)):
+        set_entry(KEY_CSV_INFO_FILE, resource_path("students_info.csv"))
+        set_entry(KEY_XLSX_INFO_FILE, resource_path("students_info.xlsx"))
+        set_entry(KEY_INFO_FILE_FOLDER, resource_path())
 
-    if sg.user_settings_get_entry(KEY_GROUP_CATEGORY) is None:
-        sg.user_settings_set_entry(KEY_GROUP_CATEGORY, "Project Groups")
+    if get_entry(KEY_GROUP_CATEGORY) is None:
+        set_entry(KEY_GROUP_CATEGORY, "Project Groups")
+
+    if get_entry(KEY_COURSE_ID) is None:
+        set_entry(KEY_COURSE_ID, "00000")
 
     window = make_window()
 
     while True:
         event, values = window.read()
+        print (values.keys())
 
         if event in ('Exit', sg.WIN_CLOSED): # if user closes window
             break
+
+        elif event == 'token_bt':
+            text = sg.popup_get_text('Access Token', default_text=get_entry(KEY_ACCESS_TOKEN))
+            if text:
+                window[KEY_ACCESS_TOKEN].update(value=text)
+                set_entry(KEY_ACCESS_TOKEN, text)
+
+        elif event == 'url_bt':
+            text = sg.popup_get_text('Base Url', default_text=get_entry(KEY_BASE_URL))
+            if text:
+                window[KEY_BASE_URL].update(value=text)
+                set_entry(KEY_BASE_URL, text)
+
+        elif event == 'course_id_bt':
+            text = sg.popup_get_text('Course ID', default_text=get_entry(KEY_COURSE_ID))
+            if text:
+                window[KEY_COURSE_ID].update(value=text)
+                set_entry(KEY_COURSE_ID, text)
+
+        elif event == 'group_set_bt':
+            text = sg.popup_get_text('Group Set', default_text=get_entry(KEY_GROUP_CATEGORY))
+            if text:
+                window[KEY_GROUP_CATEGORY].update(value=text)
+                set_entry(KEY_GROUP_CATEGORY, text)
 
         elif event == KEY_CSV_INFO_FILE_FOLDER:
             file_path = update_browse(values[KEY_CSV_INFO_FILE], True, ((TYPE_CSV),)) #, CSV)
             if file_path != "":
                 window[KEY_CSV_INFO_FILE].update(file_path)
+                set_entry(KEY_XLSX_INFO_FILE, file_path)
                 file_path = os.path.splitext(file_path)[0]
                 window[KEY_XLSX_INFO_FILE].update(file_path+".xlsx")
+                set_entry(KEY_GROUP_CATEGORY, file_path+".xlsx")
 
         elif event == CSV:
             updateButton( not values[CSV], window[KEY_CSV_INFO_FILE_FOLDER])
@@ -42,8 +72,10 @@ if __name__ == '__main__':
             file_path = update_browse(values[KEY_XLSX_INFO_FILE], True, ((TYPE_XLSX),)) #, XLSX)
             if file_path != "":
                 window[KEY_XLSX_INFO_FILE].update(file_path)
+                set_entry(KEY_XLSX_INFO_FILE, file_path)
                 file_path = os.path.splitext(file_path)[0]
                 window[KEY_CSV_INFO_FILE].update(file_path+".csv")
+                set_entry(KEY_GROUP_CATEGORY, file_path+".csv")
 
         elif event == XLSX:
             updateButton( not values[XLSX], window[KEY_XLSX_INFO_FILE_FOLDER])
@@ -97,10 +129,6 @@ if __name__ == '__main__':
                 students_yaml_file = values[KEY_STU_FILE]
                 if is_empty(students_yaml_file, "Students YAML File"):
                     continue
-
-            del(values[KEY_ML])
-            for key, val in values.items():
-                sg.user_settings_set_entry(key, val)
 
             CreateStudentsiles(urlparse(base_url), access_token, course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file)
 

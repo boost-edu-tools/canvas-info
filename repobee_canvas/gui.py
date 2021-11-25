@@ -3,7 +3,7 @@ import os
 import base64
 
 WINDOW_SIZE_X = 600
-WINDOW_SIZE_Y = 650
+WINDOW_SIZE_Y = 900
 
 KEY_ACCESS_TOKEN = 'canvas_access_token'
 KEY_BASE_URL = 'canvas_base_url'
@@ -58,6 +58,12 @@ help = resource_path("help.png")
 icon = resource_path("icon.png")
 with open(icon, 'rb') as file:
     icon = base64.b64encode(file.read())
+
+def set_entry(key: str, val: str):
+    sg.user_settings_set_entry(key, val)
+
+def get_entry(key: str) -> str:
+    return sg.user_settings_get_entry(key)
 
 progress_bar = None
 progress_text = None
@@ -124,44 +130,49 @@ def updateButton(disabled: bool, button: sg.Button):
 def make_window():
     sg.theme('DarkAmber')
 
-    csv_checked = sg.user_settings_get_entry(CSV)
-    xlsx_checked = sg.user_settings_get_entry(XLSX)
-    yaml_checked = sg.user_settings_get_entry(YAML)
+    csv_checked = get_entry(CSV)
+    xlsx_checked = get_entry(XLSX)
+    yaml_checked = get_entry(YAML)
 
     layout = [
         [
             [
-                sg.Text('Access Token', pad=(0, 3)), sg.InputText(k=KEY_ACCESS_TOKEN, default_text=sg.user_settings_get_entry(KEY_ACCESS_TOKEN), expand_x = True, pad=((0, 0), 0)),
+                sg.Text('Access Token', pad=(0, 3)), sg.InputText(k=KEY_ACCESS_TOKEN, default_text=get_entry(KEY_ACCESS_TOKEN), expand_x = True, pad=((0, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.B("Update", k='token_bt'),
                 add_help_button('token_tip', token_tip)
             ],
             [
-                sg.Text('Base URL', pad=(0, 3)), sg.InputText(k=KEY_BASE_URL, default_text=sg.user_settings_get_entry(KEY_BASE_URL), expand_x = True, pad=((24, 0), 0)),
+                sg.Text('Base URL', pad=(0, 3)), sg.InputText(k=KEY_BASE_URL, default_text=get_entry(KEY_BASE_URL), expand_x = True, pad=((24, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.B("Update", k='url_bt'),
                 add_help_button('base_url_tip', base_url_tip)
             ],
             [
-                sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True, pad=((26, 0), 0)),
+                sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=get_entry(KEY_COURSE_ID), expand_x = True, pad=((26, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.B("Update", k='course_id_bt'),
                 add_help_button('course_id_tip', course_id_tip)
             ],
             [
-                sg.Text('Group Set', pad=(0, 3)), sg.InputText(k=KEY_GROUP_CATEGORY, default_text=sg.user_settings_get_entry(KEY_GROUP_CATEGORY), expand_x = True, pad=((24, 0), 0)),
+                sg.Text('Group Set', pad=(0, 3)), sg.InputText(k=KEY_GROUP_CATEGORY, default_text=get_entry(KEY_GROUP_CATEGORY), expand_x = True, pad=((24, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.B("Update", k='group_set_bt'),
                 add_help_button('group_category_tip', group_category_tip)
             ],
             [
                 sg.Text('Info File', pad=(0, 3)),
-                sg.InputText(k=KEY_CSV_INFO_FILE, default_text=sg.user_settings_get_entry(KEY_CSV_INFO_FILE), expand_x = True, pad=((37, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
-                sg.B("Browse", k=KEY_CSV_INFO_FILE_FOLDER, pad=((5, 0), 0), disabled=not csv_checked, disabled_button_color=DISABLED_COLOR),
-                sg.Checkbox("", k=CSV, default=csv_checked, enable_events = True, pad=((2, 0), 0)),
+                sg.Checkbox("", k=CSV, default=csv_checked, enable_events = True, pad=((10, 0), 0)),
+                sg.InputText(k=KEY_CSV_INFO_FILE, default_text=get_entry(KEY_CSV_INFO_FILE), expand_x = True, pad=((0, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.B("Browse", k=KEY_CSV_INFO_FILE_FOLDER, pad=((5, 3), 0), disabled=not csv_checked, disabled_button_color=DISABLED_COLOR),
                 add_help_button('info_file_tip', info_file_tip)
             ],
             [
-                sg.InputText(k=KEY_XLSX_INFO_FILE, default_text=sg.user_settings_get_entry(KEY_XLSX_INFO_FILE), expand_x = True, pad=((86, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
-                sg.B("Browse", k=KEY_XLSX_INFO_FILE_FOLDER, pad=((5, 0), 0), disabled=not xlsx_checked, disabled_button_color=DISABLED_COLOR),
-                sg.Checkbox("", k=XLSX, default=xlsx_checked, enable_events = True, pad=((2, 24), 0))
+                sg.Checkbox("", k=XLSX, default=xlsx_checked, enable_events = True, pad=((58, 0), 0)),
+                sg.InputText(k=KEY_XLSX_INFO_FILE, default_text=get_entry(KEY_XLSX_INFO_FILE), expand_x = True, pad=((0, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.B("Browse", k=KEY_XLSX_INFO_FILE_FOLDER, pad=((5, 27), 0), disabled=not xlsx_checked, disabled_button_color=DISABLED_COLOR),
             ],
             [
-                sg.Text('YAML File', pad=(0, 3)), sg.InputText(k=KEY_STU_FILE, default_text=sg.user_settings_get_entry(KEY_STU_FILE), expand_x = True, pad=((20, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
-                sg.B("Browse", k=KEY_STU_FILE_FOLDER, pad=((5, 0), 0), disabled=not xlsx_checked, disabled_button_color=DISABLED_COLOR),
-                sg.Checkbox("", k=YAML, default=yaml_checked, enable_events = True, pad=((2, 0), 0)),
+                sg.Text('YAML File', pad=(0, 3)),
+                sg.Checkbox("", k=YAML, default=yaml_checked, enable_events = True, pad=((0, 0), 0)),
+                sg.InputText(k=KEY_STU_FILE, default_text=get_entry(KEY_STU_FILE), expand_x = True, pad=((0, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.B("Browse", k=KEY_STU_FILE_FOLDER, pad=((5, 3), 0), disabled=not xlsx_checked, disabled_button_color=DISABLED_COLOR),
                 add_help_button('yaml_file_tip', yaml_file_tip)
             ],
             [
