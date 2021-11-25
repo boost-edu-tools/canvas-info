@@ -183,7 +183,7 @@ def make_window():
                 sg.Multiline(size=(70, 20), key=KEY_ML, reroute_cprint=True, expand_y=True, expand_x=True, auto_refresh=True)
             ],
             [
-                sg.B('Execute'), sg.B('Exit'), sg.B('Clear History', pad=((348, 0), 0))
+                sg.B('Execute'), sg.B('Exit'), sg.B('Clear History')
             ]
         ],
     ]

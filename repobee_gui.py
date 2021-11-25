@@ -33,25 +33,26 @@ if __name__ == '__main__':
 
         elif event == 'token_bt':
             text = sg.popup_get_text('Access Token', default_text=get_entry(KEY_ACCESS_TOKEN), size=(80, 1))
-            if text:
+            if text is not None:
                 window[KEY_ACCESS_TOKEN].update(value=text)
                 set_entry(KEY_ACCESS_TOKEN, text)
 
         elif event == 'url_bt':
             text = sg.popup_get_text('Base URL', default_text=get_entry(KEY_BASE_URL))
-            if text:
+            if text is not None:
                 window[KEY_BASE_URL].update(value=text)
                 set_entry(KEY_BASE_URL, text)
 
         elif event == 'course_id_bt':
             text = sg.popup_get_text('Course ID', default_text=get_entry(KEY_COURSE_ID))
-            if text:
-                window[KEY_COURSE_ID].update(value=text)
-                set_entry(KEY_COURSE_ID, text)
+            if text is not None:
+                if is_number(text, "Course ID"):
+                    window[KEY_COURSE_ID].update(value=text)
+                    set_entry(KEY_COURSE_ID, text)
 
         elif event == 'group_set_bt':
             text = sg.popup_get_text('Group Set', default_text=get_entry(KEY_GROUP_CATEGORY))
-            if text:
+            if text is not None:
                 window[KEY_GROUP_CATEGORY].update(value=text)
                 set_entry(KEY_GROUP_CATEGORY, text)
 
@@ -104,8 +105,8 @@ if __name__ == '__main__':
                 continue
 
             course_id = values[KEY_COURSE_ID]
-            if is_empty(course_id, "Course ID") or not is_number(course_id, "Course ID"):
-                    continue
+            if is_empty(course_id, "Course ID"):
+                continue
 
             group_category_name = values[KEY_GROUP_CATEGORY]
             if is_empty(group_category_name, "Group Category"):
