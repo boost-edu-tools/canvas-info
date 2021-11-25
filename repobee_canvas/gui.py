@@ -21,7 +21,7 @@ DISABLED_COLOR = "grey"
 
 token_tip = "Canvas > Account > Settings > New access token > Generate Token"
 token_tip_ml = "Generate via: Canvas > Account > Settings > Blue Box '+ New access token' on page > Generate Token"
-base_url_tip = "Default value should be correct for Canvas"
+base_url_tip = "Default value should be correct for Canvas, only change when you know what you are doing."
 course_id_tip = "Number at the end of the Canvas URL for your course"
 group_category_tip = "Name of the Canvas Group Set (see Canvas tab People) that contains the student groups."
 info_file_tip = "Output file with columns: group number, name, Canvas student ID, GitLab student ID, email"
