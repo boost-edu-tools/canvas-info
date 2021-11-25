@@ -38,7 +38,7 @@ if __name__ == '__main__':
                 set_entry(KEY_ACCESS_TOKEN, text)
 
         elif event == 'url_bt':
-            text = sg.popup_get_text('Base Url', default_text=get_entry(KEY_BASE_URL))
+            text = sg.popup_get_text('Base URL', default_text=get_entry(KEY_BASE_URL))
             if text:
                 window[KEY_BASE_URL].update(value=text)
                 set_entry(KEY_BASE_URL, text)

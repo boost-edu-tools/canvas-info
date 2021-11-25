@@ -2,8 +2,8 @@ import PySimpleGUI as sg
 import os
 import base64
 
-WINDOW_SIZE_X = 600
-WINDOW_SIZE_Y = 900
+WINDOW_SIZE_X = 900
+WINDOW_SIZE_Y = 600
 
 KEY_ACCESS_TOKEN = 'canvas_access_token'
 KEY_BASE_URL = 'canvas_base_url'
@@ -176,7 +176,7 @@ def make_window():
                 add_help_button('yaml_file_tip', yaml_file_tip)
             ],
             [
-                sg.ProgressBar(max_value=100, orientation='h', size=(63, 20), key=KEY_PRO_BAR),
+                sg.ProgressBar(max_value=100, orientation='h', size=(0, 20), expand_x=True, key=KEY_PRO_BAR), #expand_x will overwrite the width
                 sg.Text('0%', key=KEY_PRO_TEXT, size=(4, None), justification='right')
             ],
             [
