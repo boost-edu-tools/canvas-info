@@ -1,75 +1,44 @@
-"""Create a students info file from a Canvas assignment.
+"""Create a students info file from a Canvas course.
 
 """
 from pathlib                    import Path
 
-from ..canvas_git_map           import CanvasGitMap
+from ..canvas_api.api           import CanvasAPI
+from ..canvas_api.course        import Course
+
+from ..canvas_git_map           import canvas_git_map_table_wizard
 
 from ..common                   import inform, warn, fault
-from ..                         import gui
-
-import xlsxwriter
-
-"""Command to create a students info file from a Canvas assignment.
-
-The create_students_info_file is a function to create a students info excel file
-for a Canvas assignment: All students assigned to this assignment are
-listed and written to the students file. If the assignment is a group
-assignment, the student groups are written instead.
-
-Because the login ids of students can be different in Canvas and git, a
-mapping needs to be made via a database containing both login ids for each
-student. This database should be a csv file and have a canvas_id and git_id
-column.
-
-
-Usage:
-
-```
-repobee -p canvas canvas create-students-yaml-file \
-        --canvas-assignment-id 23 \
-        --canvas-git-map student_data.csv
-```
-
-will create file `students.yaml` with all Git account names of the
-students involved in assignment with ID=23.
-
-If you want to use a different output filename, set the filename in the GUI.
-
-"""
 
 def CreateStudentsInfoFile(
-    canvas_git_map: str,
-    canvas_students_info_file: str):
+    canvas_base_url: str,
+    canvas_access_token: str,
+    canvas_course_id: int,
+    group_category_name: str,
+    student_info_file : str,
+    extensions: list):
+    """Command to create a Canvas-Git mapping table and write it to a file."""
+    CanvasAPI().setup(canvas_base_url, canvas_access_token)
+    inform("Loading course...")
 
-    """Create a students info file for a Canvas assignment."""
-    canvas_git_mapping_table = CanvasGitMap.load(Path(canvas_git_map))
+    try:
+        course = Course.load(canvas_course_id)
+    except Exception as e:
+        fault(e)
+        if "Unauthorized" in str(e):
+            warn("Repobee-canvas was not authorized to access your Canvas information. Please check the tooltip of the access token in the Settings Window.")
+    else:
+        canvas_git_mapping_table = canvas_git_map_table_wizard(course, group_category_name)
 
-    # inform(canvas_git_mapping_table.rows())
-    # for row in canvas_git_mapping_table.rows():
-        # inform (row)
+        if canvas_git_mapping_table.empty():
+            warn("Student info file is not created.")
+        else:
+            if "csv" in extensions:
+                path = Path(student_info_file + ".csv")
+                canvas_git_mapping_table.write(path)
+                inform(f"Created file:  {str(path)}     ⇝  the student info CSV file")
 
-    infos = canvas_git_mapping_table._student_info
-    # inform (canvas_git_mapping_table._student_info)
-    # for info in canvas_git_mapping_table._student_info:
-    #     inform("info  : ")
-    #     inform(info)
-    workbook = xlsxwriter.Workbook(canvas_students_info_file)
-    worksheet = workbook.add_worksheet()
-    worksheet.set_column('A:D', 12) #set columns_width 12
-    worksheet.set_column('E:E', 45) #set email column_width 45
-    worksheet.add_table('A1:E'+str(len(infos)+1),
-        {
-            'data': infos,
-            'columns': [
-                {'header': 'Group'},
-                {'header': 'Name'},
-                {'header': 'canvas_id'},
-                {'header': 'git_id'},
-                {'header': 'email'},
-            ]
-        }
-    )
-
-    workbook.close()
-    inform(f"Created file:  {str(canvas_students_info_file)}     ⇝  the student info xlsx file")
+            if "xlsx" in extensions:
+                path = Path(student_info_file + ".xlsx")
+                canvas_git_mapping_table.writeExcel(path)
+                inform(f"Created file:  {str(path)}     ⇝  the student info xlsx file")
