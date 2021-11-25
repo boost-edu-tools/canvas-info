@@ -7,7 +7,6 @@ KEY_BASE_URL = 'canvas_base_url'
 KEY_COURSE_ID = 'canvas_course_id'
 KEY_GROUP_CATEGORY = 'group_category_name'
 KEY_STU_FILE = 'students_file'
-KEY_STU_INFO_FILE = 'students_info_file'
 KEY_CSV_INFO_FILE = 'stu_csv_info_file'
 KEY_XLSX_INFO_FILE = 'stu_xlsx_info_file'
 KEY_STU_FILE_FOLDER = 'students_file_folder'
@@ -20,16 +19,18 @@ KEY_PRO_TEXT = 'progress'
 DEFAULT_INPUT_BG = "#000000" #"#705e52"
 DISABLED_COLOR = "grey"
 
-token_tip = "To generate a Canvas API key via 'Account', 'Settings', '+ New Access Token'."
-course_id_tip = "The course ID is a number."
+token_tip = "Canvas > Account > Settings > New access token > Generate Token"
+token_tip_ml = "Generate via: Canvas > Account > Settings > Blue Box '+ New access token' on page > Generate Token"
+base_url_tip = "Default value should be correct for Canvas"
+course_id_tip = "Number at the end of the Canvas URL for your course"
 group_category_tip = "Name of the Canvas Group Set (see Canvas tab People) that contains the student groups."
+info_file_tip = "Output file with columns: group number, name, Canvas student ID, GitLab student ID, email"
+info_file_tip_ml = "Output path for CSV or Excel file, containing for each student the following columns: group number, last name, Canvas student ID, student ID (used for GitLab login), email"
+yaml_file_tip = "Student info file for Repobee with for each student group: repo name and student IDs"
 
 CSV = "csv"
 YAML = "yaml"
 XLSX = "xlsx"
-
-DCSV = ".csv"
-DXLSX = ".xlsx"
 
 TYPE_CSV = ("Text Files", "*.csv")
 TYPE_YAML = ("Text Files", "*.yaml")
@@ -62,7 +63,7 @@ def progressBar(bar: sg.ProgressBar, text: sg.Text):
     progress_bar = bar
     progress_text = text
 
-def update_browse(file_path: str, save_as: bool, file_types: str, extension: str) -> str:
+def update_browse(file_path: str, save_as: bool, file_types: str) -> str:
     (folder, filename) = os.path.split(file_path)
     return sg.popup_get_file("", save_as=save_as, file_types=file_types, no_window=True, default_path=filename, initial_folder=folder, history=True) #default_extension=extension,
 
@@ -115,37 +116,43 @@ def make_window():
 
     csv_checked = sg.user_settings_get_entry(CSV)
     xlsx_checked = sg.user_settings_get_entry(XLSX)
+    yaml_checked = sg.user_settings_get_entry(YAML)
 
     layout = [
         [
             [
-                sg.Text('Token', pad=(0, 3)), sg.InputText(k=KEY_ACCESS_TOKEN, default_text=sg.user_settings_get_entry(KEY_ACCESS_TOKEN), expand_x = True, pad=((24, 0), 0)),
+                sg.Text('Access Token', pad=(0, 3)), sg.InputText(k=KEY_ACCESS_TOKEN, default_text=sg.user_settings_get_entry(KEY_ACCESS_TOKEN), expand_x = True, pad=((0, 0), 0)),
                 add_help_button('token_tip', token_tip)
             ],
             [
-                sg.Text('Base URL', pad=(0, 3)), sg.InputText(k=KEY_BASE_URL, default_text=sg.user_settings_get_entry(KEY_BASE_URL), expand_x = True, pad=((0, 25), 0))
+                sg.Text('Base URL', pad=(0, 3)), sg.InputText(k=KEY_BASE_URL, default_text=sg.user_settings_get_entry(KEY_BASE_URL), expand_x = True, pad=((24, 0), 0)),
+                add_help_button('base_url_tip', base_url_tip)
             ],
             [
-                sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True, pad=((2, 0), 0)),
+                sg.Text('Course ID', pad=(0, 3)), sg.InputText(k=KEY_COURSE_ID, default_text=sg.user_settings_get_entry(KEY_COURSE_ID), expand_x = True, pad=((26, 0), 0)),
                 add_help_button('course_id_tip', course_id_tip)
             ],
             [
-                sg.Text('Group Set', pad=(0, 3)), sg.InputText(k=KEY_GROUP_CATEGORY, default_text=sg.user_settings_get_entry(KEY_GROUP_CATEGORY), expand_x = True, pad=((1, 0), 0)),
+                sg.Text('Group Set', pad=(0, 3)), sg.InputText(k=KEY_GROUP_CATEGORY, default_text=sg.user_settings_get_entry(KEY_GROUP_CATEGORY), expand_x = True, pad=((24, 0), 0)),
                 add_help_button('group_category_tip', group_category_tip)
             ],
             [
-                sg.Text('Info File', pad=(0, 3)), sg.InputText(k=KEY_CSV_INFO_FILE, default_text=sg.user_settings_get_entry(KEY_CSV_INFO_FILE), expand_x = True, pad=((15, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.Text('Info File', pad=(0, 3)),
+                sg.InputText(k=KEY_CSV_INFO_FILE, default_text=sg.user_settings_get_entry(KEY_CSV_INFO_FILE), expand_x = True, pad=((37, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
                 sg.B("Browse", k=KEY_CSV_INFO_FILE_FOLDER, pad=((5, 0), 0), disabled=not csv_checked, disabled_button_color=DISABLED_COLOR),
-                sg.Checkbox("", k=CSV, default=csv_checked, enable_events = True, pad=((2, 0), 0))
+                sg.Checkbox("", k=CSV, default=csv_checked, enable_events = True, pad=((2, 0), 0)),
+                add_help_button('info_file_tip', info_file_tip)
             ],
             [
-                sg.InputText(k=KEY_XLSX_INFO_FILE, default_text=sg.user_settings_get_entry(KEY_XLSX_INFO_FILE), expand_x = True, pad=((63, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.InputText(k=KEY_XLSX_INFO_FILE, default_text=sg.user_settings_get_entry(KEY_XLSX_INFO_FILE), expand_x = True, pad=((86, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
                 sg.B("Browse", k=KEY_XLSX_INFO_FILE_FOLDER, pad=((5, 0), 0), disabled=not xlsx_checked, disabled_button_color=DISABLED_COLOR),
-                sg.Checkbox("", k=XLSX, default=xlsx_checked, enable_events = True, pad=((2, 0), 0))
+                sg.Checkbox("", k=XLSX, default=xlsx_checked, enable_events = True, pad=((2, 24), 0))
             ],
             [
-                sg.Text('Yaml File', pad=(0, 3)), sg.InputText(k=KEY_STU_FILE, default_text=sg.user_settings_get_entry(KEY_STU_FILE), expand_x = True, pad=((4, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
-                sg.B("Browse", k=KEY_STU_FILE_FOLDER, pad=((5, 0), 0))
+                sg.Text('YAML File', pad=(0, 3)), sg.InputText(k=KEY_STU_FILE, default_text=sg.user_settings_get_entry(KEY_STU_FILE), expand_x = True, pad=((20, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.B("Browse", k=KEY_STU_FILE_FOLDER, pad=((5, 0), 0), disabled=not xlsx_checked, disabled_button_color=DISABLED_COLOR),
+                sg.Checkbox("", k=YAML, default=yaml_checked, enable_events = True, pad=((2, 0), 0)),
+                add_help_button('yaml_file_tip', yaml_file_tip)
             ],
             [
                 sg.ProgressBar(max_value=100, orientation='h', size=(63, 20), key=KEY_PRO_BAR),
@@ -160,6 +167,6 @@ def make_window():
         ],
     ]
 
-    window = sg.Window('Repobee Canvas', layout, icon=icon, finalize=True)
+    window = sg.Window('Repobee Canvas', layout, size=(600, 650), icon=icon, finalize=True)
     progressBar(window[KEY_PRO_BAR], window[KEY_PRO_TEXT])
     return window
