@@ -2,6 +2,9 @@ import PySimpleGUI as sg
 import os
 import base64
 
+WINDOW_SIZE_X = 600
+WINDOW_SIZE_Y = 650
+
 KEY_ACCESS_TOKEN = 'canvas_access_token'
 KEY_BASE_URL = 'canvas_base_url'
 KEY_COURSE_ID = 'canvas_course_id'
@@ -167,6 +170,6 @@ def make_window():
         ],
     ]
 
-    window = sg.Window('Repobee Canvas', layout, size=(600, 650), icon=icon, finalize=True)
+    window = sg.Window('Repobee Canvas', layout, size=(WINDOW_SIZE_X, WINDOW_SIZE_Y), icon=icon, finalize=True)
     progressBar(window[KEY_PRO_BAR], window[KEY_PRO_TEXT])
     return window
