@@ -108,30 +108,31 @@ class Table:
                 csv_writer.writerow(row)
 
     def writeExcel(self, path: str):
-        headers = []
-        for col in columns:
-            headers.append({'header': col})
+        wb = Workbook()
+        ws = wb.active
 
-        col_len = len(columns)
-        workbook = xlsxwriter.Workbook(path)
-        worksheet = workbook.add_worksheet()
-        lst_col = 65 + col_len - 2 #65 is A in ascii code
-        worksheet.set_column('A:' + chr(lst_col), 12) #set columns_width 12
-        lst_col = chr(lst_col + 1)
-        worksheet.set_column(lst_col + ':' + lst_col, 45) #set email column_width 45
+        columns = list(self.columns())
+        ws.append(columns)
 
-        rows = []
         for row in self.rows():
-            rows.append(list(row.values()))
+            ws.append(list(row.values()))
 
-        worksheet.add_table('A1:'+lst_col+str(len(rows)+1),
-            {
-                'data': rows,
-                'columns': headers
-            }
-        )
+        lst_col = chr(64 + len(columns))
+        tab = table.Table(displayName="table1", ref='A1:'+lst_col + str(len(self._data)+1))
 
-        workbook.close()
+        ws.column_dimensions[lst_col].width = 45 #emil
+
+        # Add a default style with striped rows and banded columns
+        style = table.TableStyleInfo(name="TableStyleMedium9", showFirstColumn=False,
+                            showLastColumn=False, showRowStripes=True, showColumnStripes=True)
+        tab.tableStyleInfo = style
+
+        '''
+        Table must be added using ws.add_table() method to avoid duplicate names.
+        Using this method ensures table name is unque through out defined names and all other table name.
+        '''
+        ws.add_table(tab)
+        wb.save(path)
 
     def columns(self):
         """Generator for the column names of this Table."""
