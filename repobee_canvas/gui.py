@@ -71,7 +71,7 @@ def progressBar(bar: sg.ProgressBar, text: sg.Text):
 
 def update_browse(file_path: str, save_as: bool, file_types: str, extension: str) -> str:
     (folder, filename) = os.path.split(file_path)
-    return sg.popup_get_file("", save_as=save_as, file_types=file_types, no_window=True, default_path=filename, default_extension=extension, initial_folder=folder, history=True)
+    return sg.popup_get_file("", save_as=save_as, file_types=file_types, no_window=True, default_path=filename, initial_folder=folder, history=True) #default_extension=extension,
 
 def getParent(path: str) -> bool:
     return os.path.dirname(os.path.abspath(path))
@@ -243,18 +243,16 @@ def students_info_file_window(access_token: str, base_url: str, main_window: sg.
         elif event == KEY_CSV_INFO_FILE_FOLDER:
             file_path = update_browse(values[KEY_CSV_INFO_FILE], True, ((TYPE_CSV),), CSV)
             if file_path != "":
+                window[KEY_CSV_INFO_FILE].update(file_path)
                 file_path = os.path.splitext(file_path)[0]
-                students_info_file = file_path
-                window[KEY_CSV_INFO_FILE].update(file_path+DCSV)
                 window[KEY_XLSX_INFO_FILE].update(file_path+DXLSX)
 
         elif event == KEY_XLSX_INFO_FILE_FOLDER:
             file_path = update_browse(values[KEY_XLSX_INFO_FILE], True, ((TYPE_XLSX),), XLSX)
             if file_path != "":
+                window[KEY_XLSX_INFO_FILE].update(file_path)
                 file_path = os.path.splitext(file_path)[0]
-                students_info_file = file_path
                 window[KEY_CSV_INFO_FILE].update(file_path+DCSV)
-                window[KEY_XLSX_INFO_FILE].update(file_path+DXLSX)
 
         elif event == CSV:
             window[KEY_CSV_INFO_FILE_FOLDER].update(disabled=not values[CSV])
@@ -289,6 +287,7 @@ def students_info_file_window(access_token: str, base_url: str, main_window: sg.
             for key, val in values.items():
                 sg.user_settings_set_entry(key, val)
 
+            students_info_file = os.path.splitext(values[KEY_XLSX_INFO_FILE])[0]
             CreateStudentsInfoFile(base_url, access_token, course_id, group_category_name, students_info_file, extensions)
 
         elif event.endswith("_tip"):
