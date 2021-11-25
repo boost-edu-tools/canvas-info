@@ -151,6 +151,13 @@ class Table:
         """Return true if this table is empty, false otherwise."""
         return 0 == len(self._data)
 
+    def get_stu_info(self) -> list:
+        student_info = []
+        for row in self.rows():
+            student_info.append({"group":row[GROUP], "email2git": {row[EMAIL]:row[GIT_ID]}})
+
+        return student_info
+
 class CanvasGitMap(Table):
     """Map Canvas IDs to Git IDs and vice versa. The CanvasGitMap uses a
     data table with at least two columns, "git_id" and "canvas_id", to perform
@@ -163,20 +170,16 @@ class CanvasGitMap(Table):
 
         self._canvas2git = {}
         self._git2canvas = {}
-        self._student_info = []
 
         for row in self.rows():
             canvas_id   = row[CANVAS_ID]
             git_id      = row[GIT_ID]
-            email       = row[EMAIL]
 
             _check_id("Canvas", canvas_id, self._canvas2git)
             _check_id("Git", git_id, self._git2canvas)
 
             self._canvas2git[canvas_id] = row[GIT_ID]
             self._git2canvas[git_id]    = row[CANVAS_ID]
-
-            self._student_info.append({"group":row[GROUP], "email2git": {email:git_id}})
 
     def canvas2git(self, canvas_id : str) -> str:
         """Convert a Canvas ID to the correspondibg Git ID."""
