@@ -27,7 +27,6 @@ if __name__ == '__main__':
 
     while True:
         event, values = window.read()
-        print (values.keys())
 
         if event in ('Exit', sg.WIN_CLOSED): # if user closes window
             break
