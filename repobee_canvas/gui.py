@@ -21,6 +21,7 @@ KEY_PRO_TEXT = 'progress'
 
 DEFAULT_INPUT_BG = "#000000" #"#705e52"
 DISABLED_COLOR = "grey"
+DEFAULT_BUTTON_COLOR = ("#000000", "#fdcb52")
 
 token_tip = "Canvas > Account > Settings > New access token > Generate Token"
 token_tip_ml = "Generate via: Canvas > Account > Settings > Blue Box '+ New access token' on page > Generate Token"
@@ -113,6 +114,12 @@ def update_progress(pos: int, length: int):
     percent = int(100 * pos / length)
     progress_bar.UpdateBar(percent)
     progress_text.update("{}%".format(percent))
+
+def updateButton(disabled: bool, button: sg.Button):
+    if disabled:
+        button.update(disabled=disabled, button_color=DISABLED_COLOR)
+    else:
+        button.update(disabled=disabled, button_color=DEFAULT_BUTTON_COLOR)
 
 def make_window():
     sg.theme('DarkAmber')

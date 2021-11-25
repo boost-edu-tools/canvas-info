@@ -36,7 +36,7 @@ if __name__ == '__main__':
                 window[KEY_XLSX_INFO_FILE].update(file_path+".xlsx")
 
         elif event == CSV:
-            window[KEY_CSV_INFO_FILE_FOLDER].update(disabled=not values[CSV])
+            updateButton( not values[CSV], window[KEY_CSV_INFO_FILE_FOLDER])
 
         elif event == KEY_XLSX_INFO_FILE_FOLDER:
             file_path = update_browse(values[KEY_XLSX_INFO_FILE], True, ((TYPE_XLSX),)) #, XLSX)
@@ -46,7 +46,7 @@ if __name__ == '__main__':
                 window[KEY_CSV_INFO_FILE].update(file_path+".csv")
 
         elif event == XLSX:
-            window[KEY_XLSX_INFO_FILE_FOLDER].update(disabled=not values[XLSX])
+            updateButton( not values[XLSX], window[KEY_XLSX_INFO_FILE_FOLDER])
 
         elif event == KEY_STU_FILE_FOLDER:
             file_path = update_browse(values[KEY_STU_FILE], True, (TYPE_YAML,)) #, YAML)
@@ -54,7 +54,7 @@ if __name__ == '__main__':
                 window[KEY_STU_FILE].update(file_path)
 
         elif event == YAML:
-            window[KEY_STU_FILE_FOLDER].update(disabled=not values[YAML])
+            updateButton( not values[YAML], window[KEY_STU_FILE_FOLDER])
 
         elif event == "Execute":
             csv = values[CSV]
