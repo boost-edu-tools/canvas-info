@@ -32,6 +32,9 @@ from typing             import List
 from .canvas_api.course import Course
 from .canvas_api.user   import PUBLIC_USER_FIELDS
 from .common            import warn, inform
+import xlsxwriter
+from openpyxl import load_workbook, Workbook
+from openpyxl.worksheet import table
 
 CANVAS_ID               = "canvas_id"
 CANVAS_LOGIN_ID         = "login_id"
@@ -40,6 +43,7 @@ GIT_ID                  = "git_id"
 GROUP                   = "group"
 ID                      = "id"
 EMAIL                   = "email"
+NAME                    = 'name'
 HEAD                    = 5
 
 class Table:
@@ -53,6 +57,40 @@ class Table:
         """Load Table from a csv file."""
         with path.open() as csv_file:
             return cls(csv.DictReader(csv_file, delimiter = FIELD_SEP))
+
+    @classmethod
+    def loadExcel(cls, path : str):
+        """ Get all tables from a given workbook. Returns a dictionary of tables.
+        Requires a filename, which includes the file path and filename. """
+
+        # Load the workbook, from the filename, setting read_only to False
+        wb = load_workbook(filename=path, keep_vba=False, data_only=True, keep_links=False)
+
+        # Get a list of all rows
+        rows_list = []
+
+        # Go through each worksheet in the workbook
+        for ws_name in wb.sheetnames:
+            ws = wb[ws_name]
+
+            # Get each table in the worksheet
+            for tbl in ws.tables.values():
+                # Grab the 'data' from the table
+                data = ws[tbl.ref]
+
+                #get the first header row
+                keys = []
+                for k in data[0]:
+                    keys.append(k.value)
+
+                for row in data[1:]:
+                    # Get a list of all columns in each row
+                    cols = {}
+                    for i, col in enumerate(row):
+                        cols[keys[i]] = col.value
+                    rows_list.append(cols)
+
+        return cls(rows_list)
 
     def write(self, path : Path):
         """Write this Canvas-Git map to csv file."""
@@ -68,6 +106,32 @@ class Table:
 
             for row in self.rows():
                 csv_writer.writerow(row)
+
+    def writeExcel(self, path: str):
+        headers = []
+        for col in columns:
+            headers.append({'header': col})
+
+        col_len = len(columns)
+        workbook = xlsxwriter.Workbook(path)
+        worksheet = workbook.add_worksheet()
+        lst_col = 65 + col_len - 2 #65 is A in ascii code
+        worksheet.set_column('A:' + chr(lst_col), 12) #set columns_width 12
+        lst_col = chr(lst_col + 1)
+        worksheet.set_column(lst_col + ':' + lst_col, 45) #set email column_width 45
+
+        rows = []
+        for row in self.rows():
+            rows.append(list(row.values()))
+
+        worksheet.add_table('A1:'+lst_col+str(len(rows)+1),
+            {
+                'data': rows,
+                'columns': headers
+            }
+        )
+
+        workbook.close()
 
     def columns(self):
         """Generator for the column names of this Table."""
@@ -99,7 +163,6 @@ class CanvasGitMap(Table):
 
         self._canvas2git = {}
         self._git2canvas = {}
-        self._canvas2email = {}
         self._student_info = []
 
         for row in self.rows():
@@ -109,13 +172,11 @@ class CanvasGitMap(Table):
 
             _check_id("Canvas", canvas_id, self._canvas2git)
             _check_id("Git", git_id, self._git2canvas)
-            _check_id("Email", email, self._canvas2email)
 
             self._canvas2git[canvas_id] = row[GIT_ID]
             self._git2canvas[git_id]    = row[CANVAS_ID]
-            self._canvas2email[canvas_id] = row[EMAIL]
 
-            self._student_info.append([row[GROUP], email[:-15].split(".")[-1], canvas_id, git_id, email])
+            self._student_info.append({"group":row[GROUP], "email2git": {email:git_id}})
 
     def canvas2git(self, canvas_id : str) -> str:
         """Convert a Canvas ID to the correspondibg Git ID."""
@@ -130,13 +191,6 @@ class CanvasGitMap(Table):
             return self._git2canvas[git_id]
 
         raise ValueError(f"Git ID '{git_id}' not mapped to a Canvas ID.")
-
-    def canvas2email(self, canvas_id : str) -> str:
-        """Convert a Canvas ID to the correspondibg Sis User ID."""
-        if canvas_id in self._canvas2email:
-            return self._canvas2email[canvas_id]
-
-        raise ValueError(f"Canvas ID '{canvas_id}' not mapped to a Sis User ID.")
 
 # Guide the user in creating a potential Canvas-Git mapping table for a
 # Canvas course.
@@ -165,13 +219,28 @@ def canvas_git_map_table_wizard(course : Course, group_category : str = None) ->
     canvas_id_key = CANVAS_LOGIN_ID
 
     git_id_key = 'sis_user_id'
-    extra_column = EMAIL
 
     data = []
 
     for student in students:
         row = {}
         fields = student.fields()
+
+        if ID in fields:
+            user_id = fields[ID]
+            if user_id in group_members:
+                row[GROUP] = group_members[user_id]
+            else:
+                row[GROUP] = ""
+        else:
+            row[GROUP] = ""
+
+        email = ""
+        if EMAIL in fields:
+            email = fields[EMAIL]
+            row[NAME] = email[:-15].split(".")[-1]
+        else:
+            row[NAME] = ""
 
         if canvas_id_key in fields:
             row[CANVAS_ID] = fields[canvas_id_key]
@@ -183,19 +252,7 @@ def canvas_git_map_table_wizard(course : Course, group_category : str = None) ->
         else:
             row[GIT_ID] = ""
 
-        if ID in fields:
-            user_id = fields[ID]
-            if user_id in group_members:
-                row[GROUP] = group_members[user_id]
-            else:
-                row[GROUP] = ""
-        else:
-            row[GROUP] = ""
-
-        if extra_column in fields:
-            row[extra_column] = fields[extra_column]
-        else:
-            row[extra_column] = ""
+        row[EMAIL] = email
 
         data.append(row)
 
