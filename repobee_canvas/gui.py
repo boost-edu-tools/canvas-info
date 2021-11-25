@@ -215,7 +215,7 @@ def students_info_file_window(access_token: str, base_url: str, main_window: sg.
             sg.Checkbox("", k=CSV, default=csv_checked, enable_events = True)
         ],
         [
-            sg.InputText(k=KEY_XLSX_INFO_FILE, default_text=sg.user_settings_get_entry(KEY_XLSX_INFO_FILE), expand_x = True, pad=((25, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+            sg.InputText(k=KEY_XLSX_INFO_FILE, default_text=sg.user_settings_get_entry(KEY_XLSX_INFO_FILE), expand_x = True, pad=((63, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
             sg.B("Browse", k=KEY_XLSX_INFO_FILE_FOLDER, pad=((5, 0), 0), disabled=not xlsx_checked, disabled_button_color=DISABLED_COLOR),
             sg.Checkbox("", k=XLSX, default=xlsx_checked, enable_events = True)
         ],
