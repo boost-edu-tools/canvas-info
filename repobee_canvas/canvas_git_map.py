@@ -116,10 +116,10 @@ class Table:
         for row in self.rows():
             ws.append(list(row.values()))
 
-        lst_col = chr(64 + len(columns))
-        tab = table.Table(displayName="table1", ref='A1:'+lst_col + str(len(self._data)+1))
+        tab = table.Table(displayName="table1", ref='A1:E' + str(len(self._data)+1))
 
-        ws.column_dimensions[lst_col].width = 45 #emil
+        ws.column_dimensions["B"].width = 15 #name column
+        ws.column_dimensions["E"].width = 45 #emil column
 
         # Add a default style with striped rows and banded columns
         style = table.TableStyleInfo(name="TableStyleMedium9", showFirstColumn=False,
