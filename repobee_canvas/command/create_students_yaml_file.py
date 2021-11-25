@@ -10,7 +10,7 @@
 # WARRANTY OR CONDITIONS OF ANY KIND, either express or implied. See the EUPL
 # for the specific language governing permissions and limitations under the
 # licence.
-"""Create a students file from a Canvas assignment for use with RepoBee.
+"""Create a students yaml file from a students info csv/excel file for use with RepoBee.
 
 """
 from pathlib                    import Path
@@ -22,119 +22,69 @@ from ..canvas_git_map           import CanvasGitMap
 from ..common                   import inform, warn, fault
 from ..                         import gui
 
-"""Command to create a students file from a Canvas assignment.
-
-The create_students_yaml_file is a function to create a students file
-for a Canvas assignment: All students assigned to this assignment are
-listed and written to the students file. If the assignment is a group
-assignment, the student groups are written instead.
-
-You have to use this function first to create the students file and then use
-the student file to create and manage student repositories.
-
-Because the login ids of students can be different in Canvas and git, a
-mapping needs to be made via a database containing both login ids for each
-student. This database should be a csv file and have a canvas_id and git_id
-column.
-
-
-Usage:
-
-Assunming the course id, Canvas API URL, and Canvas API key have been
-configured, the command
-
-```
-repobee -p canvas canvas create-students-yaml-file \
-        --canvas-assignment-id 23 \
-        --canvas-git-map student_data.csv
-```
-
-will create file `students.yaml` with all Git account names of the
-students involved in assignment with ID=23.
-
-If you want to use a different output filename, set the filename in the GUI.
-
-"""
-
-# __settings__ = plug.cli.command_settings(
-#     action      = CANVAS_CATEGORY.create_students_yaml_file,
-#     help        = "create students file in YAML format",
-#     description = (
-#         "Create the students file in YAML format for a Canvas assignment for use "
-#         "with RepoBee."
-#         )
-#     )
+GROUP                           = "group"
+EMAIL2GIT                       = "email2git"
 
 def CreateStudentsYAMLFile(
-    canvas_base_url: str,
-    canvas_access_token: str,
-    canvas_course_id: int,
-    canvas_assignment_id: int,
-    canvas_git_map: str,
-    canvas_students_file: str):
+    student_info_file: str,
+    canvas_students_file: str,
+    extension: str):
 
-    """Create a students file for a Canvas assignment."""
+    """Create a students yaml file for a Canvas assignment."""
 
-    CanvasAPI().setup(canvas_base_url, canvas_access_token)
-    inform("Loading assignment...")
-    try:
-        assignment = Assignment.load(canvas_course_id, canvas_assignment_id)
-    except Exception as e:
-        fault(e)
-        if "Unauthorized" in str(e):
-            warn("Repobee-canvas was not authorized to access your Canvas information. Please check the tooltip of the access token in the Settings Window.")
-    else:
-        canvas_git_mapping_table = CanvasGitMap.load(Path(canvas_git_map))
+    canvas_git_mapping_table = None
+    if extension == ".csv":
+        canvas_git_mapping_table = CanvasGitMap.load(Path(student_info_file))
 
-        inform("Loading submissions of this assignment...(1 of 2)")
-        submissions = assignment.submissions()
+    elif extension == ".xlsx":
+        canvas_git_mapping_table = CanvasGitMap.loadExcel(student_info_file)
 
-        group_submissions = []
+    if canvas_git_mapping_table:
+        group_submissions = {}
         groupless_submissions = []
-        for s in submissions:
-            if s.is_group_submission():
-                group_submissions.append(s)
+        for info in canvas_git_mapping_table._student_info:
+            group = info[GROUP]
+            if group:
+                if group in group_submissions:
+                    group_submissions[group][EMAIL2GIT].update(info[EMAIL2GIT])
+                else:
+                    group_submissions[group] = info
             else:
-                groupless_submissions.append(s)
-
-        group_submissions = sorted(group_submissions, key = lambda s: s.group().name)
+                groupless_submissions.append(info)
 
         # Students who are not assigned to a group in a group assignment are
         # ignored by default when creating a students file. Most likely these
         # students are not actively participating in the course or have not yet
         # assigned themselves to a group. However, with parameter
         # include_groupless_students, you can override this default behavior.
-        if assignment.is_group_assignment():
-            if len(group_submissions) == 0:
-                warn(
-                    ("No group submissions found for this group assignment. "
-                    "Please run command 'repobee canvas prepare-assignment' to "
-                    "resolve this issue. Or configure this assignment as an "
-                    "individual assignment."))
+        if len(group_submissions) == 0:
+            warn(
+                ("No group submissions found for this group assignment. "
+                "Please run command 'repobee canvas prepare-assignment' to "
+                "resolve this issue. Or configure this assignment as an "
+                "individual assignment."))
 
-        inform("Create students YAML file...(2 of 2)")
-        total = len(group_submissions)
-        cnt = 1
+        inform("Create students YAML file...")
+
         with Path(canvas_students_file).open("w") as outfile:
 
-            for submission in group_submissions:
-                    team = submission.group().name
+            for submission in group_submissions.values():
+                    team = submission[GROUP]
 
                     group = []
-                    for u in submission.group().members():
-                        team += '_' + canvas_git_mapping_table.canvas2email(u.login_id)[:-15].replace('.', '')
-                        group.append(int(canvas_git_mapping_table.canvas2git(u.login_id)))
+                    for email, git_id in submission[EMAIL2GIT].items():
+                        team += '_' + email[:-15].replace('.', '')
+                        group.append(git_id)
 
                     outfile.write(team +":\n")
                     outfile.write("\tmembers:"+str(group))
                     outfile.write("\n")
-                    gui.update_progress(cnt, total)
-                    cnt += 1
 
         inform(f"Students file written to '{canvas_students_file}'.")
 
         inform("The following students were not in a group (prefixes from @student.tue.nl):")
         for submission in groupless_submissions:
-            canvas_id   = submission.submitter().login_id
-            email       = canvas_git_mapping_table.canvas2email(canvas_id)[:-15]
-            inform(email)
+            email = list(submission[EMAIL2GIT].keys())
+            inform(email[0])
+    else:
+        inform("Unknown file type. Please select a csv file or a xlsx file")
