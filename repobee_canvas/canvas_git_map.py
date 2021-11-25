@@ -154,7 +154,7 @@ class Table:
     def get_stu_info(self) -> list:
         student_info = []
         for row in self.rows():
-            student_info.append({"group":row[GROUP], "email2git": {row[EMAIL]:row[GIT_ID]}})
+            student_info.append({"group":row[GROUP], "email2git": {row[EMAIL][:-15]:row[GIT_ID]}})
 
         return student_info
 

@@ -79,7 +79,7 @@ def CreateStudentsiles(
 
                             group = []
                             for email, git_id in submission[EMAIL2GIT].items():
-                                team += '_' + email[:-15].replace('.', '')[:-15].replace('.', '')
+                                team += '_' + email.replace('.', '')
                                 group.append(git_id)
 
                             outfile.write(team +":\n")
