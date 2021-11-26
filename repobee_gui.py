@@ -59,10 +59,10 @@ if __name__ == '__main__':
             file_path = update_browse(values[KEY_CSV_INFO_FILE], True, ((TYPE_CSV),)) #, CSV)
             if file_path != "":
                 window[KEY_CSV_INFO_FILE].update(file_path)
-                set_entry(KEY_XLSX_INFO_FILE, file_path)
+                set_entry(KEY_CSV_INFO_FILE, file_path)
                 file_path = os.path.splitext(file_path)[0]
                 window[KEY_XLSX_INFO_FILE].update(file_path+".xlsx")
-                set_entry(KEY_GROUP_CATEGORY, file_path+".xlsx")
+                set_entry(KEY_XLSX_INFO_FILE, file_path+".xlsx")
 
         elif event == CSV:
             update_button(not values[CSV], window[KEY_CSV_INFO_FILE_FOLDER])
@@ -75,7 +75,7 @@ if __name__ == '__main__':
                 set_entry(KEY_XLSX_INFO_FILE, file_path)
                 file_path = os.path.splitext(file_path)[0]
                 window[KEY_CSV_INFO_FILE].update(file_path+".csv")
-                set_entry(KEY_GROUP_CATEGORY, file_path+".csv")
+                set_entry(KEY_CSV_INFO_FILE, file_path+".csv")
 
         elif event == XLSX:
             update_button(not values[XLSX], window[KEY_XLSX_INFO_FILE_FOLDER])
@@ -118,19 +118,19 @@ if __name__ == '__main__':
             stu_csv_info_file = None
             if csv:
                 stu_csv_info_file = values[KEY_CSV_INFO_FILE]
-                if is_empty(stu_csv_info_file, "Students Info CSV File"):
+                if is_empty(stu_csv_info_file, "Students Info CSV File") or is_path_invalid(stu_csv_info_file, "Info"):
                     continue
 
             stu_xlsx_info_file = None
             if xlsx:
                 stu_xlsx_info_file = values[KEY_XLSX_INFO_FILE]
-                if is_empty(stu_xlsx_info_file, "Students Info Excel File"):
+                if is_empty(stu_xlsx_info_file, "Students Info Excel File") or is_path_invalid(stu_xlsx_info_file, "Info"):
                     continue
 
             students_yaml_file = None
             if yaml:
                 students_yaml_file = values[KEY_STU_FILE]
-                if is_empty(students_yaml_file, "Students YAML File"):
+                if is_empty(students_yaml_file, "Students YAML File") or is_path_invalid(students_yaml_file, "YAML"):
                     continue
 
             CreateStudentsiles(urlparse(base_url), access_token, course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file)
