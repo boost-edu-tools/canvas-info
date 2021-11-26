@@ -111,6 +111,14 @@ def is_ready(access_token: str, base_url: str) -> bool:
 def is_invalid(string: str) -> bool:
     return string is None or string == ""
 
+def is_path_invalid(path: str, file_type: str):
+    parent = os.path.dirname(os.path.abspath(path))
+    if os.path.exists(parent):
+        return False
+
+    popup("Invalid "+ file_type + " file path.")
+    return True
+
 def add_help_button(key: str, tooltip: str) -> sg.Button:
     return sg.Button(key=key, button_color=(sg.theme_background_color(), sg.theme_background_color()),
                image_filename=help, image_subsample=60, border_width=0, tooltip = tooltip, pad=(2, 0))
