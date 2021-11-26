@@ -146,5 +146,6 @@ if __name__ == '__main__':
 
         elif event == 'Clear History':
             window[KEY_ML].update('')
+            update_progress(0, 100)
 
     window.close()
