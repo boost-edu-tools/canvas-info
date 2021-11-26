@@ -39,6 +39,8 @@ CANVAS_ID               = "canvas_id"
 CANVAS_LOGIN_ID         = "login_id"
 FIELD_SEP               = ","
 GIT_ID                  = "git_id"
+SHORT_NAME              = 'short_name'
+FULL_NAME               = 'full_name'
 GROUP                   = "group"
 ID                      = "id"
 EMAIL                   = "email"
@@ -92,8 +94,8 @@ class Table:
         return cls(rows_list)
 
     def write(self, path : Path):
-        """Write this Canvas-Git map to csv file."""
-        with path.open("w") as csv_file:
+        # """Write this Canvas-Git map to csv file."""
+        with path.open("w", encoding='utf-8-sig') as csv_file:
 
             csv_writer = csv.DictWriter(
                     csv_file,
@@ -116,10 +118,11 @@ class Table:
         for row in self.rows():
             ws.append(list(row.values()))
 
-        tab = table.Table(displayName="table1", ref='A1:E' + str(len(self._data)+1))
+        tab = table.Table(displayName="table1", ref='A1:F' + str(len(self._data)+1))
 
         ws.column_dimensions["B"].width = 15 #name column
-        ws.column_dimensions["E"].width = 45 #emil column
+        ws.column_dimensions["C"].width = 25 #full name column
+        ws.column_dimensions["F"].width = 45 #emil column
 
         # Add a default style with striped rows and banded columns
         style = table.TableStyleInfo(name="TableStyleMedium9", showFirstColumn=False,
@@ -244,6 +247,11 @@ def canvas_git_map_table_wizard(course : Course, group_category : str = None) ->
             row[NAME] = email[:-15].split(".")[-1]
         else:
             row[NAME] = ""
+
+        if SHORT_NAME in fields:
+            row[FULL_NAME] = fields[SHORT_NAME]
+        else:
+            row[FULL_NAME] = ""
 
         if canvas_id_key in fields:
             row[CANVAS_ID] = fields[canvas_id_key]
