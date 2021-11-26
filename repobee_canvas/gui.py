@@ -116,7 +116,7 @@ def is_path_invalid(path: str, file_type: str):
     if os.path.exists(parent):
         return False
 
-    popup("Invalid "+ file_type + " file path.")
+    sg.popup("Error", "Invalid "+ file_type + " file path.")
     return True
 
 def add_help_button(key: str, tooltip: str) -> sg.Button:
