@@ -15,7 +15,6 @@ if __name__ == '__main__':
     if is_invalid(get_entry(KEY_XLSX_INFO_FILE)) or is_invalid(get_entry(KEY_CSV_INFO_FILE)):
         set_entry(KEY_CSV_INFO_FILE, resource_path("students_info.csv"))
         set_entry(KEY_XLSX_INFO_FILE, resource_path("students_info.xlsx"))
-        set_entry(KEY_INFO_FILE_FOLDER, resource_path())
 
     if get_entry(KEY_GROUP_CATEGORY) is None:
         set_entry(KEY_GROUP_CATEGORY, "Project Groups")
