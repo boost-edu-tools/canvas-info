@@ -95,7 +95,7 @@ class Table:
 
     def write(self, path : Path):
         # """Write this Canvas-Git map to csv file."""
-        with path.open("w", encoding='utf-8-sig') as csv_file:
+        with path.open("w", encoding='utf-8-sig', newline='') as csv_file:
 
             csv_writer = csv.DictWriter(
                     csv_file,
