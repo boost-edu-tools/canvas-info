@@ -121,7 +121,7 @@ def update_progress(pos: int, length: int):
     progress_bar.UpdateBar(percent)
     progress_text.update("{}%".format(percent))
 
-def updateButton(disabled: bool, button: sg.Button):
+def update_button(disabled: bool, button: sg.Button):
     if disabled:
         button.update(disabled=disabled, button_color=DISABLED_COLOR)
     else:
@@ -190,4 +190,7 @@ def make_window():
 
     window = sg.Window('Repobee Canvas', layout, size=(WINDOW_SIZE_X, WINDOW_SIZE_Y), icon=icon, finalize=True)
     progressBar(window[KEY_PRO_BAR], window[KEY_PRO_TEXT])
+    update_button(not csv_checked, window[KEY_CSV_INFO_FILE_FOLDER])
+    update_button(not xlsx_checked, window[KEY_XLSX_INFO_FILE_FOLDER])
+    update_button(not yaml_checked, window[KEY_STU_FILE_FOLDER])
     return window
