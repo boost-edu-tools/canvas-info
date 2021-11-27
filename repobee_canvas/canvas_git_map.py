@@ -38,13 +38,13 @@ from openpyxl.worksheet import table
 CANVAS_ID               = "canvas_id"
 CANVAS_LOGIN_ID         = "login_id"
 FIELD_SEP               = ","
-GIT_ID                  = "git_id"
+GIT_ID                  = "GitID"
 SHORT_NAME              = 'short_name'
-FULL_NAME               = 'full_name'
-GROUP                   = "group"
-ID                      = "id"
-EMAIL                   = "email"
-NAME                    = 'name'
+FULL_NAME               = 'FullName'
+GROUP                   = 'Group'
+ID                      = 'ID'
+EMAIL                   = 'Mail'
+NAME                    = 'Name'
 HEAD                    = 5
 
 class Table:
@@ -225,6 +225,8 @@ def canvas_git_map_table_wizard(course : Course, group_category : str = None) ->
     canvas_id_key = CANVAS_LOGIN_ID
 
     git_id_key = 'sis_user_id'
+    email_key = 'email'
+    student_id = 'id'
 
     data = []
 
@@ -232,8 +234,8 @@ def canvas_git_map_table_wizard(course : Course, group_category : str = None) ->
         row = {}
         fields = student.fields()
 
-        if ID in fields:
-            user_id = fields[ID]
+        if student_id in fields:
+            user_id = fields[student_id]
             if user_id in group_members:
                 row[GROUP] = group_members[user_id]
             else:
@@ -242,8 +244,8 @@ def canvas_git_map_table_wizard(course : Course, group_category : str = None) ->
             row[GROUP] = ""
 
         email = ""
-        if EMAIL in fields:
-            email = fields[EMAIL]
+        if email_key in fields:
+            email = fields[email_key]
             row[NAME] = email[:-15].split(".")[-1]
         else:
             row[NAME] = ""
@@ -254,9 +256,9 @@ def canvas_git_map_table_wizard(course : Course, group_category : str = None) ->
             row[FULL_NAME] = ""
 
         if canvas_id_key in fields:
-            row[CANVAS_ID] = fields[canvas_id_key]
+            row[ID] = fields[canvas_id_key]
         else:
-            row[CANVAS_ID] = ""
+            row[ID] = ""
 
         if git_id_key in fields:
             row[GIT_ID] = fields[git_id_key]
