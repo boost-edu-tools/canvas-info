@@ -1,6 +1,8 @@
 import PySimpleGUI as sg
 import os
 import base64
+from sys import platform
+
 
 WINDOW_SIZE_X = 900
 WINDOW_SIZE_Y = 600
@@ -40,6 +42,8 @@ TYPE_CSV = ("Text Files", "*.csv")
 TYPE_YAML = ("Text Files", "*.yaml")
 TYPE_XLSX = ("Excel Workbook", "*.xlsx")
 TYPE_ALL = ("ALL Files", "*.* *")
+
+if platform == "darwin": sg.set_options(font = ("Any", 12))
 
 def resource_path(relative_path = None):
     """ Get absolute path to resource, works for dev and for PyInstaller """
