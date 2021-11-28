@@ -21,11 +21,14 @@ KEY_ML = '-ML-'
 KEY_PRO_BAR = 'progressbar'
 KEY_PRO_TEXT = 'progress'
 
-DEFAULT_INPUT_BG = "#000000" #"#705e52"
-DISABLED_COLOR = "grey"
-DEFAULT_BUTTON_COLOR = ("#000000", "#fdcb52")
+# DEFAULT_INPUT_BG = "#000000" #"#705e52"
+DISABLED_BT_COLOR = "grey"
+# DEFAULT_BUTTON_COLOR = ("#000000", "#fdcb52")
 
 DEFAULT_INPUT_SIZE = 99
+DEFAULT_INPUT_PAD = ((3, 5), 2)
+TEXT_CB_SIZE = 8
+INPUT_CB_PAD = ((0, 5), 2)
 
 token_tip = "Canvas > Account > Settings > New access token > Generate Token"
 token_tip_ml = "Generate via: Canvas > Account > Settings > Blue Box '+ New access token' on page > Generate Token"
@@ -65,6 +68,7 @@ def set_default_entries():
 
     if platform == "darwin":
         sg.set_options(font = ("Any", 12))
+        global DEFAULT_INPUT_SIZE
         DEFAULT_INPUT_SIZE = 86
 
 def resource_path(relative_path = None):
@@ -145,7 +149,7 @@ def is_path_invalid(path: str, file_type: str):
     sg.popup("Error", "Invalid "+ file_type + " file path.")
     return True
 
-def add_help_button(key: str, tooltip: str) -> sg.Button:
+def help_button(key: str, tooltip: str) -> sg.Button:
     return sg.Button(key=key, button_color=(sg.theme_background_color(), sg.theme_background_color()),
                image_filename=help, image_subsample=60, border_width=0, tooltip = tooltip, pad=(3, 0))
 
@@ -157,9 +161,24 @@ def update_progress(pos: int, length: int):
 
 def update_button(disabled: bool, button: sg.Button):
     if disabled:
-        button.update(disabled=disabled, button_color=DISABLED_COLOR)
+        button.update(disabled=disabled, button_color=DISABLED_BT_COLOR)
     else:
-        button.update(disabled=disabled, button_color=DEFAULT_BUTTON_COLOR)
+        button.update(disabled=disabled, button_color=("#000000", "#fdcb52"))
+
+def Text(text: str, sz: int = 11) -> sg.Text:
+    return sg.Text(text, pad=(0, 2), size=sz)
+
+def InputText(key: str, text:str, password:str='', pad:tuple=((3, 5), 2)) -> sg.InputText:
+    return sg.InputText(k=key, default_text=text, readonly=True, disabled_readonly_background_color="#000000", password_char=password, pad=pad, size=DEFAULT_INPUT_SIZE)
+
+def Checkbox(key, default) -> sg.Checkbox:
+    return sg.Checkbox("", k=key, default=default, enable_events = True, pad=(0, 2))
+
+def Button(text, key) -> sg.Button:
+    return sg.B(text, k=key, pad=((3, 0), 2))
+
+def Folder_Button(key, disable) -> sg.Button:
+    return sg.B("Browse", k=key, pad=((3, 0), 2), disabled=disable, disabled_button_color=DISABLED_BT_COLOR)
 
 def make_window():
     sg.theme('DarkAmber')
@@ -171,48 +190,48 @@ def make_window():
     layout = [
         [
             [
-                sg.Text('Access Token', pad=(0, 2), size=11),
-                sg.InputText(k=KEY_ACCESS_TOKEN, default_text=get_entry(KEY_ACCESS_TOKEN), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, password_char='*', pad=((3, 5), 2), size=DEFAULT_INPUT_SIZE),
-                sg.B("Update", k='token_bt', pad=((3, 0), 2)),
-                add_help_button('token_tip', token_tip)
+                Text('Access Token'),
+                InputText(KEY_ACCESS_TOKEN, get_entry(KEY_ACCESS_TOKEN), password='*'),
+                Button("Update", 'token_bt'),
+                help_button('token_tip', token_tip)
             ],
             [
-                sg.Text('Base URL', pad=(0, 2), size=11),
-                sg.InputText(k=KEY_BASE_URL, default_text=get_entry(KEY_BASE_URL), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, pad=((3, 5), 2), size=DEFAULT_INPUT_SIZE),
-                sg.B("Update", k='url_bt', pad=((3, 0), 2)),
-                add_help_button('base_url_tip', base_url_tip)
+                Text('Base URL'),
+                InputText(KEY_BASE_URL, get_entry(KEY_BASE_URL)),
+                Button("Update", 'url_bt'),
+                help_button('base_url_tip', base_url_tip)
             ],
             [
-                sg.Text('Course ID', pad=(0, 2), size=11),
-                sg.InputText(k=KEY_COURSE_ID, default_text=get_entry(KEY_COURSE_ID), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, pad=((3, 5), 2), size=DEFAULT_INPUT_SIZE),
-                sg.B("Update", k='course_id_bt', pad=((3, 0), 2)),
-                add_help_button('course_id_tip', course_id_tip)
+                Text('Course ID'),
+                InputText(KEY_COURSE_ID, get_entry(KEY_COURSE_ID)),
+                Button("Update", 'course_id_bt'),
+                help_button('course_id_tip', course_id_tip)
             ],
             [
-                sg.Text('Group Set', pad=(0, 2), size=11),
-                sg.InputText(k=KEY_GROUP_CATEGORY, default_text=get_entry(KEY_GROUP_CATEGORY), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, pad=((3, 5), 2), size=DEFAULT_INPUT_SIZE),
-                sg.B("Update", k='group_set_bt', pad=((3, 0), 2)),
-                add_help_button('group_category_tip', group_category_tip)
+                Text('Group Set'),
+                InputText(KEY_GROUP_CATEGORY, get_entry(KEY_GROUP_CATEGORY), pad=((3, 5), 2)),
+                Button("Update", 'group_set_bt'),
+                help_button('group_category_tip', group_category_tip)
             ],
             [
-                sg.Text('Info File', pad=(0, 2), size=8),
-                sg.Checkbox("", k=CSV, default=csv_checked, enable_events = True, pad=(0, 2)),
-                sg.InputText(k=KEY_CSV_INFO_FILE, default_text=get_entry(KEY_CSV_INFO_FILE), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, pad=((0, 5), 2), size=DEFAULT_INPUT_SIZE),
-                sg.B("Browse", k=KEY_CSV_INFO_FILE_FOLDER, pad=((3, 0), 2), disabled=not csv_checked, disabled_button_color=DISABLED_COLOR),
-                add_help_button('info_file_tip', info_file_tip)
+                Text('Info File', sz=TEXT_CB_SIZE),
+                Checkbox(CSV, csv_checked),
+                InputText(KEY_CSV_INFO_FILE, get_entry(KEY_CSV_INFO_FILE), pad=INPUT_CB_PAD),
+                Folder_Button(KEY_CSV_INFO_FILE_FOLDER, not csv_checked),
+                help_button('info_file_tip', info_file_tip)
             ],
             [
-                sg.Text('', pad=(0, 2), size=8),
-                sg.Checkbox("", k=XLSX, default=xlsx_checked, enable_events = True, pad=(0, 2)),
-                sg.InputText(k=KEY_XLSX_INFO_FILE, default_text=get_entry(KEY_XLSX_INFO_FILE), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, pad=((0, 5), 2), size=DEFAULT_INPUT_SIZE),
-                sg.B("Browse", k=KEY_XLSX_INFO_FILE_FOLDER, pad=((3, 0), 2), disabled=not xlsx_checked, disabled_button_color=DISABLED_COLOR)
+                Text('', sz=TEXT_CB_SIZE),
+                Checkbox(XLSX, xlsx_checked),
+                InputText(KEY_XLSX_INFO_FILE, get_entry(KEY_XLSX_INFO_FILE), pad=INPUT_CB_PAD),
+                Folder_Button(KEY_XLSX_INFO_FILE_FOLDER, not xlsx_checked)
             ],
             [
-                sg.Text('YAML File', pad=(0, 2), size=8),
-                sg.Checkbox("", k=YAML, default=yaml_checked, enable_events = True, pad=(0, 2)),
-                sg.InputText(k=KEY_STU_FILE, default_text=get_entry(KEY_STU_FILE), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, pad=((0, 5), 2), size=DEFAULT_INPUT_SIZE),
-                sg.B("Browse", k=KEY_STU_FILE_FOLDER, pad=((3, 0), 2), disabled=not xlsx_checked, disabled_button_color=DISABLED_COLOR),
-                add_help_button('yaml_file_tip', yaml_file_tip)
+                Text('YAML File', sz=TEXT_CB_SIZE),
+                Checkbox(YAML, yaml_checked),
+                InputText(KEY_STU_FILE, get_entry(KEY_STU_FILE), pad=INPUT_CB_PAD),
+                Folder_Button(KEY_STU_FILE_FOLDER, not xlsx_checked),
+                help_button('yaml_file_tip', yaml_file_tip)
             ],
             [
                 sg.ProgressBar(max_value=100, orientation='h', size=(0, 20), expand_x=True, key=KEY_PRO_BAR), #expand_x will overwrite the width
