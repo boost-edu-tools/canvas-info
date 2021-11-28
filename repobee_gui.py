@@ -5,23 +5,7 @@ from repobee_canvas.gui                           import *
 from repobee_canvas.command.create_students_files  import CreateStudentsiles
 
 if __name__ == '__main__':
-    if get_entry(KEY_BASE_URL) == None:
-        set_entry(KEY_BASE_URL, "https://canvas.tue.nl/api/v1")
-
-    if is_invalid(get_entry(KEY_STU_FILE)) or is_invalid(get_entry(KEY_STU_FILE_FOLDER)):
-        set_entry(KEY_STU_FILE, resource_path("students.yaml"))
-        set_entry(KEY_STU_FILE_FOLDER, resource_path())
-
-    if is_invalid(get_entry(KEY_XLSX_INFO_FILE)) or is_invalid(get_entry(KEY_CSV_INFO_FILE)):
-        set_entry(KEY_CSV_INFO_FILE, resource_path("students_info.csv"))
-        set_entry(KEY_XLSX_INFO_FILE, resource_path("students_info.xlsx"))
-
-    if get_entry(KEY_GROUP_CATEGORY) is None:
-        set_entry(KEY_GROUP_CATEGORY, "Project Groups")
-
-    if get_entry(KEY_COURSE_ID) is None:
-        set_entry(KEY_COURSE_ID, "00000")
-
+    set_default_entries()
     window = make_window()
 
     while True:

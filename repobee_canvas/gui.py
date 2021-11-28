@@ -43,7 +43,25 @@ TYPE_YAML = ("Text Files", "*.yaml")
 TYPE_XLSX = ("Excel Workbook", "*.xlsx")
 TYPE_ALL = ("ALL Files", "*.* *")
 
-if platform == "darwin": sg.set_options(font = ("Any", 12))
+def set_default_entries():
+    if get_entry(KEY_BASE_URL) == None:
+        set_entry(KEY_BASE_URL, "https://canvas.tue.nl/api/v1")
+
+    if is_invalid(get_entry(KEY_STU_FILE)) or is_invalid(get_entry(KEY_STU_FILE_FOLDER)):
+        set_entry(KEY_STU_FILE, resource_path("students.yaml"))
+        set_entry(KEY_STU_FILE_FOLDER, resource_path())
+
+    if is_invalid(get_entry(KEY_XLSX_INFO_FILE)) or is_invalid(get_entry(KEY_CSV_INFO_FILE)):
+        set_entry(KEY_CSV_INFO_FILE, resource_path("students_info.csv"))
+        set_entry(KEY_XLSX_INFO_FILE, resource_path("students_info.xlsx"))
+
+    if get_entry(KEY_GROUP_CATEGORY) is None:
+        set_entry(KEY_GROUP_CATEGORY, "Project Groups")
+
+    if get_entry(KEY_COURSE_ID) is None:
+        set_entry(KEY_COURSE_ID, "00000")
+
+    if platform == "darwin": sg.set_options(font = ("Any", 12))
 
 def resource_path(relative_path = None):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -149,45 +167,46 @@ def make_window():
     layout = [
         [
             [
-                sg.Text('Access Token', pad=(0, 3)),
-                sg.InputText(k=KEY_ACCESS_TOKEN, default_text=get_entry(KEY_ACCESS_TOKEN), expand_x = True, pad=((7, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, password_char='*'),
+                sg.Text('Access Token', pad=(0, 2), size=11, background_color="red"),
+                sg.InputText(k=KEY_ACCESS_TOKEN, default_text=get_entry(KEY_ACCESS_TOKEN), expand_x = True, readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, password_char='*', pad=((3, 5), 2)),
                 sg.B("Update", k='token_bt'),
                 add_help_button('token_tip', token_tip)
             ],
             [
-                sg.Text('Base URL', pad=(0, 3)),
-                sg.InputText(k=KEY_BASE_URL, default_text=get_entry(KEY_BASE_URL), expand_x = True, pad=((31, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.Text('Base URL', pad=(0, 2), size=11, background_color="red"),
+                sg.InputText(k=KEY_BASE_URL, default_text=get_entry(KEY_BASE_URL), expand_x = True, readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, pad=((3, 5), 2)),
                 sg.B("Update", k='url_bt'),
                 add_help_button('base_url_tip', base_url_tip)
             ],
             [
-                sg.Text('Course ID', pad=(0, 3)),
-                sg.InputText(k=KEY_COURSE_ID, default_text=get_entry(KEY_COURSE_ID), expand_x = True, pad=((33, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.Text('Course ID', pad=(0, 2), size=11),
+                sg.InputText(k=KEY_COURSE_ID, default_text=get_entry(KEY_COURSE_ID), expand_x = True, readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, pad=((3, 5), 2)),
                 sg.B("Update", k='course_id_bt'),
                 add_help_button('course_id_tip', course_id_tip)
             ],
             [
-                sg.Text('Group Set', pad=(0, 3)),
-                sg.InputText(k=KEY_GROUP_CATEGORY, default_text=get_entry(KEY_GROUP_CATEGORY), expand_x = True, pad=((31, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.Text('Group Set', pad=(0, 2), size=11),
+                sg.InputText(k=KEY_GROUP_CATEGORY, default_text=get_entry(KEY_GROUP_CATEGORY), expand_x = True, readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, pad=((3, 5), 2)),
                 sg.B("Update", k='group_set_bt'),
                 add_help_button('group_category_tip', group_category_tip)
             ],
             [
-                sg.Text('Info File', pad=(0, 3)),
-                sg.Checkbox("", k=CSV, default=csv_checked, enable_events = True, pad=((17, 0), 0)),
-                sg.InputText(k=KEY_CSV_INFO_FILE, default_text=get_entry(KEY_CSV_INFO_FILE), expand_x = True, pad=((0, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.Text('Info File', pad=(0, 2), size=8),
+                sg.Checkbox("", k=CSV, default=csv_checked, enable_events = True, pad=(0, 2)),
+                sg.InputText(k=KEY_CSV_INFO_FILE, default_text=get_entry(KEY_CSV_INFO_FILE), expand_x = True, readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, pad=((0, 5), 2)),
                 sg.B("Browse", k=KEY_CSV_INFO_FILE_FOLDER, pad=((5, 3), 0), disabled=not csv_checked, disabled_button_color=DISABLED_COLOR),
                 add_help_button('info_file_tip', info_file_tip)
             ],
             [
-                sg.Checkbox("", k=XLSX, default=xlsx_checked, enable_events = True, pad=((65, 0), 0)),
-                sg.InputText(k=KEY_XLSX_INFO_FILE, default_text=get_entry(KEY_XLSX_INFO_FILE), expand_x = True, pad=((0, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.Text('', pad=(0, 2), size=8),
+                sg.Checkbox("", k=XLSX, default=xlsx_checked, enable_events = True, pad=(0, 2)),
+                sg.InputText(k=KEY_XLSX_INFO_FILE, default_text=get_entry(KEY_XLSX_INFO_FILE), expand_x = True, readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, pad=((0, 5), 2)),
                 sg.B("Browse", k=KEY_XLSX_INFO_FILE_FOLDER, pad=((5, 27), 0), disabled=not xlsx_checked, disabled_button_color=DISABLED_COLOR),
             ],
             [
-                sg.Text('YAML File', pad=(0, 3)),
-                sg.Checkbox("", k=YAML, default=yaml_checked, enable_events = True, pad=((0, 0), 0)),
-                sg.InputText(k=KEY_STU_FILE, default_text=get_entry(KEY_STU_FILE), expand_x = True, pad=((0, 0), 0), readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG),
+                sg.Text('YAML File', pad=(0, 2), size=8),
+                sg.Checkbox("", k=YAML, default=yaml_checked, enable_events = True, pad=(0, 2)),
+                sg.InputText(k=KEY_STU_FILE, default_text=get_entry(KEY_STU_FILE), expand_x = True, readonly=True, disabled_readonly_background_color=DEFAULT_INPUT_BG, pad=((0, 5), 2)),
                 sg.B("Browse", k=KEY_STU_FILE_FOLDER, pad=((5, 3), 0), disabled=not xlsx_checked, disabled_button_color=DISABLED_COLOR),
                 add_help_button('yaml_file_tip', yaml_file_tip)
             ],
