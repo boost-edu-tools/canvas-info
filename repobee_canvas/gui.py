@@ -142,8 +142,7 @@ def is_invalid(string: str) -> bool:
     return string is None or string == ""
 
 def is_path_invalid(path: str, file_type: str):
-    parent = os.path.dirname(os.path.abspath(path))
-    if os.path.exists(parent):
+    if os.path.exists(path):
         return False
 
     sg.popup("Error", "Invalid "+ file_type + " file path.")
