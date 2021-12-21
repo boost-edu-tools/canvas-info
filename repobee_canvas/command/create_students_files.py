@@ -83,8 +83,8 @@ def CreateStudentsiles(
                                 group.append(git_id)
 
                             outfile.write(team +":\n")
-                            outfile.write("\tmembers:"+str(group))
-                            outfile.write("\n")
+                            outfile.write("\tmembers:["+ ', '.join(group))
+                            outfile.write("]\n")
 
                 inform(f"Created students YAML file: {students_yaml_file}.")
 
