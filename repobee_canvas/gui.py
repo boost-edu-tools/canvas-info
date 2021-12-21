@@ -237,7 +237,7 @@ def make_window():
                 sg.Text('0%', key=KEY_PRO_TEXT, size=(4, None), justification='right')
             ],
             [
-                sg.Multiline(size=(70, 20), key=KEY_ML, reroute_cprint=True, expand_y=True, expand_x=True, auto_refresh=True)
+                sg.Multiline(size=(70, 10), key=KEY_ML, reroute_cprint=True, expand_y=True, expand_x=True, auto_refresh=True)
             ],
             [
                 sg.B('Execute'), sg.B('Exit'), sg.B('Clear History')
