@@ -256,30 +256,42 @@ def make_window():
             Frame('Local computer configuration',
                 layout = [
                     [
-                        Text('Info File', sz=TEXT_CB_SIZE),
-                        Checkbox(CSV, csv_checked),
-                        InputText(KEY_CSV_INFO_FILE, get_entry(KEY_CSV_INFO_FILE), pad=INPUT_CB_PAD, enable_events=False),
-                        Folder_Button(KEY_CSV_INFO_FILE_FOLDER, not csv_checked),
-                        help_button('info_file_tip', info_file_tip)
+                        Frame('',
+                            layout= [
+                                [
+                                    Text('Info File', sz=TEXT_CB_SIZE),
+                                    Checkbox(CSV, csv_checked),
+                                    InputText(KEY_CSV_INFO_FILE, get_entry(KEY_CSV_INFO_FILE), pad=INPUT_CB_PAD, enable_events=False),
+                                    Folder_Button(KEY_CSV_INFO_FILE_FOLDER, not csv_checked),
+                                    help_button('info_file_tip', info_file_tip)
+                                ],
+                                [
+                                    Text('', sz=TEXT_CB_SIZE),
+                                    Checkbox(XLSX, xlsx_checked),
+                                    InputText(KEY_XLSX_INFO_FILE, get_entry(KEY_XLSX_INFO_FILE), pad=INPUT_CB_PAD, enable_events=False),
+                                    Folder_Button(KEY_XLSX_INFO_FILE_FOLDER, not xlsx_checked),
+                                    help_button('info_file_excel_tip', info_file_tip)
+                                ]
+                            ]
+                        )
                     ],
                     [
-                        Text('', sz=TEXT_CB_SIZE),
-                        Checkbox(XLSX, xlsx_checked),
-                        InputText(KEY_XLSX_INFO_FILE, get_entry(KEY_XLSX_INFO_FILE), pad=INPUT_CB_PAD, enable_events=False),
-                        Folder_Button(KEY_XLSX_INFO_FILE_FOLDER, not xlsx_checked),
-                        help_button('info_file_excel_tip', info_file_tip)
-                    ],
-                    [
-                        Text('YAML File', sz=TEXT_CB_SIZE),
-                        Checkbox(YAML, yaml_checked),
-                        InputText(KEY_STU_FILE, get_entry(KEY_STU_FILE), pad=INPUT_CB_PAD, readOnly=False),
-                        Folder_Button(KEY_STU_FILE_FOLDER, not xlsx_checked),
-                        help_button('yaml_file_tip', yaml_file_tip)
-                    ],
-                    [
-                        sg.Text('Member Option', size=22, justification='right'),
-                        Radio('Email', KEY_EMAIL, KEY_EMAIL == member_option),
-                        Radio('Year ID', KEY_GIT_ID, KEY_GIT_ID == member_option)
+                        Frame('',
+                            layout = [
+                                [
+                                    Text('YAML File', sz=TEXT_CB_SIZE),
+                                    Checkbox(YAML, yaml_checked),
+                                    InputText(KEY_STU_FILE, get_entry(KEY_STU_FILE), pad=INPUT_CB_PAD, readOnly=False),
+                                    Folder_Button(KEY_STU_FILE_FOLDER, not xlsx_checked),
+                                    help_button('yaml_file_tip', yaml_file_tip)
+                                ],
+                                [
+                                    sg.Text('Member Option', size=22, justification='right'),
+                                    Radio('Email', KEY_EMAIL, KEY_EMAIL == member_option),
+                                    Radio('Year ID', KEY_GIT_ID, KEY_GIT_ID == member_option)
+                                ]
+                            ]
+                        )
                     ]
                 ]
             )
