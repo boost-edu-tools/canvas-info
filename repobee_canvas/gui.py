@@ -20,6 +20,9 @@ KEY_XLSX_INFO_FILE_FOLDER = 'stu_xlsx_info_file_folder'
 KEY_ML = '-ML-'
 KEY_PRO_BAR = 'progressbar'
 KEY_PRO_TEXT = 'progress'
+MEMBER_OPTION = 'member_option'
+KEY_GIT_ID = 'git_id'
+KEY_EMAIL = 'email'
 
 # DEFAULT_INPUT_BG = "#000000" #"#705e52"
 DISABLED_BT_COLOR = "grey"
@@ -66,6 +69,9 @@ def set_default_entries():
     if get_entry(KEY_COURSE_ID) is None:
         set_entry(KEY_COURSE_ID, "00000")
 
+    if get_entry(MEMBER_OPTION) is None:
+        set_entry(MEMBER_OPTION, KEY_EMAIL)
+
     if platform == "darwin":
         sg.set_options(font = ("Any", 12))
         global DEFAULT_INPUT_SIZE
@@ -84,7 +90,6 @@ def resource_path(relative_path = None):
 
     return os.path.join(base_path, relative_path)
 
-help = resource_path("help.png")
 icon = resource_path("icon.png")
 with open(icon, 'rb') as file:
     icon = base64.b64encode(file.read())
@@ -142,15 +147,15 @@ def is_invalid(string: str) -> bool:
     return string is None or string == ""
 
 def is_path_invalid(path: str, file_type: str):
-    if os.path.exists(path):
+    parent = os.path.dirname(os.path.abspath(path))
+    if os.path.exists(parent):
         return False
 
     sg.popup("Error", "Invalid "+ file_type + " file path.")
     return True
 
 def help_button(key: str, tooltip: str) -> sg.Button:
-    return sg.Button(key=key, button_color=(sg.theme_background_color(), sg.theme_background_color()),
-               image_filename=help, image_subsample=60, border_width=0, tooltip = tooltip, pad=(3, 0))
+    return sg.Button("?", key=key, tooltip = tooltip, pad=(3, 0))
 
 def update_progress(pos: int, length: int):
     global progress_bar, progress_text
@@ -168,7 +173,7 @@ def Text(text: str, sz: int = 11) -> sg.Text:
     return sg.Text(text, pad=(0, 2), size=sz)
 
 def InputText(key: str, text:str, password:str='', pad:tuple=((3, 5), 2)) -> sg.InputText:
-    return sg.InputText(k=key, default_text=text, readonly=True, disabled_readonly_background_color="#000000", password_char=password, pad=pad, size=DEFAULT_INPUT_SIZE)
+    return sg.InputText(k=key, default_text=text, readonly=True, password_char=password, pad=pad, size=DEFAULT_INPUT_SIZE)
 
 def Checkbox(key, default) -> sg.Checkbox:
     return sg.Checkbox("", k=key, default=default, enable_events = True, pad=(0, 2))
@@ -176,15 +181,19 @@ def Checkbox(key, default) -> sg.Checkbox:
 def Button(text, key) -> sg.Button:
     return sg.B(text, k=key, pad=((3, 0), 2))
 
+def Radio(text:str, key:str, default_val: bool, size:(int, int)=(10,1)) -> sg.Radio:
+    return sg.Radio(text, MEMBER_OPTION, k=key, default=default_val, s=size, enable_events=True)
+
 def Folder_Button(key, disable) -> sg.Button:
     return sg.B("Browse", k=key, pad=((3, 0), 2), disabled=disable, disabled_button_color=DISABLED_BT_COLOR)
 
 def make_window():
-    sg.theme('DarkAmber')
+    sg.theme("SystemDefault")
 
     csv_checked = get_entry(CSV)
     xlsx_checked = get_entry(XLSX)
     yaml_checked = get_entry(YAML)
+    member_option = get_entry(MEMBER_OPTION)
 
     layout = [
         [
@@ -231,6 +240,11 @@ def make_window():
                 InputText(KEY_STU_FILE, get_entry(KEY_STU_FILE), pad=INPUT_CB_PAD),
                 Folder_Button(KEY_STU_FILE_FOLDER, not xlsx_checked),
                 help_button('yaml_file_tip', yaml_file_tip)
+            ],
+            [
+                Text('Member Option'),
+                Radio('Email', KEY_EMAIL, KEY_EMAIL == member_option),
+                Radio('Canvas ID', KEY_GIT_ID, KEY_GIT_ID == member_option)
             ],
             [
                 sg.ProgressBar(max_value=100, orientation='h', size=(0, 20), expand_x=True, key=KEY_PRO_BAR), #expand_x will overwrite the width
