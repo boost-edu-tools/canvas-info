@@ -32,6 +32,7 @@ from typing             import List
 from .canvas_api.course import Course
 from .canvas_api.user   import PUBLIC_USER_FIELDS
 from .common            import warn, inform
+import xlsxwriter
 from openpyxl import load_workbook, Workbook
 from openpyxl.worksheet import table
 
@@ -59,40 +60,6 @@ class Table:
         with path.open() as csv_file:
             return cls(csv.DictReader(csv_file, delimiter = FIELD_SEP))
 
-    @classmethod
-    def loadExcel(cls, path : str):
-        """ Get all tables from a given workbook. Returns a dictionary of tables.
-        Requires a filename, which includes the file path and filename. """
-
-        # Load the workbook, from the filename, setting read_only to False
-        wb = load_workbook(filename=path, keep_vba=False, data_only=True, keep_links=False)
-
-        # Get a list of all rows
-        rows_list = []
-
-        # Go through each worksheet in the workbook
-        for ws_name in wb.sheetnames:
-            ws = wb[ws_name]
-
-            # Get each table in the worksheet
-            for tbl in ws.tables.values():
-                # Grab the 'data' from the table
-                data = ws[tbl.ref]
-
-                #get the first header row
-                keys = []
-                for k in data[0]:
-                    keys.append(k.value)
-
-                for row in data[1:]:
-                    # Get a list of all columns in each row
-                    cols = {}
-                    for i, col in enumerate(row):
-                        cols[keys[i]] = col.value
-                    rows_list.append(cols)
-
-        return cls(rows_list)
-
     def write(self, path : Path):
         # """Write this Canvas-Git map to csv file."""
         with path.open("w", encoding='utf-8-sig', newline='') as csv_file:
@@ -109,32 +76,29 @@ class Table:
                 csv_writer.writerow(row)
 
     def writeExcel(self, path: str):
-        wb = Workbook()
-        ws = wb.active
+        headers = []
+        columns = self.columns()
+        for col in columns:
+            headers.append({'header': col})
 
-        columns = list(self.columns())
-        ws.append(columns)
+        workbook = xlsxwriter.Workbook(path)
+        worksheet = workbook.add_worksheet()
+        worksheet.set_column('B:B', 15) #name column 15
+        worksheet.set_column('C:C', 25) #full name column 25
+        worksheet.set_column('F:F', 45) #set email column_width 45
 
+        rows = []
         for row in self.rows():
-            ws.append(list(row.values()))
+            rows.append(list(row.values()))
 
-        tab = table.Table(displayName="table1", ref='A1:F' + str(len(self._data)+1))
+        worksheet.add_table('A1:F'+str(len(rows)+1),
+            {
+                'data': rows,
+                'columns': headers
+            }
+        )
 
-        ws.column_dimensions["B"].width = 15 #name column
-        ws.column_dimensions["C"].width = 25 #full name column
-        ws.column_dimensions["F"].width = 45 #emil column
-
-        # Add a default style with striped rows and banded columns
-        style = table.TableStyleInfo(name="TableStyleMedium9", showFirstColumn=False,
-                            showLastColumn=False, showRowStripes=True, showColumnStripes=True)
-        tab.tableStyleInfo = style
-
-        '''
-        Table must be added using ws.add_table() method to avoid duplicate names.
-        Using this method ensures table name is unque through out defined names and all other table name.
-        '''
-        ws.add_table(tab)
-        wb.save(path)
+        workbook.close()
 
     def columns(self):
         """Generator for the column names of this Table."""
@@ -157,7 +121,7 @@ class Table:
     def get_stu_info(self) -> list:
         student_info = []
         for row in self.rows():
-            student_info.append({"group":row[GROUP], "email2git": {row[EMAIL][:-15]:row[GIT_ID]}})
+            student_info.append({"group":row[GROUP], "email2git": {row[EMAIL]:row[GIT_ID]}})
 
         return student_info
 
