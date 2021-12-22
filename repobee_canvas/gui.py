@@ -32,7 +32,7 @@ DEFAULT_INPUT_SIZE = 99
 DEFAULT_INPUT_PAD = ((3, 5), 2)
 TEXT_CB_SIZE = 8
 INPUT_CB_PAD = ((0, 5), 2)
-ALIGN_RIGHT = ((415, 0), 5)
+ALIGN_RIGHT = ((690, 0), 5)
 
 token_tip = "Canvas > Account > Settings > New access token > Generate Token"
 token_tip_ml = "Generate via: Canvas > Account > Settings > Blue Box '+ New access token' on page > Generate Token"
