@@ -222,10 +222,6 @@ def make_window():
 
     layout = [
         [
-            Text(LOCKED, KEY_CONF_LOCK_STATE),
-            Button(UNLOCK, KEY_CONF_LOCK)
-        ],
-        [
             Frame('Canvas configuration',
                 layout = [
                     [
@@ -233,6 +229,10 @@ def make_window():
                         InputText(KEY_ACCESS_TOKEN, get_entry(KEY_ACCESS_TOKEN), password='*', enable_events=False),
                         Button("Edit", 'token_bt'),
                         help_button('token_tip', token_tip)
+                    ],
+                    [
+                        Text(LOCKED, KEY_CONF_LOCK_STATE),
+                        Button(UNLOCK, KEY_CONF_LOCK)
                     ],
                     [
                         Text('Base URL'),
