@@ -48,9 +48,8 @@ if __name__ == '__main__':
                 window[KEY_XLSX_INFO_FILE].update(file_path+".xlsx")
                 set_entry(KEY_XLSX_INFO_FILE, file_path+".xlsx")
 
-        elif event == CSV:
-            update_button(not values[CSV], window[KEY_CSV_INFO_FILE_FOLDER])
-            set_entry(CSV, values[CSV])
+        elif event in (CSV, XLSX, YAML, KEY_BASE_URL, KEY_COURSE_ID, KEY_GROUP_CATEGORY, KEY_STU_FILE):
+            set_entry(event, values[event])
 
         elif event == KEY_XLSX_INFO_FILE_FOLDER:
             file_path = update_browse(values[KEY_XLSX_INFO_FILE], True, ((TYPE_XLSX),)) #, XLSX)
@@ -61,22 +60,17 @@ if __name__ == '__main__':
                 window[KEY_CSV_INFO_FILE].update(file_path+".csv")
                 set_entry(KEY_CSV_INFO_FILE, file_path+".csv")
 
-        elif event == XLSX:
-            update_button(not values[XLSX], window[KEY_XLSX_INFO_FILE_FOLDER])
-            set_entry(XLSX, values[XLSX])
-
         elif event == KEY_STU_FILE_FOLDER:
             file_path = update_browse(values[KEY_STU_FILE], True, (TYPE_YAML,)) #, YAML)
             if file_path != "":
                 window[KEY_STU_FILE].update(file_path)
                 set_entry(KEY_STU_FILE, file_path)
 
-        elif event == YAML:
-            update_button(not values[YAML], window[KEY_STU_FILE_FOLDER])
-            set_entry(YAML, values[YAML])
-
         elif event in [KEY_GIT_ID, KEY_EMAIL]:
             set_entry(MEMBER_OPTION, event)
+
+        elif event == KEY_CONF_LOCK:
+            update_option_state(window, event)
 
         elif event == "Execute":
             csv = values[CSV]
@@ -126,7 +120,7 @@ if __name__ == '__main__':
             window[event].TooltipObject.showtip()
             sg.cprint(token_tip_ml)
 
-        elif event == "info_file_tip":
+        elif event in ("info_file_tip", "info_file_excel_tip"):
             window[event].TooltipObject.showtip()
             sg.cprint(info_file_tip_ml)
 
