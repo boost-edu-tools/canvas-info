@@ -75,6 +75,9 @@ if __name__ == '__main__':
             update_button(not values[YAML], window[KEY_STU_FILE_FOLDER])
             set_entry(YAML, values[YAML])
 
+        elif event in [KEY_GIT_ID, KEY_EMAIL]:
+            set_entry(MEMBER_OPTION, event)
+
         elif event == "Execute":
             csv = values[CSV]
             xlsx = values[XLSX]
@@ -117,7 +120,7 @@ if __name__ == '__main__':
                 if is_empty(students_yaml_file, "Students YAML File") or is_path_invalid(students_yaml_file, "YAML"):
                     continue
 
-            CreateStudentsiles(urlparse(base_url), access_token, course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file)
+            CreateStudentsiles(urlparse(base_url), access_token, course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file, get_entry(MEMBER_OPTION))
 
         elif event == "token_tip":
             window[event].TooltipObject.showtip()
