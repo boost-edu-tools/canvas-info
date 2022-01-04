@@ -72,7 +72,6 @@ UNLOCKED = "UnLocked"
 
 if platform == "darwin":
     sg.set_options(font = ("Any", 12))
-    MAX_COL_HEIGHT = 545
 
 def set_default_entries():
     if get_entry(KEY_BASE_URL) == None:
