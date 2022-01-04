@@ -7,6 +7,7 @@ from repobee_canvas.command.create_students_files  import CreateStudentsiles
 if __name__ == '__main__':
     set_default_entries()
     window = make_window()
+    last_screen_height = window.Size[1]
 
     while True:
         event, values = window.read()
@@ -77,6 +78,15 @@ if __name__ == '__main__':
             if event == KEY_INC_MEMBER:
                 window[KEY_INC_INITIAL].update(disabled=not values[KEY_INC_MEMBER])
 
+        elif event == KEY_COL_PERCENT:
+            update_col_percent(window, last_screen_height, values[event])
+
+        elif event == "Conf":
+            wh = window.Size[1]
+            if wh == last_screen_height:
+                continue
+            update_column_height(window[KEY_CONFIG_COL], wh, last_screen_height)
+            last_screen_height = wh
 
         elif event == KEY_EXECUTE:
             csv = values[CSV]

@@ -4,8 +4,12 @@ import base64
 from sys import platform
 
 
-WINDOW_SIZE_X = 900
-WINDOW_SIZE_Y = 600
+WINDOW_SIZE_X = 750
+WINDOW_SIZE_Y = 770
+MAX_COL_HEIGHT = 370
+WINDOW_HEIGHT_CORR = 45     # height correction: height of command buttons + title bar
+COL_PERCENT = 40
+INIT_COL_HEIGHT = int((WINDOW_SIZE_Y - WINDOW_HEIGHT_CORR) * COL_PERCENT / 100)
 
 KEY_ACCESS_TOKEN = 'canvas_access_token'
 KEY_BASE_URL = 'canvas_base_url'
@@ -29,9 +33,11 @@ KEY_REPO_NAME_OPTION = "repo_name_options"
 KEY_INC_GROUP = "include_group"
 KEY_INC_MEMBER = "include_member"
 KEY_INC_INITIAL = "include_initials"
-KEY_EXECUTE     = 'Execute'
-KEY_EXIT        = 'Exit'
-KEY_CLEAR       = 'Clear'
+KEY_COL_PERCENT = "col_percent"
+KEY_EXECUTE = 'Execute'
+KEY_EXIT = 'Exit'
+KEY_CLEAR = 'Clear'
+KEY_CONFIG_COL = "config_column"
 
 DISABLED_BT_COLOR = "grey"
 
@@ -66,6 +72,7 @@ UNLOCKED = "UnLocked"
 
 if platform == "darwin":
     sg.set_options(font = ("Any", 12))
+    MAX_COL_HEIGHT = 545
 
 def set_default_entries():
     if get_entry(KEY_BASE_URL) == None:
@@ -91,6 +98,24 @@ def set_default_entries():
     if get_entry(KEY_INC_GROUP) is None and get_entry(KEY_INC_MEMBER) is None and get_entry(KEY_INC_INITIAL) is None:
         set_entry(KEY_INC_GROUP, True)
         set_entry(KEY_INC_MEMBER, True)
+
+    col_percent = get_entry(KEY_COL_PERCENT)
+    if col_percent:
+        global COL_PERCENT, INIT_COL_HEIGHT
+        COL_PERCENT = col_percent
+        INIT_COL_HEIGHT = int((WINDOW_SIZE_Y - WINDOW_HEIGHT_CORR) * COL_PERCENT / 100)
+        if INIT_COL_HEIGHT > MAX_COL_HEIGHT:
+            INIT_COL_HEIGHT = MAX_COL_HEIGHT
+    else:
+        set_entry(KEY_COL_PERCENT, COL_PERCENT)
+
+def update_col_percent(window, wh, percent):
+    element = window[KEY_CONFIG_COL]
+    set_entry(KEY_COL_PERCENT, percent)
+    global COL_PERCENT
+    if COL_PERCENT != percent:
+        COL_PERCENT = percent
+        update_column_height(element, wh, wh)
 
 def resource_path(relative_path = None):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -201,6 +226,13 @@ def update_option_state(window: sg.Window, key: str):
     for key in (KEY_BASE_URL, KEY_COURSE_ID, KEY_GROUP_CATEGORY):
         disable_elements(window[key], state)
 
+def update_column_height(element, wh, last_screen_height):
+    ch = element.Widget.canvas.winfo_height()
+    if ch < MAX_COL_HEIGHT or (wh - last_screen_height) <= 0:
+        ch = (wh - WINDOW_HEIGHT_CORR) * COL_PERCENT / 100
+        ch = min(ch, MAX_COL_HEIGHT)
+        update_height(element, int(ch))
+
 def Text(text: str, key:str=None, sz: int = 11) -> sg.Text:
     return sg.Text(text, k=key, pad=(0, 2), size=sz)
 
@@ -219,8 +251,21 @@ def Radio(text:str, key:str, default_val: bool) -> sg.Radio:
 def Folder_Button(key, disable) -> sg.Button:
     return sg.B("Browse", k=key, pad=((3, 0), 2))
 
-def Frame(title:str, layout:list) -> sg.Frame:
-    return sg.Frame(layout=layout, title=title, relief=sg.RELIEF_SUNKEN, expand_x=True)
+def Frame(title:str, layout:list, pad:(int, int)=None) -> sg.Frame:
+    return sg.Frame(layout=layout, title=title, relief=sg.RELIEF_SUNKEN, expand_x=True, pad=pad)
+
+def Column(layout:list, key:str=None):
+    global INIT_COL_HEIGHT
+    return sg.Column(layout, k=key, vertical_scroll_only=True, scrollable=True, expand_x=True, size=(None, INIT_COL_HEIGHT))
+
+def configure_canvas(event, canvas, frame_id):
+    canvas.itemconfig(frame_id, width=event.width)
+
+def configure_frame(event, canvas):
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+def update_height(element, height):
+    element.Widget.canvas.configure({'height':height})
 
 def make_window():
     sg.theme("SystemDefault")
@@ -230,123 +275,145 @@ def make_window():
     yaml_checked = get_entry(YAML)
     member_option = get_entry(MEMBER_OPTION)
 
+    local_config_frame = Frame('Local computer configuration',
+        layout = [
+            [
+                Frame('',
+                    layout= [
+                        [
+                            Text('Info File', sz=TEXT_CB_SIZE),
+                            Checkbox(CSV, csv_checked),
+                            InputText(KEY_CSV_INFO_FILE, get_entry(KEY_CSV_INFO_FILE), pad=INPUT_CB_PAD, enable_events=False),
+                            Folder_Button(KEY_CSV_INFO_FILE_FOLDER, not csv_checked),
+                            help_button('info_file_tip', info_file_tip)
+                        ],
+                        [
+                            Text('', sz=TEXT_CB_SIZE),
+                            Checkbox(XLSX, xlsx_checked),
+                            InputText(KEY_XLSX_INFO_FILE, get_entry(KEY_XLSX_INFO_FILE), pad=INPUT_CB_PAD, enable_events=False),
+                            Folder_Button(KEY_XLSX_INFO_FILE_FOLDER, not xlsx_checked),
+                            help_button('info_file_excel_tip', info_file_tip)
+                        ]
+                    ]
+                )
+            ],
+            [
+                Frame('',
+                    layout = [
+                        [
+                            Text('YAML File', sz=TEXT_CB_SIZE),
+                            Checkbox(YAML, yaml_checked),
+                            InputText(KEY_STU_FILE, get_entry(KEY_STU_FILE), pad=INPUT_CB_PAD, readOnly=False),
+                            Folder_Button(KEY_STU_FILE_FOLDER, not xlsx_checked),
+                            help_button('yaml_file_tip', yaml_file_tip)
+                        ],
+                        [
+                            Frame('Members',
+                                layout=[
+                                    [
+                                        Radio('Email', KEY_EMAIL, KEY_EMAIL == member_option),
+                                        Radio('Year ID', KEY_GIT_ID, KEY_GIT_ID == member_option),
+                                        help_button('member_options_tip', member_options_tip)
+                                    ]
+                            ]),
+                            Frame('Repo Name',
+                                layout=[
+                                    [
+                                        Checkbox(KEY_INC_GROUP, get_entry(KEY_INC_GROUP), "Include Group Name"),
+                                        Checkbox(KEY_INC_MEMBER, get_entry(KEY_INC_MEMBER), "Include Member Names"),
+                                        Checkbox(KEY_INC_INITIAL, get_entry(KEY_INC_INITIAL), "Include Initials", not get_entry(KEY_INC_MEMBER)),
+                                        help_button('yamloptions_tip', yaml_options_tip)
+                                    ]
+                                ]
+                            )
+                        ]
+                    ]
+                )
+            ]
+        ], pad=(0,0)
+    )
+
+    canvas_config_frame = Frame('Canvas configuration',
+        layout = [
+            [
+                Text(LOCKED, KEY_CONF_LOCK_STATE),
+                Button(UNLOCK, KEY_CONF_LOCK)
+            ],
+            [
+                Text('Group Set'),
+                InputText(KEY_GROUP_CATEGORY, get_entry(KEY_GROUP_CATEGORY)),
+                help_button('group_category_tip', group_category_tip)
+            ],
+            [
+                Text('Course ID'),
+                InputText(KEY_COURSE_ID, get_entry(KEY_COURSE_ID)),
+                help_button('course_id_tip', course_id_tip)
+            ],
+            [
+                Text('Base URL'),
+                InputText(KEY_BASE_URL, get_entry(KEY_BASE_URL)),
+                help_button('base_url_tip', base_url_tip)
+            ],
+            [
+                Text('Access Token'),
+                InputText(KEY_ACCESS_TOKEN, get_entry(KEY_ACCESS_TOKEN), password='*', enable_events=False),
+                Button("Edit", 'token_bt'),
+                help_button('token_tip', token_tip)
+            ]
+        ]
+    )
+
     layout = [
-        [
-            Frame('Canvas configuration',
-                layout = [
-                    [
-                        Text('Access Token'),
-                        InputText(KEY_ACCESS_TOKEN, get_entry(KEY_ACCESS_TOKEN), password='*', enable_events=False),
-                        Button("Edit", 'token_bt'),
-                        help_button('token_tip', token_tip)
-                    ],
-                    [
-                        Text(LOCKED, KEY_CONF_LOCK_STATE),
-                        Button(UNLOCK, KEY_CONF_LOCK)
-                    ],
-                    [
-                        Text('Base URL'),
-                        InputText(KEY_BASE_URL, get_entry(KEY_BASE_URL)),
-                        help_button('base_url_tip', base_url_tip)
-                    ],
-                    [
-                        Text('Course ID'),
-                        InputText(KEY_COURSE_ID, get_entry(KEY_COURSE_ID)),
-                        help_button('course_id_tip', course_id_tip)
-                    ],
-                    [
-                        Text('Group Set'),
-                        InputText(KEY_GROUP_CATEGORY, get_entry(KEY_GROUP_CATEGORY)),
-                        help_button('group_category_tip', group_category_tip)
-                    ]
-                ]
-            )
-        ],
-        [
-            Frame('Local computer configuration',
-                layout = [
-                    [
-                        Frame('',
-                            layout= [
-                                [
-                                    Text('Info File', sz=TEXT_CB_SIZE),
-                                    Checkbox(CSV, csv_checked),
-                                    InputText(KEY_CSV_INFO_FILE, get_entry(KEY_CSV_INFO_FILE), pad=INPUT_CB_PAD, enable_events=False),
-                                    Folder_Button(KEY_CSV_INFO_FILE_FOLDER, not csv_checked),
-                                    help_button('info_file_tip', info_file_tip)
-                                ],
-                                [
-                                    Text('', sz=TEXT_CB_SIZE),
-                                    Checkbox(XLSX, xlsx_checked),
-                                    InputText(KEY_XLSX_INFO_FILE, get_entry(KEY_XLSX_INFO_FILE), pad=INPUT_CB_PAD, enable_events=False),
-                                    Folder_Button(KEY_XLSX_INFO_FILE_FOLDER, not xlsx_checked),
-                                    help_button('info_file_excel_tip', info_file_tip)
-                                ]
-                            ]
-                        )
-                    ],
-                    [
-                        Frame('',
-                            layout = [
-                                [
-                                    Text('YAML File', sz=TEXT_CB_SIZE),
-                                    Checkbox(YAML, yaml_checked),
-                                    InputText(KEY_STU_FILE, get_entry(KEY_STU_FILE), pad=INPUT_CB_PAD, readOnly=False),
-                                    Folder_Button(KEY_STU_FILE_FOLDER, not xlsx_checked),
-                                    help_button('yaml_file_tip', yaml_file_tip)
-                                ],
-                                [
-                                    Frame('Members',
-                                        layout=[
-                                            [
-                                                Radio('Email', KEY_EMAIL, KEY_EMAIL == member_option),
-                                                Radio('Year ID', KEY_GIT_ID, KEY_GIT_ID == member_option),
-                                                help_button('member_options_tip', member_options_tip)
-                                            ]
-                                    ]),
-                                    Frame('Repo Name',
-                                        layout=[
-                                            [
-                                                Checkbox(KEY_INC_GROUP, get_entry(KEY_INC_GROUP), "Include Group Name"),
-                                                Checkbox(KEY_INC_MEMBER, get_entry(KEY_INC_MEMBER), "Include Member Names"),
-                                                Checkbox(KEY_INC_INITIAL, get_entry(KEY_INC_INITIAL), "Include Initials", not get_entry(KEY_INC_MEMBER)),
-                                                help_button('yamloptions_tip', yaml_options_tip)
-                                            ]
-                                        ]
-                                    )
-                                ]
-                            ]
-                        )
-                    ]
-                ]
-            )
-        ],
-        [
-            sg.ProgressBar(max_value=100, orientation='h', size=(0, 20), expand_x=True, key=KEY_PRO_BAR), #expand_x will overwrite the width
-            sg.Text('0%', key=KEY_PRO_TEXT, size=(4, None), justification='right')
-        ],
-        [
-            sg.Multiline(size=(70, 10), key=KEY_ML, reroute_cprint=True, expand_y=True, expand_x=True, auto_refresh=True)
-        ],
         [
             sg.Column(
                 [
                     [
                         Button(KEY_EXECUTE, KEY_EXECUTE)
                     ]
-                ]
+                ], pad=(0,(4,0))
             ),
             sg.Column(
                 [
                     [
                         Button(KEY_CLEAR, KEY_CLEAR),
-                        Button(KEY_EXIT, KEY_EXIT)
+                        Button(KEY_EXIT, KEY_EXIT),
+                        sg.Spin([i for i in range(20,90,10)], initial_value=COL_PERCENT, k=KEY_COL_PERCENT, enable_events=True, pad=((5,0),None), readonly=True),
+                        sg.Text("%", pad=((0,5), None))
                     ]
-                ], element_justification="right", expand_x=True
+                ], element_justification="right", expand_x=True, pad=(0,(4,0))
             )
+        ],
+        [
+            Column(
+                [
+                    [
+                        sg.ProgressBar(max_value=100, orientation='h', size=(0, 20), expand_x=True, key=KEY_PRO_BAR, pad=(0,0)), #expand_x will overwrite the width
+                        sg.Text('0%', key=KEY_PRO_TEXT, size=(4, None), justification='right')
+                    ],
+                    [
+                        local_config_frame
+                    ],
+                    [
+                        canvas_config_frame
+                    ]
+                ], KEY_CONFIG_COL
+            )
+        ],
+        [
+            sg.Multiline(size=(70, 10), key=KEY_ML, reroute_cprint=True, expand_y=True, expand_x=True, auto_refresh=True)
         ]
     ]
 
     window = sg.Window('Canvas group info', layout, size=(WINDOW_SIZE_X, WINDOW_SIZE_Y), icon=icon, margins=(0, 0), resizable=True, finalize=True)
     progressBar(window[KEY_PRO_BAR], window[KEY_PRO_TEXT])
+    col = window[KEY_CONFIG_COL]
+    frame_id = col.Widget.frame_id
+    frame = col.Widget.TKFrame
+    canvas = col.Widget.canvas
+    canvas.bind("<Configure>", lambda event, canvas=canvas, frame_id=frame_id:configure_canvas(event, canvas, frame_id))
+    frame.bind("<Configure>", lambda event, canvas=canvas:configure_frame(event, canvas))
+    window.bind('<Configure>', "Conf")
+    sg.cprint_set_output_destination(window, KEY_ML)
+    canvas.itemconfig(frame_id, width=canvas.winfo_width())
+    window.refresh()
     return window
