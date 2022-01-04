@@ -29,14 +29,15 @@ KEY_REPO_NAME_OPTION = "repo_name_options"
 KEY_INC_GROUP = "include_group"
 KEY_INC_MEMBER = "include_member"
 KEY_INC_INITIAL = "include_initials"
+KEY_EXECUTE     = 'Execute'
+KEY_EXIT        = 'Exit'
+KEY_CLEAR       = 'Clear'
 
 DISABLED_BT_COLOR = "grey"
 
-DEFAULT_INPUT_SIZE = 99
 DEFAULT_INPUT_PAD = ((3, 5), 2)
 TEXT_CB_SIZE = 8
 INPUT_CB_PAD = ((0, 5), 2)
-ALIGN_RIGHT = ((690, 0), 5)
 
 token_tip = "Canvas > Account > Settings > New access token > Generate Token"
 token_tip_ml = "Generate via: Canvas > Account > Settings > Blue Box '+ New access token' on page > Generate Token"
@@ -65,7 +66,6 @@ UNLOCKED = "UnLocked"
 
 if platform == "darwin":
     sg.set_options(font = ("Any", 12))
-    ALIGN_RIGHT = ((685, 0), 0)
 
 def set_default_entries():
     if get_entry(KEY_BASE_URL) == None:
@@ -329,7 +329,21 @@ def make_window():
             sg.Multiline(size=(70, 10), key=KEY_ML, reroute_cprint=True, expand_y=True, expand_x=True, auto_refresh=True)
         ],
         [
-            sg.B('Execute'), sg.B('Clear History', pad=ALIGN_RIGHT), sg.B('Exit')
+            sg.Column(
+                [
+                    [
+                        Button(KEY_EXECUTE, KEY_EXECUTE)
+                    ]
+                ]
+            ),
+            sg.Column(
+                [
+                    [
+                        Button(KEY_CLEAR, KEY_CLEAR),
+                        Button(KEY_EXIT, KEY_EXIT)
+                    ]
+                ], element_justification="right", expand_x=True
+            )
         ]
     ]
 

@@ -11,7 +11,7 @@ if __name__ == '__main__':
     while True:
         event, values = window.read()
 
-        if event in ('Exit', sg.WIN_CLOSED): # if user closes window
+        if event in (KEY_EXIT, sg.WIN_CLOSED): # if user closes window
             break
 
         elif event == 'token_bt':
@@ -78,7 +78,7 @@ if __name__ == '__main__':
                 window[KEY_INC_INITIAL].update(disabled=not values[KEY_INC_MEMBER])
 
 
-        elif event == "Execute":
+        elif event == KEY_EXECUTE:
             csv = values[CSV]
             xlsx = values[XLSX]
             yaml = values[YAML]
@@ -145,7 +145,7 @@ if __name__ == '__main__':
             window[event].TooltipObject.showtip()
             sg.cprint(window[event].TooltipObject.text)
 
-        elif event == 'Clear History':
+        elif event == KEY_CLEAR:
             window[KEY_ML].update('')
             update_progress(0, 100)
 
