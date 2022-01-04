@@ -72,6 +72,12 @@ if __name__ == '__main__':
         elif event == KEY_CONF_LOCK:
             update_option_state(window, event)
 
+        elif event in (KEY_INC_GROUP, KEY_INC_MEMBER, KEY_INC_INITIAL):
+            set_entry(event, values[event])
+            if event == KEY_INC_MEMBER:
+                window[KEY_INC_INITIAL].update(disabled=not values[KEY_INC_MEMBER])
+
+
         elif event == "Execute":
             csv = values[CSV]
             xlsx = values[XLSX]
@@ -114,7 +120,18 @@ if __name__ == '__main__':
                 if is_empty(students_yaml_file, "Students YAML File") or is_path_invalid(students_yaml_file, "YAML"):
                     continue
 
-            CreateStudentsiles(urlparse(base_url), access_token, course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file, get_entry(MEMBER_OPTION))
+            include_group = values[KEY_INC_GROUP]
+            include_member = values[KEY_INC_MEMBER]
+            if include_member:
+                include_initials = values[KEY_INC_INITIAL]
+            else:
+                include_initials = False
+
+            if not include_group and not include_member and not include_initials:
+                popup("Please select at least 1 option.")
+                continue
+
+            CreateStudentsiles(urlparse(base_url), access_token, course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file, get_entry(MEMBER_OPTION), include_group, include_member, include_initials)
 
         elif event == "token_tip":
             window[event].TooltipObject.showtip()

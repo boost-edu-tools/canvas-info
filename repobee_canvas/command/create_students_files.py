@@ -21,7 +21,10 @@ def CreateStudentsiles(
     student_csv_info_file: str,
     student_xlsx_info_file: str,
     students_yaml_file: str,
-    student_member_option: str):
+    student_member_option: str,
+    include_group: bool,
+    include_member: bool,
+    include_initials: bool):
     """Command to create a Canvas-Git mapping table and write it to a file."""
     CanvasAPI().setup(canvas_base_url, canvas_access_token)
     inform("Loading course...")
@@ -74,10 +77,10 @@ def CreateStudentsiles(
                 inform("Create students YAML file...")
 
                 if student_member_option == "email":
-                    member_as_email(students_yaml_file, group_submissions)
+                    member_as_email(students_yaml_file, group_submissions, include_group, include_member, include_initials)
 
                 elif student_member_option == "git_id":
-                    member_as_gitid(students_yaml_file, group_submissions)
+                    member_as_gitid(students_yaml_file, group_submissions, include_group, include_member, include_initials)
 
                 inform(f"Created students YAML file: {students_yaml_file}.")
 
@@ -86,30 +89,50 @@ def CreateStudentsiles(
                     email = list(submission[EMAIL2GIT].keys())
                     inform(email[0])
 
-def member_as_email(students_yaml_file: str, group_submissions: dict):
+def member_as_email(students_yaml_file: str, group_submissions: dict, include_group: bool, include_member: bool, include_initials: bool):
     with Path(students_yaml_file).open("w") as outfile:
         for submission in group_submissions.values():
-            team = submission[GROUP]
+            if include_group:
+                team = submission[GROUP]
+            else:
+                team = ""
 
             group = []
             for email in submission[EMAIL2GIT].keys():
-                team += '_' + email[:-15].replace('.', '')
                 group.append(email)
+                if include_member:
+                    email = email[:-15]
+                    if include_initials:
+                        team += '_' + email.replace('.', '')
+                    else:
+                        team += '_' + email.split(".")[-1]
 
+            if team[0] == '_':
+                team = team[1:]
             outfile.write(team +":\n")
             outfile.write("\tmembers:["+ ', '.join(group))
             outfile.write("]\n")
 
-def member_as_gitid(students_yaml_file: str, group_submissions: dict):
+def member_as_gitid(students_yaml_file: str, group_submissions: dict, include_group: bool, include_member: bool, include_initials: bool):
     with Path(students_yaml_file).open("w") as outfile:
         for submission in group_submissions.values():
-            team = submission[GROUP]
+            if include_group:
+                team = submission[GROUP]
+            else:
+                team = ""
 
             group = []
             for email, git_id in submission[EMAIL2GIT].items():
-                team += '_' + email[:-15].replace('.', '')
                 group.append(git_id)
+                if include_member:
+                    email = email[:-15]
+                    if include_initials:
+                        team += '_' + email.replace('.', '')
+                    else:
+                        team += '_' + email.split(".")[-1]
 
+            if team[0] == '_':
+                team = team[1:]
             outfile.write(team +":\n")
             outfile.write("\tmembers:["+ ', '.join(group))
             outfile.write("]\n")

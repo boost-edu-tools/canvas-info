@@ -25,6 +25,10 @@ KEY_GIT_ID = 'git_id'
 KEY_EMAIL = 'email'
 KEY_CONF_LOCK    = "config_lock"
 KEY_CONF_LOCK_STATE = "config_lock_state"
+KEY_REPO_NAME_OPTION = "repo_name_options"
+KEY_INC_GROUP = "include_group"
+KEY_INC_MEMBER = "include_member"
+KEY_INC_INITIAL = "include_initials"
 
 DISABLED_BT_COLOR = "grey"
 
@@ -42,6 +46,8 @@ group_category_tip = "Name of the Canvas Group Set (see Canvas tab People) that 
 info_file_tip = "Output file with columns: group number, name, Canvas student ID, GitLab student ID, email"
 info_file_tip_ml = "Output path for CSV or Excel file, containing for each student the following columns: group number, last name, Canvas student ID, student ID (used for GitLab login), email"
 yaml_file_tip = "Student info file for Repobee with for each student group: repo name and student IDs"
+member_options_tip = "Options tip"
+yaml_options_tip = "repo option tip"
 
 CSV = "csv"
 YAML = "yaml"
@@ -81,6 +87,10 @@ def set_default_entries():
 
     if get_entry(MEMBER_OPTION) is None:
         set_entry(MEMBER_OPTION, KEY_EMAIL)
+
+    if get_entry(KEY_INC_GROUP) is None and get_entry(KEY_INC_MEMBER) is None and get_entry(KEY_INC_INITIAL) is None:
+        set_entry(KEY_INC_GROUP, True)
+        set_entry(KEY_INC_MEMBER, True)
 
 def resource_path(relative_path = None):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -197,14 +207,14 @@ def Text(text: str, key:str=None, sz: int = 11) -> sg.Text:
 def InputText(key:str, text:str, password:str='', readOnly:bool=True, pad:tuple=DEFAULT_INPUT_PAD, enable_events:bool=True) -> sg.InputText:
     return sg.InputText(k=key, default_text=text, disabled=readOnly, password_char=password, pad=pad, enable_events=enable_events, expand_x=True)
 
-def Checkbox(key, default) -> sg.Checkbox:
-    return sg.Checkbox("", k=key, default=default, enable_events = True, pad=(0, 2))
+def Checkbox(key, default, text:str="", disabled:bool=False) -> sg.Checkbox:
+    return sg.Checkbox(text, k=key, default=default, enable_events = True, pad=(0, 2), disabled=disabled)
 
 def Button(text, key) -> sg.Button:
     return sg.B(text, k=key, pad=((3, 0), 2))
 
-def Radio(text:str, key:str, default_val: bool, size:(int, int)=(10,1)) -> sg.Radio:
-    return sg.Radio(text, MEMBER_OPTION, k=key, default=default_val, s=size, enable_events=True)
+def Radio(text:str, key:str, default_val: bool) -> sg.Radio:
+    return sg.Radio(text, MEMBER_OPTION, k=key, default=default_val, enable_events=True)
 
 def Folder_Button(key, disable) -> sg.Button:
     return sg.B("Browse", k=key, pad=((3, 0), 2))
@@ -286,9 +296,24 @@ def make_window():
                                     help_button('yaml_file_tip', yaml_file_tip)
                                 ],
                                 [
-                                    sg.Text('Member Option', size=22, justification='right'),
-                                    Radio('Email', KEY_EMAIL, KEY_EMAIL == member_option),
-                                    Radio('Year ID', KEY_GIT_ID, KEY_GIT_ID == member_option)
+                                    Frame('Members',
+                                        layout=[
+                                            [
+                                                Radio('Email', KEY_EMAIL, KEY_EMAIL == member_option),
+                                                Radio('Year ID', KEY_GIT_ID, KEY_GIT_ID == member_option),
+                                                help_button('member_options_tip', member_options_tip)
+                                            ]
+                                    ]),
+                                    Frame('Repo Name',
+                                        layout=[
+                                            [
+                                                Checkbox(KEY_INC_GROUP, get_entry(KEY_INC_GROUP), "Include Group Name"),
+                                                Checkbox(KEY_INC_MEMBER, get_entry(KEY_INC_MEMBER), "Include Member Names"),
+                                                Checkbox(KEY_INC_INITIAL, get_entry(KEY_INC_INITIAL), "Include Initials", not get_entry(KEY_INC_MEMBER)),
+                                                help_button('yamloptions_tip', yaml_options_tip)
+                                            ]
+                                        ]
+                                    )
                                 ]
                             ]
                         )
@@ -308,6 +333,6 @@ def make_window():
         ]
     ]
 
-    window = sg.Window('Repobee Canvas', layout, size=(WINDOW_SIZE_X, WINDOW_SIZE_Y), icon=icon, finalize=True)
+    window = sg.Window('Canvas group info', layout, size=(WINDOW_SIZE_X, WINDOW_SIZE_Y), icon=icon, margins=(0, 0), resizable=True, finalize=True)
     progressBar(window[KEY_PRO_BAR], window[KEY_PRO_TEXT])
     return window
