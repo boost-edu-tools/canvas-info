@@ -13,7 +13,7 @@ from ..common                   import inform, warn, fault
 GROUP                           = "group"
 EMAIL2GIT                       = "email2git"
 
-def CreateStudentsiles(
+def CreateStudentsFiles(
     canvas_base_url: str,
     canvas_access_token: str,
     canvas_course_id: int,
