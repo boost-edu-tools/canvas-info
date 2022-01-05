@@ -2,7 +2,8 @@ import PySimpleGUI as sg
 import os
 from urllib.parse                                 import urlparse
 from repobee_canvas.gui                           import *
-from repobee_canvas.command.create_students_files  import CreateStudentsiles
+from repobee_canvas.command.create_students_files import CreateStudentsFiles
+from repobee_canvas.command.verify_course_id      import VerifyCourseID
 
 if __name__ == '__main__':
     set_default_entries()
@@ -88,7 +89,7 @@ if __name__ == '__main__':
             update_column_height(window[KEY_CONFIG_COL], wh, last_screen_height)
             last_screen_height = wh
 
-        elif event == KEY_EXECUTE:
+        elif event in (KEY_EXECUTE, KEY_VERIFY):
             csv = values[CSV]
             xlsx = values[XLSX]
             yaml = values[YAML]
@@ -106,6 +107,12 @@ if __name__ == '__main__':
 
             course_id = values[KEY_COURSE_ID]
             if is_empty(course_id, "Course ID"):
+                continue
+
+            if event == KEY_VERIFY:
+                course_name = VerifyCourseID(urlparse(base_url), access_token, course_id)
+                window[KEY_COURSE_NAME].update(value=course_name)
+                set_entry(KEY_COURSE_NAME, course_name)
                 continue
 
             group_category_name = values[KEY_GROUP_CATEGORY]

@@ -35,10 +35,12 @@ KEY_INC_MEMBER = "include_member"
 KEY_INC_INITIAL = "include_initials"
 KEY_COL_PERCENT = "col_percent"
 KEY_HELP = "Help"
-KEY_EXECUTE = 'Execute'
-KEY_EXIT = 'Exit'
-KEY_CLEAR = 'Clear'
+KEY_EXECUTE = "Execute"
+KEY_EXIT = "Exit"
+KEY_CLEAR = "Clear"
 KEY_CONFIG_COL = "config_column"
+KEY_VERIFY = "Verify"
+KEY_COURSE_NAME = "course_name"
 
 DISABLED_BT_COLOR = "grey"
 
@@ -244,7 +246,7 @@ def Checkbox(key, default, text:str="", disabled:bool=False) -> sg.Checkbox:
     return sg.Checkbox(text, k=key, default=default, enable_events = True, pad=(0, 2), disabled=disabled)
 
 def Button(text, key) -> sg.Button:
-    return sg.B(text, k=key, pad=((3, 0), 2))
+    return sg.B(text, k=key, pad=((3, 3), 2))
 
 def Radio(text:str, key:str, default_val: bool) -> sg.Radio:
     return sg.Radio(text, MEMBER_OPTION, k=key, default=default_val, enable_events=True)
@@ -338,7 +340,14 @@ def make_window():
         layout = [
             [
                 Text(LOCKED, KEY_CONF_LOCK_STATE),
-                Button(UNLOCK, KEY_CONF_LOCK)
+                Button(UNLOCK, KEY_CONF_LOCK),
+                sg.Column(
+                    [
+                        [
+                            Button(KEY_VERIFY, KEY_VERIFY),
+                        ]
+                    ], element_justification="right", expand_x=True, pad=(0,(4,0))
+                )
             ],
             [
                 Text('Group Set'),
@@ -347,7 +356,8 @@ def make_window():
             ],
             [
                 Text('Course ID'),
-                InputText(KEY_COURSE_ID, get_entry(KEY_COURSE_ID)),
+                sg.InputText(k=KEY_COURSE_ID, default_text=get_entry(KEY_COURSE_ID), disabled=True, pad=DEFAULT_INPUT_PAD, size=(5, None)),
+                InputText(KEY_COURSE_NAME, get_entry(KEY_COURSE_NAME)),
                 help_button('course_id_tip', course_id_tip)
             ],
             [
