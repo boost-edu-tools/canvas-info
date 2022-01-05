@@ -143,6 +143,9 @@ if __name__ == '__main__':
 
             CreateStudentsiles(urlparse(base_url), access_token, course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file, get_entry(MEMBER_OPTION), include_group, include_member, include_initials)
 
+        elif event == KEY_HELP:
+            sg.cprint(help_info)
+
         elif event == "token_tip":
             window[event].TooltipObject.showtip()
             sg.cprint(token_tip_ml)

@@ -34,6 +34,7 @@ KEY_INC_GROUP = "include_group"
 KEY_INC_MEMBER = "include_member"
 KEY_INC_INITIAL = "include_initials"
 KEY_COL_PERCENT = "col_percent"
+KEY_HELP = "Help"
 KEY_EXECUTE = 'Execute'
 KEY_EXIT = 'Exit'
 KEY_CLEAR = 'Clear'
@@ -55,6 +56,7 @@ info_file_tip_ml = "Output path for CSV or Excel file, containing for each stude
 yaml_file_tip = "Student info file for Repobee with for each student group: repo name and student IDs"
 member_options_tip = "Options tip"
 yaml_options_tip = "repo option tip"
+help_info     = "help info"
 
 CSV = "csv"
 YAML = "yaml"
@@ -374,6 +376,7 @@ def make_window():
             sg.Column(
                 [
                     [
+                        Button(KEY_HELP, KEY_HELP),
                         Button(KEY_CLEAR, KEY_CLEAR),
                         Button(KEY_EXIT, KEY_EXIT),
                         sg.Spin([i for i in range(20,90,10)], initial_value=COL_PERCENT, k=KEY_COL_PERCENT, enable_events=True, pad=((5,0),None), readonly=True),
