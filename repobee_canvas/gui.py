@@ -24,7 +24,7 @@ KEY_XLSX_INFO_FILE_FOLDER = 'stu_xlsx_info_file_folder'
 KEY_ML = '-ML-'
 KEY_PRO_BAR = 'progressbar'
 KEY_PRO_TEXT = 'progress'
-MEMBER_OPTION = 'member_option'
+KEY_MEMBER_OPTION = 'member_option'
 KEY_GIT_ID = 'git_id'
 KEY_EMAIL = 'email'
 KEY_CONF_LOCK    = "config_lock"
@@ -40,7 +40,11 @@ KEY_EXIT = "Exit"
 KEY_CLEAR = "Clear"
 KEY_CONFIG_COL = "config_column"
 KEY_VERIFY = "Verify"
+KEY_DELETE = "Delete"
 KEY_COURSE_NAME = "course_name"
+KEY_COURSES = "courses"
+KEY_NEW_COURSE_EMPTY = "New Empty Course"
+KEY_NEW_COURSE_EXIST = "Clone Exist Course"
 
 DISABLED_BT_COLOR = "grey"
 
@@ -58,7 +62,7 @@ info_file_tip_ml = "Output path for CSV or Excel file, containing for each stude
 yaml_file_tip = "Student info file for Repobee with for each student group: repo name and student IDs"
 member_options_tip = "Options tip"
 yaml_options_tip = "repo option tip"
-help_info     = "help info"
+help_info = "help info"
 
 CSV = "csv"
 YAML = "yaml"
@@ -74,35 +78,22 @@ UNLOCK = "Unlock"
 LOCKED = "Locked"
 UNLOCKED = "UnLocked"
 
+TEXT_SETTINGS_KEY = [KEY_BASE_URL, KEY_ACCESS_TOKEN, KEY_COURSE_NAME, KEY_GROUP_CATEGORY, KEY_CSV_INFO_FILE, KEY_XLSX_INFO_FILE, KEY_STU_FILE]
+BOOL_SETTINGS_KEY = [CSV, XLSX, YAML, KEY_INC_INITIAL, KEY_INC_GROUP, KEY_INC_MEMBER]
+COURSE_SETTINGS_KEYS = TEXT_SETTINGS_KEY + BOOL_SETTINGS_KEY
+courses_list = []
+course_info = None
+
 if platform == "darwin":
     sg.set_options(font = ("Any", 12))
 
+settings = sg.UserSettings()
+
+course_id = settings[KEY_COURSE_ID]
+last_course_id = ""
 def set_default_entries():
-    if get_entry(KEY_BASE_URL) == None:
-        set_entry(KEY_BASE_URL, "https://canvas.tue.nl/api/v1")
-
-    if is_invalid(get_entry(KEY_STU_FILE)) or is_invalid(get_entry(KEY_STU_FILE_FOLDER)):
-        set_entry(KEY_STU_FILE, resource_path("students.yaml"))
-        set_entry(KEY_STU_FILE_FOLDER, resource_path())
-
-    if is_invalid(get_entry(KEY_XLSX_INFO_FILE)) or is_invalid(get_entry(KEY_CSV_INFO_FILE)):
-        set_entry(KEY_CSV_INFO_FILE, resource_path("students_info.csv"))
-        set_entry(KEY_XLSX_INFO_FILE, resource_path("students_info.xlsx"))
-
-    if get_entry(KEY_GROUP_CATEGORY) is None:
-        set_entry(KEY_GROUP_CATEGORY, "Project Groups")
-
-    if get_entry(KEY_COURSE_ID) is None:
-        set_entry(KEY_COURSE_ID, "00000")
-
-    if get_entry(MEMBER_OPTION) is None:
-        set_entry(MEMBER_OPTION, KEY_EMAIL)
-
-    if get_entry(KEY_INC_GROUP) is None and get_entry(KEY_INC_MEMBER) is None and get_entry(KEY_INC_INITIAL) is None:
-        set_entry(KEY_INC_GROUP, True)
-        set_entry(KEY_INC_MEMBER, True)
-
-    col_percent = get_entry(KEY_COL_PERCENT)
+    col_percent = settings[KEY_COL_PERCENT]
+    updated = False
     if col_percent:
         global COL_PERCENT, INIT_COL_HEIGHT
         COL_PERCENT = col_percent
@@ -111,6 +102,157 @@ def set_default_entries():
             INIT_COL_HEIGHT = MAX_COL_HEIGHT
     else:
         set_entry(KEY_COL_PERCENT, COL_PERCENT)
+        updated = True
+
+    if not settings[KEY_COURSES]:
+        set_entry(KEY_COURSES, [KEY_NEW_COURSE_EMPTY, KEY_NEW_COURSE_EXIST])
+        updated = True
+
+    if updated:
+        settings.load()
+
+class Course():
+    def __init__(self, settings:sg.UserSettings, course_id:str, course:dict=None, create:bool=False):
+        self.settings = settings
+        self.course = {}
+        self.course_id = course_id
+        self.course[KEY_COURSE_ID] = self.course_id
+        if course:
+            for key in COURSE_SETTINGS_KEYS:
+                self.course[key] = course[key]
+            self.course[KEY_MEMBER_OPTION] = course[KEY_MEMBER_OPTION]
+        else:
+            self.init_empty_course()
+
+        if create:
+            self.create_course()
+            self.save()
+
+    def init_empty_course(self):
+        for key in TEXT_SETTINGS_KEY:
+            self.course[key] = ""
+        for key in BOOL_SETTINGS_KEY:
+            self.course[key] = False
+        self.course[KEY_MEMBER_OPTION] = KEY_EMAIL
+
+    def create_course(self):
+        self.course[KEY_BASE_URL] = "https://canvas.tue.nl/api/v1"
+        self.course[KEY_STU_FILE] = resource_path("students.yaml")
+        self.course[KEY_STU_FILE_FOLDER] = resource_path()
+        self.course[KEY_CSV_INFO_FILE] = resource_path("students_info.csv")
+        self.course[KEY_XLSX_INFO_FILE] = resource_path("students_info.xlsx")
+        self.course[KEY_GROUP_CATEGORY] = "Project Groups"
+        self.course[KEY_MEMBER_OPTION] = KEY_EMAIL
+        self.course[KEY_INC_GROUP] = True
+        self.course[KEY_INC_MEMBER] = True
+
+    def save(self):
+        self.settings.set(self.course_id, self.course)
+
+    def get(self):
+        return self.course
+
+    def update(self, key, value):
+        self.course[key] = value
+        self.save()
+
+def set_course_info(key:str, value:str):
+    global course_info
+    if course_info:
+        course_info.update(key, value)
+
+def update_courses(window:sg.Window, event:str, value: str):
+    global last_course_id
+    course_id = value
+
+    if course_id == KEY_NEW_COURSE_EXIST and len(courses_list) == 2:
+        window[KEY_COURSES].update(value=last_course_id)
+        popup("No exisiting course.")
+        return
+
+    if course_id in (KEY_NEW_COURSE_EMPTY, KEY_NEW_COURSE_EXIST):
+        course_id = sg.popup_get_text('New Course ID', default_text="00000", keep_on_top=True)
+        if course_id in courses_list:
+            popup("The course exists")
+            window[KEY_COURSES].update(value=course_id)
+            return
+
+        if is_invalid(course_id):
+            if course_id:
+                popup("Please fill in a valid course ID.")
+
+            course_id = last_course_id
+            window[KEY_COURSES].update(value=course_id)
+            return
+        else:
+            if not course_id.isnumeric():
+                popup("Please fill in a valid course ID.")
+                course_id = last_course_id
+                window[KEY_COURSES].update(value=course_id)
+                return
+
+        if value == KEY_NEW_COURSE_EMPTY:
+            update_course_settings(window, course_id, None, create=True)
+        else:
+            update_course_settings(window, course_id, get_entry(last_course_id), create=True)
+    else:
+        update_course_settings(window, course_id, settings[course_id])
+
+def update_course_ui(window:sg.Window, course_id:str, course:dict):
+    global settings, last_course_id
+    window[KEY_COURSES].update(value=course_id)
+    last_course_id = course_id
+
+    for key in COURSE_SETTINGS_KEYS:
+        window[key].update(value=course[key])
+
+    member_option = course[KEY_MEMBER_OPTION]
+    window[KEY_EMAIL].update(value=(KEY_EMAIL == member_option))
+    window[KEY_GIT_ID].update(value=(KEY_GIT_ID == member_option))
+
+def update_course_settings(window:sg.Window, course_id:str, course:dict, create:bool=False):
+    global settings, course_info, courses_list, last_course_id
+    if create:
+        courses_list.insert(0, course_id)
+        window[KEY_COURSES].update(values=courses_list)
+        settings.set(KEY_COURSES, courses_list)
+        if course: #new Course based on exist one
+            course[KEY_COURSE_ID] = course_id
+            course[KEY_COURSE_NAME] = ""
+            window[KEY_COURSES].update(value=course_id)
+            window[KEY_COURSE_NAME].update(value="")
+            course_info = Course(settings, course_id, course=course, create=True)
+            settings.set(KEY_COURSE_ID, course_id)
+            return
+        else: #new Empty Course
+            course_info = Course(settings, course_id, create=True)
+    else:
+        course_info = Course(settings, course_id, course)
+
+    course = course_info.get()
+    settings.set(KEY_COURSE_ID, course_id)
+    update_course_ui(window, course_id, course)
+
+def delete_course_id(window:sg.Window):
+    global course_id, course, course_info
+    ind = courses_list.index(course_id)
+    courses_list.remove(course_id)
+    settings.set(KEY_COURSES, courses_list)
+    window[KEY_COURSES].update(values=courses_list)
+    sg.user_settings_delete_entry(course_id)
+    ind -= 1
+    if ind >= 0:
+        course_id = courses_list[ind]
+        window[KEY_COURSES].update(value=course_id)
+        course_info = Course(settings, course_id, settings[course_id])
+    else:
+        course_id = None
+        window[KEY_COURSES].update(value="")
+        course_info = Course(settings, "")
+        sg.user_settings_delete_entry(KEY_COURSE_ID)
+
+    course = course_info.get()
+    update_course_ui(window, course_id, course)
 
 def update_col_percent(window, wh, percent):
     element = window[KEY_CONFIG_COL]
@@ -226,7 +368,7 @@ def update_option_state(window: sg.Window, key: str):
         window[key].update(text=LOCK)
         window[key+"_state"].update(value=UNLOCKED)
 
-    for key in (KEY_BASE_URL, KEY_COURSE_ID, KEY_GROUP_CATEGORY):
+    for key in (KEY_BASE_URL, KEY_GROUP_CATEGORY):
         disable_elements(window[key], state)
 
 def update_column_height(element, wh, last_screen_height):
@@ -249,7 +391,7 @@ def Button(text, key) -> sg.Button:
     return sg.B(text, k=key, pad=((3, 3), 2))
 
 def Radio(text:str, key:str, default_val: bool) -> sg.Radio:
-    return sg.Radio(text, MEMBER_OPTION, k=key, default=default_val, enable_events=True)
+    return sg.Radio(text, KEY_MEMBER_OPTION, k=key, default=default_val, enable_events=True)
 
 def Folder_Button(key, disable) -> sg.Button:
     return sg.B("Browse", k=key, pad=((3, 0), 2))
@@ -273,10 +415,23 @@ def update_height(element, height):
 def make_window():
     sg.theme("SystemDefault")
 
-    csv_checked = get_entry(CSV)
-    xlsx_checked = get_entry(XLSX)
-    yaml_checked = get_entry(YAML)
-    member_option = get_entry(MEMBER_OPTION)
+    global courses_list, settings, last_course_id, course_info
+    if settings[KEY_COURSES]:
+        courses_list = settings[KEY_COURSES]
+
+    if course_id in courses_list:
+        course = settings[course_id]
+        last_course_id = course_id
+        course_info = Course(settings, course_id, course=course)
+    else:
+        course_info = Course(settings, "")
+
+    course = course_info.get()
+
+    csv_checked = course[CSV]
+    xlsx_checked = course[XLSX]
+    yaml_checked = course[YAML]
+    member_option = course[KEY_MEMBER_OPTION]
 
     local_config_frame = Frame('Local computer configuration',
         layout = [
@@ -286,14 +441,14 @@ def make_window():
                         [
                             Text('Info File', sz=TEXT_CB_SIZE),
                             Checkbox(CSV, csv_checked),
-                            InputText(KEY_CSV_INFO_FILE, get_entry(KEY_CSV_INFO_FILE), pad=INPUT_CB_PAD, enable_events=False),
+                            InputText(KEY_CSV_INFO_FILE, course[KEY_CSV_INFO_FILE], pad=INPUT_CB_PAD, enable_events=False),
                             Folder_Button(KEY_CSV_INFO_FILE_FOLDER, not csv_checked),
                             help_button('info_file_tip', info_file_tip)
                         ],
                         [
                             Text('', sz=TEXT_CB_SIZE),
                             Checkbox(XLSX, xlsx_checked),
-                            InputText(KEY_XLSX_INFO_FILE, get_entry(KEY_XLSX_INFO_FILE), pad=INPUT_CB_PAD, enable_events=False),
+                            InputText(KEY_XLSX_INFO_FILE, course[KEY_XLSX_INFO_FILE], pad=INPUT_CB_PAD, enable_events=False),
                             Folder_Button(KEY_XLSX_INFO_FILE_FOLDER, not xlsx_checked),
                             help_button('info_file_excel_tip', info_file_tip)
                         ]
@@ -306,7 +461,7 @@ def make_window():
                         [
                             Text('YAML File', sz=TEXT_CB_SIZE),
                             Checkbox(YAML, yaml_checked),
-                            InputText(KEY_STU_FILE, get_entry(KEY_STU_FILE), pad=INPUT_CB_PAD, readOnly=False),
+                            InputText(KEY_STU_FILE, course[KEY_STU_FILE], pad=INPUT_CB_PAD, readOnly=False),
                             Folder_Button(KEY_STU_FILE_FOLDER, not xlsx_checked),
                             help_button('yaml_file_tip', yaml_file_tip)
                         ],
@@ -322,9 +477,9 @@ def make_window():
                             Frame('Repo Name',
                                 layout=[
                                     [
-                                        Checkbox(KEY_INC_GROUP, get_entry(KEY_INC_GROUP), "Include Group Name"),
-                                        Checkbox(KEY_INC_MEMBER, get_entry(KEY_INC_MEMBER), "Include Member Names"),
-                                        Checkbox(KEY_INC_INITIAL, get_entry(KEY_INC_INITIAL), "Include Initials", not get_entry(KEY_INC_MEMBER)),
+                                        Checkbox(KEY_INC_GROUP, course[KEY_INC_GROUP], "Include Group Name"),
+                                        Checkbox(KEY_INC_MEMBER, course[KEY_INC_MEMBER], "Include Member Names"),
+                                        Checkbox(KEY_INC_INITIAL, course[KEY_INC_INITIAL], "Include Initials", disabled=not course[KEY_INC_MEMBER]),
                                         help_button('yamloptions_tip', yaml_options_tip)
                                     ]
                                 ]
@@ -345,29 +500,30 @@ def make_window():
                     [
                         [
                             Button(KEY_VERIFY, KEY_VERIFY),
+                            Button(KEY_DELETE, KEY_DELETE),
                         ]
                     ], element_justification="right", expand_x=True, pad=(0,(4,0))
                 )
             ],
             [
                 Text('Group Set'),
-                InputText(KEY_GROUP_CATEGORY, get_entry(KEY_GROUP_CATEGORY)),
+                InputText(KEY_GROUP_CATEGORY, course[KEY_GROUP_CATEGORY]),
                 help_button('group_category_tip', group_category_tip)
             ],
             [
                 Text('Course ID'),
-                sg.InputText(k=KEY_COURSE_ID, default_text=get_entry(KEY_COURSE_ID), disabled=True, pad=DEFAULT_INPUT_PAD, size=(5, None)),
-                InputText(KEY_COURSE_NAME, get_entry(KEY_COURSE_NAME)),
+                sg.Combo(courses_list, k=KEY_COURSES, default_value=course[KEY_COURSE_ID], pad=DEFAULT_INPUT_PAD, size=(15, None), enable_events=True, readonly=True),
+                InputText(KEY_COURSE_NAME, course[KEY_COURSE_NAME]),
                 help_button('course_id_tip', course_id_tip)
             ],
             [
                 Text('Base URL'),
-                InputText(KEY_BASE_URL, get_entry(KEY_BASE_URL)),
+                InputText(KEY_BASE_URL, course[KEY_BASE_URL]),
                 help_button('base_url_tip', base_url_tip)
             ],
             [
                 Text('Access Token'),
-                InputText(KEY_ACCESS_TOKEN, get_entry(KEY_ACCESS_TOKEN), password='*', enable_events=False),
+                InputText(KEY_ACCESS_TOKEN, course[KEY_ACCESS_TOKEN], password='*', enable_events=False),
                 Button("Edit", 'token_bt'),
                 help_button('token_tip', token_tip)
             ]
