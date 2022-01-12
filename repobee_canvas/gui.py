@@ -44,7 +44,7 @@ KEY_DELETE = "Delete"
 KEY_COURSE_NAME = "course_name"
 KEY_COURSES = "courses"
 KEY_NEW_COURSE_EMPTY = "New Empty Course"
-KEY_NEW_COURSE_EXIST = "Clone Exist Course"
+KEY_NEW_COURSE_EXIST = "Clone Existing Course"
 
 DISABLED_BT_COLOR = "grey"
 
@@ -512,7 +512,7 @@ def make_window():
             ],
             [
                 Text('Course ID'),
-                sg.Combo(courses_list, k=KEY_COURSES, default_value=course[KEY_COURSE_ID], pad=DEFAULT_INPUT_PAD, size=(15, None), enable_events=True, readonly=True),
+                sg.Combo(courses_list, k=KEY_COURSES, default_value=course[KEY_COURSE_ID], pad=DEFAULT_INPUT_PAD, size=(17, None), enable_events=True, readonly=True),
                 InputText(KEY_COURSE_NAME, course[KEY_COURSE_NAME]),
                 help_button('course_id_tip', course_id_tip)
             ],
