@@ -505,8 +505,8 @@ def make_window():
                             help_button('course_id_tip', course_id_tip)
                         ],
                         [
-                            Button("Rename Course ID", KEY_RENAME_COURSE),
                             Button("Clone Course", KEY_CLONE_COURSE),
+                            Button("Rename Course ID", KEY_RENAME_COURSE)
                         ]
                     ]
                 )
