@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import os
 from urllib.parse                                 import urlparse
 from repobee_canvas.gui                           import *
+from repobee_canvas                               import gui
 from repobee_canvas.command.create_students_files import CreateStudentsFiles
 from repobee_canvas.command.verify_course_id      import VerifyCourseID
 
@@ -10,6 +11,8 @@ if __name__ == '__main__':
     window = make_window()
     last_screen_height = window.Size[1]
 
+    disable_by_course_id(window, gui.course_id)
+
     while True:
         event, values = window.read()
 
@@ -17,7 +20,7 @@ if __name__ == '__main__':
             break
 
         elif event == 'token_bt':
-            text = sg.popup_get_text('Access Token', default_text=get_entry(KEY_ACCESS_TOKEN), size=(80, 1))
+            text = sg.popup_get_text('Access Token', default_text=window[KEY_ACCESS_TOKEN].DefaultText, size=(80, 1))
             if text is not None:
                 window[KEY_ACCESS_TOKEN].update(value=text)
                 set_course_info(KEY_ACCESS_TOKEN, text)
@@ -63,8 +66,21 @@ if __name__ == '__main__':
         elif event == KEY_COL_PERCENT:
             update_col_percent(window, last_screen_height, values[event])
 
+        elif event == KEY_CLONE_COURSE:
+            enable_all_buttons(window)
+            course_id = sg.popup_get_text('New Course ID', default_text="00000", keep_on_top=True)
+            if valid_course_id(window, course_id):
+                update_course_settings(window, course_id, get_entry(gui.course_id), MODE_CLONE)
+
+        elif event == KEY_RENAME_COURSE:
+            course_id = sg.popup_get_text('New Course ID', default_text=gui.course_id, keep_on_top=True)
+            if valid_course_id(window, course_id):
+                update_course_settings(window, course_id, get_entry(gui.course_id), MODE_RENAME)
+
         elif event == KEY_COURSES:
-            update_courses(window, event, values[event])
+            course_id = values[event].split(" ")[1]
+            update_course_settings(window, course_id, settings[course_id], MODE_PARSE)
+            disable_by_course_id(window, course_id)
 
         elif event == "Conf":
             wh = window.Size[1]
@@ -74,7 +90,12 @@ if __name__ == '__main__':
             last_screen_height = wh
 
         elif event == KEY_DELETE:
-            delete_course_id(window)
+            if "00000" == gui.course_id:
+                popup("Cannot delete Course ID 00000. It is a template.")
+                continue
+            res = sg.popup_ok_cancel('Are you sure: this will remove the course ' + window[KEY_COURSES].DefaultValue + 'ID: Name: from the Canvas Info app?', keep_on_top=True)
+            if res == "OK":
+                delete_course_id(window)
 
         elif event in (KEY_EXECUTE, KEY_VERIFY):
             access_token = values[KEY_ACCESS_TOKEN]
@@ -85,15 +106,19 @@ if __name__ == '__main__':
             if is_empty(base_url, "Base URL"):
                 continue
 
-            course_id = window[KEY_COURSES].DefaultValue
-            if is_empty(course_id, "Course ID"):
-                continue
-
             if event == KEY_VERIFY:
+                course_id = window[KEY_COURSES].DefaultValue
+                courses_list = window[KEY_COURSES].Values
+                ind = courses_list.index(course_id)
                 sg.cprint("Verifying...")
-                course_name = VerifyCourseID(urlparse(base_url), access_token, course_id)
-                window[KEY_COURSE_NAME].update(value=course_name)
-                set_course_info(KEY_COURSE_NAME, course_name)
+                course_name = VerifyCourseID(urlparse(base_url), access_token, gui.course_id)
+                if course_name:
+                    set_course_info(KEY_COURSE_NAME, course_name)
+                    course_title = gui.course_info.get_course_title()
+                    courses_list[ind] = course_title
+                    window[KEY_COURSES].update(values=courses_list)
+                    window[KEY_COURSES].update(value=course_title)
+                    settings.set(KEY_COURSES, courses_list)
                 sg.cprint("Verifying done.")
                 continue
 
@@ -137,8 +162,7 @@ if __name__ == '__main__':
                 popup("Please select at least 1 option.")
                 continue
 
-            print (values[KEY_MEMBER_OPTION])
-            # CreateStudentsiles(urlparse(base_url), access_token, course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file, values(KEY_MEMBER_OPTION), include_group, include_member, include_initials)
+            CreateStudentsFiles(urlparse(base_url), access_token, course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file, gui.course_info.course[KEY_MEMBER_OPTION], include_group, include_member, include_initials)
 
         elif event == KEY_HELP:
             sg.cprint(help_info)
