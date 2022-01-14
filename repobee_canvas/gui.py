@@ -109,7 +109,6 @@ def set_default_entries():
         settings.set(KEY_COL_PERCENT, COL_PERCENT)
         updated = True
 
-    print (settings[KEY_COURSES])
     if not course_id:
         create_template_course()
         updated = True
@@ -234,7 +233,6 @@ def update_course_settings(window:sg.Window, id:str, course:dict, mode:int):
         courses_list.append(course_info.get_course_title())
         courses_list.sort(reverse=True)
         update_courses_list(window, courses_list)
-    print (courses_list)
 
     settings.set(KEY_COURSE_ID, course_id)
     update_course_ui(window, course_id, course_info.get())
