@@ -250,6 +250,7 @@ def delete_course_id(window:sg.Window):
     sg.user_settings_delete_entry(course_id)
     if len(courses_list) == 0:
         create_template_course()
+        courses_list = settings[KEY_COURSES]
     update_courses_list(window, courses_list)
     course_id = courses_list[ind].split(" ")[1]
     settings.set(KEY_COURSE_ID, course_id)
