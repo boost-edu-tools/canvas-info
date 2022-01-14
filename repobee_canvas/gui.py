@@ -197,6 +197,10 @@ def valid_course_id(course_list: list, course_id:str)->bool:
             popup("The course exists")
             return False
 
+    if course_id == "00000":
+        popup("Course ID 00000 cannot be added.")
+        return False
+
     if is_invalid(course_id):
         if course_id:
             popup("Please fill in a valid course ID.")
