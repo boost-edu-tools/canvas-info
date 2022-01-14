@@ -78,6 +78,7 @@ LOCK = "Lock"
 UNLOCK = "Unlock"
 LOCKED = "Locked"
 UNLOCKED = "UnLocked"
+DEFAULT_COURSE_ID = "00001"
 
 MODE_PARSE = 0
 MODE_RENAME = 1
@@ -118,7 +119,7 @@ def set_default_entries():
 
 def create_template_course():
     global course_id, course_info
-    course_id = "00000"
+    course_id = DEFAULT_COURSE_ID
     course_info = Course(course_id, mode=MODE_CREATE)
     settings.set(KEY_COURSE_ID, course_id)
     settings.set(KEY_COURSES, [course_info.get_course_title()])

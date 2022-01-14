@@ -59,7 +59,7 @@ if __name__ == '__main__':
             update_col_percent(window, last_screen_height, values[event])
 
         elif event == KEY_CLONE_COURSE:
-            course_id = get_input_course_id(window[KEY_COURSES].Values, "00000")
+            course_id = get_input_course_id(window[KEY_COURSES].Values, DEFAULT_COURSE_ID)
             if course_id:
                 update_course_settings(window, course_id, get_entry(gui.course_id), MODE_CLONE)
 
@@ -69,7 +69,7 @@ if __name__ == '__main__':
                 update_course_settings(window, course_id, get_entry(gui.course_id), MODE_RENAME)
 
         elif event == KEY_NEW_COURSE:
-            course_id = course_id = get_input_course_id(window[KEY_COURSES].Values, "00000")
+            course_id = course_id = get_input_course_id(window[KEY_COURSES].Values, DEFAULT_COURSE_ID)
             if course_id:
                 update_course_settings(window, course_id, None, MODE_CREATE)
 
