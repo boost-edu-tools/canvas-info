@@ -8,7 +8,7 @@ WINDOW_SIZE_X = 750
 WINDOW_SIZE_Y = 770
 MAX_COL_HEIGHT = 430
 WINDOW_HEIGHT_CORR = 45     # height correction: height of command buttons + title bar
-COL_PERCENT = 40
+COL_PERCENT = 60
 INIT_COL_HEIGHT = int((WINDOW_SIZE_Y - WINDOW_HEIGHT_CORR) * COL_PERCENT / 100)
 
 KEY_ACCESS_TOKEN = 'canvas_access_token'
@@ -45,6 +45,8 @@ KEY_COURSE_NAME = "course_name"
 KEY_COURSES = "courses"
 KEY_RENAME_COURSE = "rename_course"
 KEY_CLONE_COURSE = "clone_course"
+KEY_NEW_COURSE = "new_course"
+KEY_END = "end"
 
 DEFAULT_INPUT_PAD = ((3, 5), 2)
 TEXT_CB_SIZE = 8
@@ -81,13 +83,13 @@ MODE_RENAME = 1
 MODE_CLONE = 2
 MODE_CREATE = 3
 
-buttons = [KEY_CONF_LOCK, KEY_VERIFY, "token_bt", KEY_RENAME_COURSE, KEY_EXECUTE, KEY_CSV_INFO_FILE_FOLDER, KEY_XLSX_INFO_FILE_FOLDER, KEY_STU_FILE_FOLDER]
+buttons = [KEY_CONF_LOCK, KEY_VERIFY, "token_bt", KEY_RENAME_COURSE, KEY_EXECUTE, KEY_CSV_INFO_FILE_FOLDER, KEY_XLSX_INFO_FILE_FOLDER, KEY_STU_FILE_FOLDER, KEY_CLONE_COURSE, KEY_NEW_COURSE, KEY_HELP, KEY_EXIT, KEY_CLEAR]
 TEXT_SETTINGS_KEY = [KEY_BASE_URL, KEY_ACCESS_TOKEN, KEY_GROUP_CATEGORY, KEY_CSV_INFO_FILE, KEY_XLSX_INFO_FILE, KEY_STU_FILE]
 BOOL_SETTINGS_KEY = [CSV, XLSX, YAML, KEY_INC_INITIAL, KEY_INC_GROUP, KEY_INC_MEMBER]
 COURSE_SETTINGS_KEYS = TEXT_SETTINGS_KEY + BOOL_SETTINGS_KEY
 courses_list = []
 course_info = None
-course_title = "ID: {0} Name: {1}"
+course_title = "ID: {0}  Name: {1}"
 
 if platform == "darwin":
     sg.set_options(font = ("Any", 12))
@@ -107,16 +109,20 @@ def set_default_entries():
         settings.set(KEY_COL_PERCENT, COL_PERCENT)
         updated = True
 
-    global course_id, course_info
     if not course_id:
-        course_id = "00000"
-        course_info = Course(course_id, mode=MODE_CREATE)
-        settings.set(KEY_COURSE_ID, course_id)
-        settings.set(KEY_COURSES, [course_info.get_course_title()])
+        create_template_course()
         updated = True
 
     if updated:
         settings.load()
+
+def create_template_course():
+    global course_id, course_info, courses_list
+    course_id = "00000"
+    course_info = Course(course_id, mode=MODE_CREATE)
+    settings.set(KEY_COURSE_ID, course_id)
+    courses_list = [course_info.get_course_title()]
+    settings.set(KEY_COURSES, courses_list)
 
 class Course():
     def __init__(self, course_id:str, course:dict=None, mode:int=MODE_PARSE):
@@ -124,7 +130,7 @@ class Course():
         self.course_id = course_id
         self.course[KEY_COURSE_ID] = self.course_id
         if mode == MODE_CREATE:
-            self.create_template_course()
+            self.create_course()
             self.save()
         else:
             for key in COURSE_SETTINGS_KEYS:
@@ -137,14 +143,14 @@ class Course():
             else:
                 self.course[KEY_COURSE_NAME] = course[KEY_COURSE_NAME]
 
-    def create_template_course(self):
+    def create_course(self):
         home = str(Path.home())
         for key in TEXT_SETTINGS_KEY:
             self.course[key] = ""
         for key in BOOL_SETTINGS_KEY:
             self.course[key] = False
         self.course[KEY_MEMBER_OPTION] = KEY_EMAIL
-        self.course[KEY_COURSE_NAME] = "Course template for Cloning only, cannot be edited or deleted."
+        self.course[KEY_COURSE_NAME] = "Unverified"
         self.course[KEY_BASE_URL] = "https://canvas.tue.nl/api/v1"
         self.course[KEY_STU_FILE] = home + "/students.yaml"
         self.course[KEY_STU_FILE_FOLDER] = home
@@ -172,10 +178,15 @@ def set_course_info(key:str, value:str):
     if course_info:
         course_info.update(key, value)
 
-def valid_course_id(window:sg.Window, course_id:str)->bool:
-    if not course_id:
-        return False
+def get_inpit_course_id(default_course:str)->str:
+    course_id = sg.popup_get_text('New Course ID', default_text=default_course, keep_on_top=True)
+    while course_id:
+        if valid_course_id(course_id):
+            return course_id
+        course_id = sg.popup_get_text('New Course ID', default_text=course_id, keep_on_top=True)
+    return None
 
+def valid_course_id(course_id:str)->bool:
     for course_title in courses_list:
         if course_id in course_title:
             popup("The course exists")
@@ -207,23 +218,22 @@ def update_course_settings(window:sg.Window, id:str, course:dict, mode:int):
         courses_list.remove(course_info.get_course_title())
         sg.user_settings_delete_entry(course_id)
     course_id = id
-    if mode in (MODE_RENAME, MODE_CLONE):
+    course_info = Course(course_id, course=course, mode=mode)
+    if mode in (MODE_RENAME, MODE_CLONE, MODE_CREATE):
+        course = course_info.get()
         course[KEY_COURSE_ID] = course_id
         settings.set(KEY_COURSE_ID, course_id)
-        course_info = Course(course_id, course=course, mode=mode)
         window[KEY_COURSES].update(value=course_info.get_course_title())
         #update course_list
         courses_list.append(course_info.get_course_title())
         courses_list.sort(reverse=True)
         update_courses_list(window, courses_list)
-    else: #select a course
-        course_info = Course(course_id, course)
 
     settings.set(KEY_COURSE_ID, course_id)
     update_course_ui(window, course_id, course_info.get())
 
 def delete_course_id(window:sg.Window):
-    global course_id, course_info
+    global course_id, course_info, courses_list
     course_title = course_info.get_course_title()
     ind = courses_list.index(course_title)
     ind -= 1
@@ -231,13 +241,14 @@ def delete_course_id(window:sg.Window):
         ind = 0
     courses_list.remove(course_title)
     sg.user_settings_delete_entry(course_id)
+    if len(courses_list) == 0:
+        create_template_course()
     update_courses_list(window, courses_list)
     course_id = courses_list[ind].split(" ")[1]
     settings.set(KEY_COURSE_ID, course_id)
     course_info = Course(course_id, settings[course_id])
     window[KEY_COURSES].update(set_to_index=ind)
     update_course_ui(window, course_id, course_info.get())
-    disable_by_course_id(window, course_id)
 
 def update_courses_list(window:sg.Window, courses_list:list):
     window[KEY_COURSES].update(values=courses_list)
@@ -329,6 +340,7 @@ def is_path_invalid(path: str, file_type: str):
     return True
 
 def help_button(key: str, tooltip: str) -> sg.Button:
+    buttons.append(key)
     return sg.Button("?", key=key, tooltip = tooltip, pad=(3, 0))
 
 def update_progress(pos: int, length: int):
@@ -336,12 +348,6 @@ def update_progress(pos: int, length: int):
     percent = int(100 * pos / length)
     progress_bar.UpdateBar(percent)
     progress_text.update("{}%".format(percent))
-
-def disable_by_course_id(window:sg.Window, course_id:str):
-    if course_id == "00000":
-        disable_all_buttons(window)
-    else:
-        enable_all_buttons(window)
 
 def disable_elements(ele: sg.Element, disable: bool):
     ele.update(disabled=disable)
@@ -505,8 +511,9 @@ def make_window():
                             help_button('course_id_tip', course_id_tip)
                         ],
                         [
+                            Button("Rename Course ID", KEY_RENAME_COURSE),
                             Button("Clone Course", KEY_CLONE_COURSE),
-                            Button("Rename Course ID", KEY_RENAME_COURSE)
+                            Button("New Course", KEY_NEW_COURSE)
                         ]
                     ]
                 )

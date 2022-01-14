@@ -11,8 +11,6 @@ if __name__ == '__main__':
     window = make_window()
     last_screen_height = window.Size[1]
 
-    disable_by_course_id(window, gui.course_id)
-
     while True:
         event, values = window.read()
 
@@ -67,20 +65,23 @@ if __name__ == '__main__':
             update_col_percent(window, last_screen_height, values[event])
 
         elif event == KEY_CLONE_COURSE:
-            enable_all_buttons(window)
-            course_id = sg.popup_get_text('New Course ID', default_text="00000", keep_on_top=True)
-            if valid_course_id(window, course_id):
+            course_id = get_inpit_course_id("00000")
+            if course_id:
                 update_course_settings(window, course_id, get_entry(gui.course_id), MODE_CLONE)
 
         elif event == KEY_RENAME_COURSE:
-            course_id = sg.popup_get_text('New Course ID', default_text=gui.course_id, keep_on_top=True)
-            if valid_course_id(window, course_id):
+            course_id = get_inpit_course_id(gui.course_id)
+            if course_id:
                 update_course_settings(window, course_id, get_entry(gui.course_id), MODE_RENAME)
+
+        elif event == KEY_NEW_COURSE:
+            course_id = course_id = get_inpit_course_id("00000")
+            if course_id:
+                update_course_settings(window, course_id, None, MODE_CREATE)
 
         elif event == KEY_COURSES:
             course_id = values[event].split(" ")[1]
             update_course_settings(window, course_id, settings[course_id], MODE_PARSE)
-            disable_by_course_id(window, course_id)
 
         elif event == "Conf":
             wh = window.Size[1]
@@ -90,9 +91,6 @@ if __name__ == '__main__':
             last_screen_height = wh
 
         elif event == KEY_DELETE:
-            if "00000" == gui.course_id:
-                popup("Cannot delete Course ID 00000. It is a template.")
-                continue
             res = sg.popup_ok_cancel('Are you sure: this will remove the course ' + window[KEY_COURSES].DefaultValue + 'ID: Name: from the Canvas Info app?', keep_on_top=True)
             if res == "OK":
                 delete_course_id(window)
@@ -162,7 +160,14 @@ if __name__ == '__main__':
                 popup("Please select at least 1 option.")
                 continue
 
-            CreateStudentsFiles(urlparse(base_url), access_token, course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file, gui.course_info.course[KEY_MEMBER_OPTION], include_group, include_member, include_initials)
+
+            disable_all_buttons(window)
+            window.perform_long_operation(
+                lambda:CreateStudentsFiles(urlparse(base_url), access_token, course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file, gui.course_info.course[KEY_MEMBER_OPTION], include_group, include_member, include_initials),
+                KEY_END)
+
+        elif event == KEY_END:
+            enable_all_buttons(window)
 
         elif event == KEY_HELP:
             sg.cprint(help_info)
