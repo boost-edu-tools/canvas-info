@@ -14,6 +14,8 @@ def VerifyCourseByID(
     CanvasAPI().setup(canvas_base_url, canvas_access_token)
 
     course_name = getCourseName(canvas_course_id)
+    if not course_name:
+        return None, None
     group_set = getGroupCategories(canvas_course_id)
     return course_name, group_set
 

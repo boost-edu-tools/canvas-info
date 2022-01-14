@@ -118,7 +118,8 @@ if __name__ == '__main__':
                     window[KEY_GROUP_CATEGORY].update(values=group_set)
                     set_update_course_info(window, KEY_GROUP_CATEGORY, group_set[0])
 
-                sg.cprint("All settings successfully verified")
+                if course_name and group_set:
+                    sg.cprint("All settings successfully verified")
                 continue
 
             csv = values[CSV]
