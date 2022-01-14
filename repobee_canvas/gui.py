@@ -15,6 +15,7 @@ KEY_ACCESS_TOKEN = 'canvas_access_token'
 KEY_BASE_URL = 'canvas_base_url'
 KEY_COURSE_ID = 'canvas_course_id'
 KEY_GROUP_CATEGORY = 'group_category_name'
+KEY_GROUP_CATEGORIES = 'group_categories'
 KEY_STU_FILE = 'students_file'
 KEY_CSV_INFO_FILE = 'stu_csv_info_file'
 KEY_XLSX_INFO_FILE = 'stu_xlsx_info_file'
@@ -87,7 +88,6 @@ buttons = [KEY_CONF_LOCK, KEY_VERIFY, "token_bt", KEY_RENAME_COURSE, KEY_EXECUTE
 TEXT_SETTINGS_KEY = [KEY_BASE_URL, KEY_ACCESS_TOKEN, KEY_GROUP_CATEGORY, KEY_CSV_INFO_FILE, KEY_XLSX_INFO_FILE, KEY_STU_FILE]
 BOOL_SETTINGS_KEY = [CSV, XLSX, YAML, KEY_INC_INITIAL, KEY_INC_GROUP, KEY_INC_MEMBER]
 COURSE_SETTINGS_KEYS = TEXT_SETTINGS_KEY + BOOL_SETTINGS_KEY
-courses_list = []
 course_info = None
 course_title = "ID: {0}  Name: {1}"
 
@@ -109,6 +109,7 @@ def set_default_entries():
         settings.set(KEY_COL_PERCENT, COL_PERCENT)
         updated = True
 
+    print (settings[KEY_COURSES])
     if not course_id:
         create_template_course()
         updated = True
@@ -117,12 +118,11 @@ def set_default_entries():
         settings.load()
 
 def create_template_course():
-    global course_id, course_info, courses_list
+    global course_id, course_info
     course_id = "00000"
     course_info = Course(course_id, mode=MODE_CREATE)
     settings.set(KEY_COURSE_ID, course_id)
-    courses_list = [course_info.get_course_title()]
-    settings.set(KEY_COURSES, courses_list)
+    settings.set(KEY_COURSES, [course_info.get_course_title()])
 
 class Course():
     def __init__(self, course_id:str, course:dict=None, mode:int=MODE_PARSE):
@@ -136,6 +136,7 @@ class Course():
             for key in COURSE_SETTINGS_KEYS:
                 self.course[key] = course[key]
             self.course[KEY_MEMBER_OPTION] = course[KEY_MEMBER_OPTION]
+            self.course[KEY_GROUP_CATEGORIES] = course[KEY_GROUP_CATEGORIES]
 
             if mode != MODE_PARSE:
                 self.course[KEY_COURSE_NAME] = "Unverified"
@@ -156,9 +157,9 @@ class Course():
         self.course[KEY_STU_FILE_FOLDER] = home
         self.course[KEY_CSV_INFO_FILE] = home + "/students_info.csv"
         self.course[KEY_XLSX_INFO_FILE] = home + "/students_info.xlsx"
-        self.course[KEY_GROUP_CATEGORY] = "Project Groups"
         self.course[KEY_INC_GROUP] = True
         self.course[KEY_INC_MEMBER] = True
+        self.course[KEY_GROUP_CATEGORIES] = []
 
     def get_course_title(self):
         return course_title.format(self.course_id, self.course[KEY_COURSE_NAME])
@@ -173,21 +174,25 @@ class Course():
         self.course[key] = value
         self.save()
 
+def set_update_course_info(window:sg.Window, key:str, value:str):
+    set_course_info(key, value)
+    window[key].update(value=value)
+
 def set_course_info(key:str, value:str):
     global course_info
     if course_info:
         course_info.update(key, value)
 
-def get_inpit_course_id(default_course:str)->str:
+def get_input_course_id(course_list: list, default_course:str)->str:
     course_id = sg.popup_get_text('New Course ID', default_text=default_course, keep_on_top=True)
     while course_id:
-        if valid_course_id(course_id):
+        if valid_course_id(course_list, course_id):
             return course_id
         course_id = sg.popup_get_text('New Course ID', default_text=course_id, keep_on_top=True)
     return None
 
-def valid_course_id(course_id:str)->bool:
-    for course_title in courses_list:
+def valid_course_id(course_list: list, course_id:str)->bool:
+    for course_title in course_list:
         if course_id in course_title:
             popup("The course exists")
             return False
@@ -213,7 +218,8 @@ def update_course_ui(window:sg.Window, course_id:str, course:dict):
     window[KEY_GIT_ID].update(value=(KEY_GIT_ID == member_option))
 
 def update_course_settings(window:sg.Window, id:str, course:dict, mode:int):
-    global course_info, courses_list, course_id
+    global course_info, course_id
+    courses_list = window[KEY_COURSES].Values
     if mode == MODE_RENAME:
         courses_list.remove(course_info.get_course_title())
         sg.user_settings_delete_entry(course_id)
@@ -228,13 +234,15 @@ def update_course_settings(window:sg.Window, id:str, course:dict, mode:int):
         courses_list.append(course_info.get_course_title())
         courses_list.sort(reverse=True)
         update_courses_list(window, courses_list)
+    print (courses_list)
 
     settings.set(KEY_COURSE_ID, course_id)
     update_course_ui(window, course_id, course_info.get())
 
 def delete_course_id(window:sg.Window):
-    global course_id, course_info, courses_list
-    course_title = course_info.get_course_title()
+    global course_id, course_info
+    course_title = window[KEY_COURSES].DefaultValue
+    courses_list = window[KEY_COURSES].Values
     ind = courses_list.index(course_title)
     ind -= 1
     if ind < 0:
@@ -397,6 +405,9 @@ def Radio(text:str, key:str, default_val: bool) -> sg.Radio:
 def Folder_Button(key, disable) -> sg.Button:
     return sg.B("Browse", k=key, pad=((3, 0), 2))
 
+def Combo(values:list, key:str, default:str) -> sg.Combo:
+    return sg.Combo(values, k=key, default_value=default, pad=DEFAULT_INPUT_PAD, enable_events=True, readonly=True, expand_x=True)
+
 def Frame(title:str, layout:list, pad:(int, int)=None) -> sg.Frame:
     return sg.Frame(layout=layout, title=title, relief=sg.RELIEF_SUNKEN, expand_x=True, pad=pad)
 
@@ -416,8 +427,7 @@ def update_height(element, height):
 def make_window():
     sg.theme("SystemDefault")
 
-    global course_info, courses_list
-    courses_list = settings[KEY_COURSES]
+    global course_info
     course_info = Course(course_id, course=settings[course_id])
     course = course_info.get()
     csv_checked = course[CSV]
@@ -499,7 +509,7 @@ def make_window():
             ],
             [
                 Text('Group Set'),
-                InputText(KEY_GROUP_CATEGORY, course[KEY_GROUP_CATEGORY]),
+                Combo(course[KEY_GROUP_CATEGORIES], KEY_GROUP_CATEGORY, default=course[KEY_GROUP_CATEGORY]),
                 help_button('group_category_tip', group_category_tip)
             ],
             [
@@ -507,7 +517,7 @@ def make_window():
                     layout = [
                         [
                             sg.Text('Course ID', pad=(0, 2), size=10),
-                            sg.Combo(courses_list, k=KEY_COURSES, default_value=course_info.get_course_title(), pad=DEFAULT_INPUT_PAD, enable_events=True, readonly=True, expand_x=True),
+                            Combo(settings[KEY_COURSES], KEY_COURSES, default=course_info.get_course_title()),
                             help_button('course_id_tip', course_id_tip)
                         ],
                         [

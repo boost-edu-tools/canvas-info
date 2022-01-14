@@ -4,7 +4,7 @@ from urllib.parse                                 import urlparse
 from repobee_canvas.gui                           import *
 from repobee_canvas                               import gui
 from repobee_canvas.command.create_students_files import CreateStudentsFiles
-from repobee_canvas.command.verify_course_id      import VerifyCourseID
+from repobee_canvas.command.verify_course_id      import VerifyCourseByID
 
 if __name__ == '__main__':
     set_default_entries()
@@ -20,17 +20,14 @@ if __name__ == '__main__':
         elif event == 'token_bt':
             text = sg.popup_get_text('Access Token', default_text=window[KEY_ACCESS_TOKEN].DefaultText, size=(80, 1))
             if text is not None:
-                window[KEY_ACCESS_TOKEN].update(value=text)
-                set_course_info(KEY_ACCESS_TOKEN, text)
+                set_update_course_info(window, KEY_ACCESS_TOKEN, text)
 
         elif event == KEY_CSV_INFO_FILE_FOLDER:
             file_path = update_browse(values[KEY_CSV_INFO_FILE], True, ((TYPE_CSV),)) #, CSV)
             if file_path != "":
-                window[KEY_CSV_INFO_FILE].update(file_path)
-                set_course_info(KEY_CSV_INFO_FILE, file_path)
+                set_update_course_info(window, KEY_CSV_INFO_FILE, file_path)
                 file_path = os.path.splitext(file_path)[0]
-                window[KEY_XLSX_INFO_FILE].update(file_path+".xlsx")
-                set_course_info(KEY_XLSX_INFO_FILE, file_path+".xlsx")
+                set_update_course_info(window, KEY_XLSX_INFO_FILE, file_path+".xlsx")
 
         elif event in (CSV, XLSX, YAML, KEY_BASE_URL, KEY_GROUP_CATEGORY, KEY_STU_FILE):
             set_course_info(event, values[event])
@@ -38,17 +35,14 @@ if __name__ == '__main__':
         elif event == KEY_XLSX_INFO_FILE_FOLDER:
             file_path = update_browse(values[KEY_XLSX_INFO_FILE], True, ((TYPE_XLSX),)) #, XLSX)
             if file_path != "":
-                window[KEY_XLSX_INFO_FILE].update(file_path)
-                set_course_info(KEY_XLSX_INFO_FILE, file_path)
+                set_update_course_info(window, KEY_XLSX_INFO_FILE, file_path)
                 file_path = os.path.splitext(file_path)[0]
-                window[KEY_CSV_INFO_FILE].update(file_path+".csv")
-                set_course_info(KEY_CSV_INFO_FILE, file_path+".csv")
+                set_update_course_info(window, KEY_CSV_INFO_FILE, file_path+".csv")
 
         elif event == KEY_STU_FILE_FOLDER:
             file_path = update_browse(values[KEY_STU_FILE], True, (TYPE_YAML,)) #, YAML)
             if file_path != "":
-                window[KEY_STU_FILE].update(file_path)
-                set_course_info(KEY_STU_FILE, file_path)
+                set_update_course_info(window, KEY_STU_FILE, file_path)
 
         elif event in [KEY_GIT_ID, KEY_EMAIL]:
             set_course_info(KEY_MEMBER_OPTION, event)
@@ -65,23 +59,26 @@ if __name__ == '__main__':
             update_col_percent(window, last_screen_height, values[event])
 
         elif event == KEY_CLONE_COURSE:
-            course_id = get_inpit_course_id("00000")
+            course_id = get_input_course_id(window[KEY_COURSES].Values, "00000")
             if course_id:
                 update_course_settings(window, course_id, get_entry(gui.course_id), MODE_CLONE)
 
         elif event == KEY_RENAME_COURSE:
-            course_id = get_inpit_course_id(gui.course_id)
+            course_id = get_input_course_id(window[KEY_COURSES].Values, gui.course_id)
             if course_id:
                 update_course_settings(window, course_id, get_entry(gui.course_id), MODE_RENAME)
 
         elif event == KEY_NEW_COURSE:
-            course_id = course_id = get_inpit_course_id("00000")
+            course_id = course_id = get_input_course_id(window[KEY_COURSES].Values, "00000")
             if course_id:
                 update_course_settings(window, course_id, None, MODE_CREATE)
 
         elif event == KEY_COURSES:
             course_id = values[event].split(" ")[1]
             update_course_settings(window, course_id, settings[course_id], MODE_PARSE)
+
+        elif event == KEY_GROUP_CATEGORIES:
+            set_update_course_info(window, KEY_GROUP_CATEGORY, values[event])
 
         elif event == "Conf":
             wh = window.Size[1]
@@ -91,7 +88,7 @@ if __name__ == '__main__':
             last_screen_height = wh
 
         elif event == KEY_DELETE:
-            res = sg.popup_ok_cancel('Are you sure: this will remove the course ' + window[KEY_COURSES].DefaultValue + 'ID: Name: from the Canvas Info app?', keep_on_top=True)
+            res = sg.popup_ok_cancel('Are you sure: this will remove the course ' + window[KEY_COURSES].DefaultValue + ' from the Canvas Info app?', keep_on_top=True)
             if res == "OK":
                 delete_course_id(window)
 
@@ -109,15 +106,19 @@ if __name__ == '__main__':
                 courses_list = window[KEY_COURSES].Values
                 ind = courses_list.index(course_id)
                 sg.cprint("Verifying...")
-                course_name = VerifyCourseID(urlparse(base_url), access_token, gui.course_id)
+                course_name, group_set = VerifyCourseByID(urlparse(base_url), access_token, gui.course_id)
                 if course_name:
                     set_course_info(KEY_COURSE_NAME, course_name)
                     course_title = gui.course_info.get_course_title()
                     courses_list[ind] = course_title
-                    window[KEY_COURSES].update(values=courses_list)
+                    update_courses_list(window, courses_list)
                     window[KEY_COURSES].update(value=course_title)
-                    settings.set(KEY_COURSES, courses_list)
-                sg.cprint("Verifying done.")
+                if group_set and len(group_set):
+                    set_course_info(KEY_GROUP_CATEGORIES, group_set)
+                    window[KEY_GROUP_CATEGORY].update(values=group_set)
+                    set_update_course_info(window, KEY_GROUP_CATEGORY, group_set[0])
+
+                sg.cprint("All settings successfully verified")
                 continue
 
             csv = values[CSV]
@@ -159,7 +160,6 @@ if __name__ == '__main__':
             if not include_group and not include_member and not include_initials:
                 popup("Please select at least 1 option.")
                 continue
-
 
             disable_all_buttons(window)
             window.perform_long_operation(
