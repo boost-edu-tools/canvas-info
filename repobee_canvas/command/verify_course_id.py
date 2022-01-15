@@ -44,9 +44,9 @@ def getGroupCategories(canvas_course_id: str)->list:
         group_info = CanvasAPI().group_categories_per_course(canvas_course_id)
     except Exception as e:
         if "Not Found" in str(e):
-            fault("Verifying Group Set: failed")
+            fault("Verifying Group Set: Failed")
     else:
-        inform("Verifying Group Set: successful")
+        inform("Verifying Group Set: Successful")
         group_set = []
         for group in group_info:
             group_set.append(group["name"])
