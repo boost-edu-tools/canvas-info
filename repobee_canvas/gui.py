@@ -424,7 +424,7 @@ def Folder_Button(key, disable) -> sg.Button:
 def Combo(values:list, key:str, default:str, expand_x:bool=True) -> sg.Combo:
     return sg.Combo(values, k=key, default_value=default, pad=DEFAULT_INPUT_PAD, enable_events=True, readonly=True, expand_x=expand_x)
 
-def Frame(title:str, layout:list, pad:(int, int)=None) -> sg.Frame:
+def Frame(title:str, layout:list, pad=None) -> sg.Frame:
     return sg.Frame(layout=layout, title=title, relief=sg.RELIEF_SUNKEN, expand_x=True, pad=pad)
 
 def Column(layout:list, key:str=None):

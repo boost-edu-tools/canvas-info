@@ -4,12 +4,12 @@
 from ..canvas_api.api           import CanvasAPI
 from ..canvas_api.course        import Course
 
-from ..common                   import inform, warn, fault
+from ..common                   import inform, fault
 
 def VerifyCourseByID(
     canvas_base_url: str,
     canvas_access_token: str,
-    canvas_course_id: str) -> (str, list):
+    canvas_course_id: str):
     """Command to create a Canvas-Git mapping table and write it to a file."""
     CanvasAPI().setup(canvas_base_url, canvas_access_token)
 
