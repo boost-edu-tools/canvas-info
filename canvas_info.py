@@ -102,18 +102,18 @@ if __name__ == '__main__':
                 continue
 
             if event == KEY_VERIFY:
-                course_id = window[KEY_COURSES].DefaultValue
+                course_title = window[KEY_COURSES].DefaultValue
                 courses_list = window[KEY_COURSES].Values
-                ind = courses_list.index(course_id)
+                ind = courses_list.index(course_title)
                 sg.cprint("Verifying...")
                 course_name, group_set = VerifyCourseByID(urlparse(base_url), access_token, gui.course_id)
-                if course_name:
+                if gui.course_info.course[KEY_COURSE_NAME] != course_name:
                     set_course_info(KEY_COURSE_NAME, course_name)
                     course_title = gui.course_info.get_course_title()
                     courses_list[ind] = course_title
                     update_courses_list(window, courses_list)
                     window[KEY_COURSES].update(value=course_title)
-                if group_set and len(group_set):
+                if group_set and group_set != window[KEY_GROUP_CATEGORY].Values:
                     set_course_info(KEY_GROUP_CATEGORIES, group_set)
                     window[KEY_GROUP_CATEGORY].update(values=group_set)
                     set_update_course_info(window, KEY_GROUP_CATEGORY, group_set[0])
@@ -162,9 +162,10 @@ if __name__ == '__main__':
                 popup("Please select at least 1 option.")
                 continue
 
+            sg.cprint("Executing the Execute command...")
             disable_all_buttons(window)
             window.perform_long_operation(
-                lambda:CreateStudentsFiles(urlparse(base_url), access_token, course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file, gui.course_info.course[KEY_MEMBER_OPTION], include_group, include_member, include_initials),
+                lambda:CreateStudentsFiles(urlparse(base_url), access_token, gui.course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file, gui.course_info.course[KEY_MEMBER_OPTION], include_group, include_member, include_initials),
                 KEY_END)
 
         elif event == KEY_END:

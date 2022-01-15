@@ -55,7 +55,7 @@ INPUT_CB_PAD = ((0, 5), 2)
 
 token_tip = "Canvas > Account > Settings > New access token > Generate Token"
 token_tip_ml = "Generate via: Canvas > Account > Settings > Blue Box '+ New access token' on page > Generate Token"
-base_url_tip = "Default value should be correct for Canvas, only change when you know what you are doing."
+base_url_tip = "Default value should be correct for TUe users of Canvas, only change when you know what you are doing."
 course_id_tip = "Number at the end of the Canvas URL for your course"
 group_category_tip = "Name of the Canvas Group Set (see Canvas tab People) that contains the student groups."
 info_file_tip = "Output file with columns: group number, name, Canvas student ID, GitLab student ID, email"
@@ -136,13 +136,15 @@ class Course():
             for key in COURSE_SETTINGS_KEYS:
                 self.course[key] = course[key]
             self.course[KEY_MEMBER_OPTION] = course[KEY_MEMBER_OPTION]
-            self.course[KEY_GROUP_CATEGORIES] = course[KEY_GROUP_CATEGORIES]
 
             if mode != MODE_PARSE:
                 self.course[KEY_COURSE_NAME] = "Unverified"
+                self.course[KEY_GROUP_CATEGORIES] = []
+                self.course[KEY_GROUP_CATEGORY] = ""
                 self.save()
             else:
                 self.course[KEY_COURSE_NAME] = course[KEY_COURSE_NAME]
+                self.course[KEY_GROUP_CATEGORIES] = course[KEY_GROUP_CATEGORIES]
 
     def create_course(self):
         home = str(Path.home())
@@ -213,6 +215,7 @@ def valid_course_id(course_list: list, course_id:str)->bool:
 
 def update_course_ui(window:sg.Window, course_id:str, course:dict):
     window[KEY_COURSES].update(value=course_info.get_course_title())
+    window[KEY_GROUP_CATEGORY].update(values=course[KEY_GROUP_CATEGORIES])
 
     for key in COURSE_SETTINGS_KEYS:
         window[key].update(value=course[key])
@@ -231,8 +234,6 @@ def update_course_settings(window:sg.Window, id:str, course:dict, mode:int):
     course_info = Course(course_id, course=course, mode=mode)
     if mode in (MODE_RENAME, MODE_CLONE, MODE_CREATE):
         course = course_info.get()
-        course[KEY_COURSE_ID] = course_id
-        settings.set(KEY_COURSE_ID, course_id)
         window[KEY_COURSES].update(value=course_info.get_course_title())
         #update course_list
         courses_list.append(course_info.get_course_title())
