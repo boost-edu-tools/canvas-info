@@ -23,16 +23,15 @@ def getCourseName(canvas_course_id: int)->str:
     try:
         courses = CanvasAPI().courses()
     except Exception as e:
-        if "Unauthorized" in str(e):
-            fault("Verifying Access Token: Failed")
-        elif "Not Found" in str(e) or "Failed to establish a new connection" in str(e):
-            inform("Verifying Access Token: Successful")
+        if "Not Found" in str(e) or "Failed to establish a new connection" in str(e):
             fault("Verifying Base URL: Failed")
+        elif "Unauthorized" in str(e):
+            fault("Verifying Access Token: Failed")
         else:
             fault(e)
     else:
-        inform("Verifying Access Token: Successful")
         inform("Verifying Base URL: Successful")
+        inform("Verifying Access Token: Successful")
         for course in courses:
             if course["id"] == canvas_course_id:
                 inform("Verifying Course ID: Successful")
