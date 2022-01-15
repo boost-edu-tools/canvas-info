@@ -118,7 +118,7 @@ if __name__ == '__main__':
                 ind = courses_list.index(course_title)
                 sg.cprint("Verifying...")
                 course_name, group_set = VerifyCourseByID(urlparse(base_url), access_token, gui.course_id)
-                if gui.course_info.course[KEY_COURSE_NAME] != course_name:
+                if course_name and gui.course_info.course[KEY_COURSE_NAME] != course_name:
                     set_course_info(KEY_COURSE_NAME, course_name)
                     course_title = gui.course_info.get_course_title()
                     courses_list[ind] = course_title
@@ -141,7 +141,8 @@ if __name__ == '__main__':
                 continue
 
             group_category_name = values[KEY_GROUP_CATEGORY]
-            if is_empty(group_category_name, "Group Category"):
+            if is_invalid(group_category_name):
+                popup("Please verify first, and select the group category")
                 continue
 
             stu_csv_info_file = None
