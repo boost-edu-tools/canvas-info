@@ -50,12 +50,6 @@ if __name__ == '__main__':
         elif event in [KEY_GIT_ID, KEY_EMAIL]:
             set_course_info(KEY_MEMBER_OPTION, event)
 
-        elif event == KEY_CONF_LOCK:
-            state = (window[KEY_CONF_LOCK].ButtonText == LOCK)
-            if values[KEY_URL_OPTION] == KEY_CUSTOM:
-                disable_elements(window[KEY_BASE_URL], state)
-            update_option_state(window, event, state)
-
         elif event in (KEY_INC_GROUP, KEY_INC_MEMBER, KEY_INC_INITIAL):
             set_course_info(event, values[event])
             if event == KEY_INC_MEMBER:

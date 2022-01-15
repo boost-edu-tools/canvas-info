@@ -28,8 +28,6 @@ KEY_PRO_TEXT = 'progress'
 KEY_MEMBER_OPTION = 'member_option'
 KEY_GIT_ID = 'git_id'
 KEY_EMAIL = 'email'
-KEY_CONF_LOCK    = "config_lock"
-KEY_CONF_LOCK_STATE = "config_lock_state"
 KEY_REPO_NAME_OPTION = "repo_name_options"
 KEY_INC_GROUP = "include_group"
 KEY_INC_MEMBER = "include_member"
@@ -52,6 +50,8 @@ KEY_TUE = "TUE"
 KEY_CUSTOM = "Custom"
 KEY_URL_OPTION = "url_option"
 KEY_URL_OPTIONS = "url_options"
+KEY_EDIT_TOKEN = "token_bt"
+KEY_EDIT_URL = "url_bt"
 
 DEFAULT_INPUT_PAD = ((3, 5), 2)
 TEXT_CB_SIZE = 8
@@ -78,10 +78,6 @@ TYPE_YAML = ("Text Files", "*.yaml")
 TYPE_XLSX = ("Excel Workbook", "*.xlsx")
 TYPE_ALL = ("ALL Files", "*.* *")
 
-LOCK = "Lock"
-UNLOCK = "Unlock"
-LOCKED = "Locked"
-UNLOCKED = "UnLocked"
 DEFAULT_COURSE_ID = "00001"
 
 MODE_PARSE = 0
@@ -92,7 +88,7 @@ MODE_CREATE = 3
 URL_OPTIONS = [KEY_TUE, KEY_CUSTOM]
 TUE_API_URL = "https://canvas.tue.nl/api/v1"
 
-buttons = [KEY_CONF_LOCK, KEY_VERIFY, "token_bt", KEY_RENAME_COURSE, KEY_EXECUTE, KEY_CSV_INFO_FILE_FOLDER, KEY_XLSX_INFO_FILE_FOLDER, KEY_STU_FILE_FOLDER, KEY_CLONE_COURSE, KEY_NEW_COURSE, KEY_HELP, KEY_EXIT, KEY_CLEAR]
+buttons = [KEY_VERIFY, "token_bt", KEY_EDIT_URL, KEY_RENAME_COURSE, KEY_EXECUTE, KEY_CSV_INFO_FILE_FOLDER, KEY_XLSX_INFO_FILE_FOLDER, KEY_STU_FILE_FOLDER, KEY_CLONE_COURSE, KEY_NEW_COURSE, KEY_HELP, KEY_EXIT, KEY_CLEAR]
 TEXT_SETTINGS_KEY = [KEY_BASE_URL, KEY_ACCESS_TOKEN, KEY_GROUP_CATEGORY, KEY_CSV_INFO_FILE, KEY_XLSX_INFO_FILE, KEY_STU_FILE, KEY_URL_OPTION]
 BOOL_SETTINGS_KEY = [CSV, XLSX, YAML, KEY_INC_INITIAL, KEY_INC_GROUP, KEY_INC_MEMBER]
 COURSE_SETTINGS_KEYS = TEXT_SETTINGS_KEY + BOOL_SETTINGS_KEY
@@ -285,11 +281,10 @@ def delete_course_id(window:sg.Window):
     update_course_ui(window, course_id, course_info.get())
 
 def check_url_lock(window:sg.Window, url_option:str):
-    if window[KEY_CONF_LOCK].ButtonText == LOCK:
-        if url_option == KEY_CUSTOM:
-            disable_elements(window[KEY_BASE_URL], False)
-        elif url_option == KEY_TUE:
-            disable_elements(window[KEY_BASE_URL], True)
+    if url_option == KEY_TUE:
+        window[KEY_EDIT_URL].update(disabled=True)
+    else:
+        window[KEY_EDIT_URL].update(disabled=False)
 
 def update_courses_list(window:sg.Window, courses_list:list):
     window[KEY_COURSES].update(values=courses_list)
@@ -401,17 +396,6 @@ def enable_all_buttons(window: sg.Window):
     for bt in buttons:
         disable_elements(window[bt], False)
 
-def update_option_state(window: sg.Window, key: str, state: bool):
-    if state:
-        window[key].update(text=UNLOCK)
-        window[key+"_state"].update(value=LOCKED)
-    else:
-        window[key].update(text=LOCK)
-        window[key+"_state"].update(value=UNLOCKED)
-
-    for key in (KEY_GROUP_CATEGORY, KEY_COURSES, KEY_URL_OPTION):
-        disable_elements(window[key], state)
-
 def update_column_height(element, wh, last_screen_height):
     ch = element.Widget.canvas.winfo_height()
     if ch < MAX_COL_HEIGHT or (wh - last_screen_height) <= 0:
@@ -428,8 +412,8 @@ def InputText(key:str, text:str, password:str='', readOnly:bool=True, pad:tuple=
 def Checkbox(key, default, text:str="", disabled:bool=False) -> sg.Checkbox:
     return sg.Checkbox(text, k=key, default=default, enable_events = True, pad=(0, 2), disabled=disabled)
 
-def Button(text, key) -> sg.Button:
-    return sg.B(text, k=key, pad=((3, 3), 2))
+def Button(text, key, disabled:bool=False) -> sg.Button:
+    return sg.B(text, k=key, pad=((3, 3), 2), disabled=disabled)
 
 def Radio(text:str, key:str, default_val: bool) -> sg.Radio:
     return sg.Radio(text, KEY_MEMBER_OPTION, k=key, default=default_val, enable_events=True)
@@ -438,7 +422,7 @@ def Folder_Button(key, disable) -> sg.Button:
     return sg.B("Browse", k=key, pad=((3, 0), 2))
 
 def Combo(values:list, key:str, default:str, expand_x:bool=True) -> sg.Combo:
-    return sg.Combo(values, k=key, default_value=default, pad=DEFAULT_INPUT_PAD, enable_events=True, readonly=True, expand_x=expand_x, disabled=True)
+    return sg.Combo(values, k=key, default_value=default, pad=DEFAULT_INPUT_PAD, enable_events=True, readonly=True, expand_x=expand_x)
 
 def Frame(title:str, layout:list, pad:(int, int)=None) -> sg.Frame:
     return sg.Frame(layout=layout, title=title, relief=sg.RELIEF_SUNKEN, expand_x=True, pad=pad)
@@ -529,15 +513,7 @@ def make_window():
     canvas_config_frame = Frame('Canvas configuration',
         layout = [
             [
-                Text(LOCKED, KEY_CONF_LOCK_STATE),
-                Button(UNLOCK, KEY_CONF_LOCK),
-                sg.Column(
-                    [
-                        [
-                            Button(KEY_VERIFY, KEY_VERIFY),
-                        ]
-                    ], element_justification="right", expand_x=True, pad=(0,(4,0))
-                )
+                Button(KEY_VERIFY, KEY_VERIFY)
             ],
             [
                 Text('Group Set'),
@@ -564,12 +540,13 @@ def make_window():
                 Text('Base URL'),
                 Combo(URL_OPTIONS, KEY_URL_OPTION, default=course[KEY_URL_OPTION], expand_x=False),
                 InputText(KEY_BASE_URL, course[KEY_BASE_URL]),
+                Button("Edit", KEY_EDIT_URL, disabled=course[KEY_URL_OPTION]==KEY_TUE),
                 help_button('base_url_tip', base_url_tip)
             ],
             [
                 Text('Access Token'),
                 InputText(KEY_ACCESS_TOKEN, course[KEY_ACCESS_TOKEN], password='*', enable_events=False),
-                Button("Edit", 'token_bt'),
+                Button("Edit", KEY_EDIT_TOKEN),
                 help_button('token_tip', token_tip)
             ]
         ]
