@@ -21,22 +21,24 @@ def VerifyCourseByID(
 
 def getCourseName(canvas_course_id: int)->str:
     try:
-        inform("Verifying Base URL and Access Token...")
-        course_info = CanvasAPI().course(canvas_course_id)
+        courses = CanvasAPI().courses()
     except Exception as e:
         if "Unauthorized" in str(e):
-            fault("Failed")
-        elif "Not Found" in str(e):
-            inform("Successful")
-            inform("Verifying Course ID...")
-            fault("Failed ")
+            fault("Verifying Access Token: Failed")
+        elif "Not Found" in str(e) or "Failed to establish a new connection" in str(e):
+            inform("Verifying Access Token: Successful")
+            fault("Verifying Base URL: Failed")
         else:
             fault(e)
     else:
-        inform("Successful")
-        inform("Verifying Course ID...")
-        inform("Successful")
-        return course_info["name"]
+        inform("Verifying Access Token: Successful")
+        inform("Verifying Base URL: Successful")
+        for course in courses:
+            if course["id"] == canvas_course_id:
+                inform("Verifying Course ID: Successful")
+                return course["name"]
+        fault("Verifying Course ID:Failed")
+        return None
 
 def getGroupCategories(canvas_course_id: int)->list:
     try:

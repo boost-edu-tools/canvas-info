@@ -168,6 +168,10 @@ class CanvasAPI:
             SUBMISSIONS: EMPTY
             }, params = GROUPED_SUBMISSION)
 
+    def courses(self):
+        """Get courses"""
+        return self.__get({COURSES: EMPTY})
+
     def course(self, course_id):
         """Get course"""
         return self.__get({
