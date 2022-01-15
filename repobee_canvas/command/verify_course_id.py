@@ -36,7 +36,7 @@ def getCourseName(canvas_course_id: int)->str:
             if course["id"] == canvas_course_id:
                 inform("Verifying Course ID: Successful")
                 return course["name"]
-        fault("Verifying Course ID:Failed")
+        fault("Verifying Course ID: Failed")
         return None
 
 def getGroupCategories(canvas_course_id: str)->list:
