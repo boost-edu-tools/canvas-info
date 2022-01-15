@@ -9,11 +9,11 @@ from ..common                   import inform, warn, fault
 def VerifyCourseByID(
     canvas_base_url: str,
     canvas_access_token: str,
-    canvas_course_id: int) -> (str, list):
+    canvas_course_id: str) -> (str, list):
     """Command to create a Canvas-Git mapping table and write it to a file."""
     CanvasAPI().setup(canvas_base_url, canvas_access_token)
 
-    course_name = getCourseName(canvas_course_id)
+    course_name = getCourseName(int(canvas_course_id))
     if not course_name:
         return None, None
     group_set = getGroupCategories(canvas_course_id)
@@ -40,7 +40,7 @@ def getCourseName(canvas_course_id: int)->str:
         fault("Verifying Course ID:Failed")
         return None
 
-def getGroupCategories(canvas_course_id: int)->list:
+def getGroupCategories(canvas_course_id: str)->list:
     try:
         group_info = CanvasAPI().group_categories_per_course(canvas_course_id)
     except Exception as e:
