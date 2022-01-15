@@ -239,7 +239,7 @@ def update_course_ui(window:sg.Window, course_id:str, course:dict):
     member_option = course[KEY_MEMBER_OPTION]
     window[KEY_EMAIL].update(value=(KEY_EMAIL == member_option))
     window[KEY_GIT_ID].update(value=(KEY_GIT_ID == member_option))
-    check_url_lock(window, course[KEY_URL_OPTION])
+    check_url_lock(window[KEY_EDIT_URL], course[KEY_URL_OPTION])
 
 def update_course_settings(window:sg.Window, id:str, course:dict, mode:int):
     global course_info, course_id
@@ -280,11 +280,11 @@ def delete_course_id(window:sg.Window):
     window[KEY_COURSES].update(set_to_index=ind)
     update_course_ui(window, course_id, course_info.get())
 
-def check_url_lock(window:sg.Window, url_option:str):
+def check_url_lock(button:sg.Button, url_option:str):
     if url_option == KEY_TUE:
-        window[KEY_EDIT_URL].update(disabled=True)
+        button.update(disabled=True)
     else:
-        window[KEY_EDIT_URL].update(disabled=False)
+        button.update(disabled=False)
 
 def update_courses_list(window:sg.Window, courses_list:list):
     window[KEY_COURSES].update(values=courses_list)
@@ -412,8 +412,8 @@ def InputText(key:str, text:str, password:str='', readOnly:bool=True, pad:tuple=
 def Checkbox(key, default, text:str="", disabled:bool=False) -> sg.Checkbox:
     return sg.Checkbox(text, k=key, default=default, enable_events = True, pad=(0, 2), disabled=disabled)
 
-def Button(text, key, disabled:bool=False) -> sg.Button:
-    return sg.B(text, k=key, pad=((3, 3), 2), disabled=disabled)
+def Button(text, key) -> sg.Button:
+    return sg.B(text, k=key, pad=(3, 2))
 
 def Radio(text:str, key:str, default_val: bool) -> sg.Radio:
     return sg.Radio(text, KEY_MEMBER_OPTION, k=key, default=default_val, enable_events=True)
@@ -540,7 +540,7 @@ def make_window():
                 Text('Base URL'),
                 Combo(URL_OPTIONS, KEY_URL_OPTION, default=course[KEY_URL_OPTION], expand_x=False),
                 InputText(KEY_BASE_URL, course[KEY_BASE_URL]),
-                Button("Edit", KEY_EDIT_URL, disabled=course[KEY_URL_OPTION]==KEY_TUE),
+                sg.Button("Edit", k=KEY_EDIT_URL, pad=(3, 2), disabled=course[KEY_URL_OPTION]==KEY_TUE, disabled_button_color=('grey', "#082567")),
                 help_button('base_url_tip', base_url_tip)
             ],
             [
