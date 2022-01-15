@@ -30,64 +30,72 @@ def CreateStudentsFiles(
     inform("Loading course...")
 
     try:
-        course = Course.load(canvas_course_id)
+        courses = CanvasAPI().courses()
     except Exception as e:
-        fault(e)
-        if "Unauthorized" in str(e):
-            warn("Repobee-canvas was not authorized to access your Canvas information. Please check the tooltip of the access token in the Settings Window.")
-    else:
-        canvas_git_mapping_table = canvas_git_map_table_wizard(course, group_category_name)
-
-        if canvas_git_mapping_table.empty():
-            warn("No students found.")
+        if "Not Found" in str(e) or "Failed to establish a new connection" in str(e):
+            fault("Erroneous Base URL")
+        elif "Unauthorized" in str(e):
+            fault("Erroneous Access Token")
         else:
-            if student_csv_info_file:
-                canvas_git_mapping_table.write(Path(student_csv_info_file))
-                inform(f"Created students info CSV file::  {student_csv_info_file}")
+            fault(e)
+    else:
+        for course in courses:
+            if course["id"] == canvas_course_id:
+                course = Course.load(canvas_course_id)
+                canvas_git_mapping_table = canvas_git_map_table_wizard(course, group_category_name)
 
-            if student_xlsx_info_file:
-                canvas_git_mapping_table.writeExcel(student_xlsx_info_file)
-                inform(f"Created students info Excel file:  {student_xlsx_info_file}")
+                if canvas_git_mapping_table.empty():
+                    warn("No students found.")
+                else:
+                    if student_csv_info_file:
+                        canvas_git_mapping_table.write(Path(student_csv_info_file))
+                        inform(f"Created students info CSV file::  {student_csv_info_file}")
 
-            if students_yaml_file:
-                group_submissions = {}
-                groupless_submissions = []
-                for info in canvas_git_mapping_table.get_stu_info():
-                    group = info[GROUP]
-                    if group:
-                        if group in group_submissions:
-                            group_submissions[group][EMAIL2GIT].update(info[EMAIL2GIT])
-                        else:
-                            group_submissions[group] = info
-                    else:
-                        groupless_submissions.append(info)
+                    if student_xlsx_info_file:
+                        canvas_git_mapping_table.writeExcel(student_xlsx_info_file)
+                        inform(f"Created students info Excel file:  {student_xlsx_info_file}")
 
-                # Students who are not assigned to a group in a group assignment are
-                # ignored by default when creating a students file. Most likely these
-                # students are not actively participating in the course or have not yet
-                # assigned themselves to a group. However, with parameter
-                # include_groupless_students, you can override this default behavior.
-                if len(group_submissions) == 0:
-                    warn(
-                        ("No group submissions found for this group assignment. "
-                        "Please run command 'repobee canvas prepare-assignment' to "
-                        "resolve this issue. Or configure this assignment as an "
-                        "individual assignment."))
+                    if students_yaml_file:
+                        group_submissions = {}
+                        groupless_submissions = []
+                        for info in canvas_git_mapping_table.get_stu_info():
+                            group = info[GROUP]
+                            if group:
+                                if group in group_submissions:
+                                    group_submissions[group][EMAIL2GIT].update(info[EMAIL2GIT])
+                                else:
+                                    group_submissions[group] = info
+                            else:
+                                groupless_submissions.append(info)
 
-                inform("Create students YAML file...")
+                        # Students who are not assigned to a group in a group assignment are
+                        # ignored by default when creating a students file. Most likely these
+                        # students are not actively participating in the course or have not yet
+                        # assigned themselves to a group. However, with parameter
+                        # include_groupless_students, you can override this default behavior.
+                        if len(group_submissions) == 0:
+                            warn(
+                                ("No group submissions found for this group assignment. "
+                                "Please run command 'repobee canvas prepare-assignment' to "
+                                "resolve this issue. Or configure this assignment as an "
+                                "individual assignment."))
 
-                if student_member_option == "email":
-                    member_as_email(students_yaml_file, group_submissions, include_group, include_member, include_initials)
+                        inform("Create students YAML file...")
 
-                elif student_member_option == "git_id":
-                    member_as_gitid(students_yaml_file, group_submissions, include_group, include_member, include_initials)
+                        if student_member_option == "email":
+                            member_as_email(students_yaml_file, group_submissions, include_group, include_member, include_initials)
 
-                inform(f"Created students YAML file: {students_yaml_file}.")
+                        elif student_member_option == "git_id":
+                            member_as_gitid(students_yaml_file, group_submissions, include_group, include_member, include_initials)
 
-                inform("The following students were not in a group (prefixes from @student.tue.nl):")
-                for submission in groupless_submissions:
-                    email = list(submission[EMAIL2GIT].keys())
-                    inform(email[0])
+                        inform(f"Created students YAML file: {students_yaml_file}.")
+
+                        inform("The following students were not in a group (prefixes from @student.tue.nl):")
+                        for submission in groupless_submissions:
+                            email = list(submission[EMAIL2GIT].keys())
+                            inform(email[0])
+                return
+        fault("Non-existing Course ID")
 
 def member_as_email(students_yaml_file: str, group_submissions: dict, include_group: bool, include_member: bool, include_initials: bool):
     with Path(students_yaml_file).open("w") as outfile:
