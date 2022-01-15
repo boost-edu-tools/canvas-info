@@ -190,7 +190,6 @@ class Course():
         self.course[KEY_BASE_URL] = value
         self.course[KEY_URL_OPTIONS][key] = value
         self.save()
-        print(self.course[KEY_URL_OPTIONS])
 
 def set_update_course_info(window:sg.Window, key:str, value:str):
     set_course_info(key, value)
@@ -410,7 +409,8 @@ def update_option_state(window: sg.Window, key: str, state: bool):
         window[key].update(text=LOCK)
         window[key+"_state"].update(value=UNLOCKED)
 
-    # disable_elements(window[KEY_GROUP_CATEGORY], state)
+    for key in (KEY_GROUP_CATEGORY, KEY_COURSES, KEY_URL_OPTION):
+        disable_elements(window[key], state)
 
 def update_column_height(element, wh, last_screen_height):
     ch = element.Widget.canvas.winfo_height()
@@ -438,7 +438,7 @@ def Folder_Button(key, disable) -> sg.Button:
     return sg.B("Browse", k=key, pad=((3, 0), 2))
 
 def Combo(values:list, key:str, default:str, expand_x:bool=True) -> sg.Combo:
-    return sg.Combo(values, k=key, default_value=default, pad=DEFAULT_INPUT_PAD, enable_events=True, readonly=True, expand_x=expand_x)
+    return sg.Combo(values, k=key, default_value=default, pad=DEFAULT_INPUT_PAD, enable_events=True, readonly=True, expand_x=expand_x, disabled=True)
 
 def Frame(title:str, layout:list, pad:(int, int)=None) -> sg.Frame:
     return sg.Frame(layout=layout, title=title, relief=sg.RELIEF_SUNKEN, expand_x=True, pad=pad)
