@@ -48,6 +48,10 @@ KEY_RENAME_COURSE = "rename_course"
 KEY_CLONE_COURSE = "clone_course"
 KEY_NEW_COURSE = "new_course"
 KEY_END = "end"
+KEY_TUE = "TUE"
+KEY_CUSTOM = "Custom"
+KEY_URL_OPTION = "url_option"
+KEY_URL_OPTIONS = "url_options"
 
 DEFAULT_INPUT_PAD = ((3, 5), 2)
 TEXT_CB_SIZE = 8
@@ -85,8 +89,11 @@ MODE_RENAME = 1
 MODE_CLONE = 2
 MODE_CREATE = 3
 
+URL_OPTIONS = [KEY_TUE, KEY_CUSTOM]
+TUE_API_URL = "https://canvas.tue.nl/api/v1"
+
 buttons = [KEY_CONF_LOCK, KEY_VERIFY, "token_bt", KEY_RENAME_COURSE, KEY_EXECUTE, KEY_CSV_INFO_FILE_FOLDER, KEY_XLSX_INFO_FILE_FOLDER, KEY_STU_FILE_FOLDER, KEY_CLONE_COURSE, KEY_NEW_COURSE, KEY_HELP, KEY_EXIT, KEY_CLEAR]
-TEXT_SETTINGS_KEY = [KEY_BASE_URL, KEY_ACCESS_TOKEN, KEY_GROUP_CATEGORY, KEY_CSV_INFO_FILE, KEY_XLSX_INFO_FILE, KEY_STU_FILE]
+TEXT_SETTINGS_KEY = [KEY_BASE_URL, KEY_ACCESS_TOKEN, KEY_GROUP_CATEGORY, KEY_CSV_INFO_FILE, KEY_XLSX_INFO_FILE, KEY_STU_FILE, KEY_URL_OPTION]
 BOOL_SETTINGS_KEY = [CSV, XLSX, YAML, KEY_INC_INITIAL, KEY_INC_GROUP, KEY_INC_MEMBER]
 COURSE_SETTINGS_KEYS = TEXT_SETTINGS_KEY + BOOL_SETTINGS_KEY
 course_info = None
@@ -133,6 +140,7 @@ class Course():
             self.create_course()
             self.save()
         else:
+            self.course[KEY_URL_OPTIONS] = course[KEY_URL_OPTIONS]
             for key in COURSE_SETTINGS_KEYS:
                 self.course[key] = course[key]
             self.course[KEY_MEMBER_OPTION] = course[KEY_MEMBER_OPTION]
@@ -154,7 +162,7 @@ class Course():
             self.course[key] = False
         self.course[KEY_MEMBER_OPTION] = KEY_EMAIL
         self.course[KEY_COURSE_NAME] = "Unverified"
-        self.course[KEY_BASE_URL] = "https://canvas.tue.nl/api/v1"
+        self.course[KEY_BASE_URL] = TUE_API_URL
         self.course[KEY_STU_FILE] = home + "/students.yaml"
         self.course[KEY_STU_FILE_FOLDER] = home
         self.course[KEY_CSV_INFO_FILE] = home + "/students_info.csv"
@@ -162,6 +170,8 @@ class Course():
         self.course[KEY_INC_GROUP] = True
         self.course[KEY_INC_MEMBER] = True
         self.course[KEY_GROUP_CATEGORIES] = []
+        self.course[KEY_URL_OPTIONS] = {KEY_TUE: TUE_API_URL, KEY_CUSTOM: ""}
+        self.course[KEY_URL_OPTION] = KEY_TUE
 
     def get_course_title(self):
         return course_title.format(self.course_id, self.course[KEY_COURSE_NAME])
@@ -176,6 +186,12 @@ class Course():
         self.course[key] = value
         self.save()
 
+    def update_url(self, key, value):
+        self.course[KEY_BASE_URL] = value
+        self.course[KEY_URL_OPTIONS][key] = value
+        self.save()
+        print(self.course[KEY_URL_OPTIONS])
+
 def set_update_course_info(window:sg.Window, key:str, value:str):
     set_course_info(key, value)
     window[key].update(value=value)
@@ -184,6 +200,11 @@ def set_course_info(key:str, value:str):
     global course_info
     if course_info:
         course_info.update(key, value)
+
+def set_course_url(key:str, value:str):
+    global course_info
+    if course_info:
+        course_info.update_url(key, value)
 
 def get_input_course_id(course_list: list, default_course:str)->str:
     course_id = sg.popup_get_text('New Course ID', default_text=default_course, keep_on_top=True)
@@ -223,6 +244,7 @@ def update_course_ui(window:sg.Window, course_id:str, course:dict):
     member_option = course[KEY_MEMBER_OPTION]
     window[KEY_EMAIL].update(value=(KEY_EMAIL == member_option))
     window[KEY_GIT_ID].update(value=(KEY_GIT_ID == member_option))
+    check_url_lock(window, course[KEY_URL_OPTION])
 
 def update_course_settings(window:sg.Window, id:str, course:dict, mode:int):
     global course_info, course_id
@@ -262,6 +284,13 @@ def delete_course_id(window:sg.Window):
     course_info = Course(course_id, settings[course_id])
     window[KEY_COURSES].update(set_to_index=ind)
     update_course_ui(window, course_id, course_info.get())
+
+def check_url_lock(window:sg.Window, url_option:str):
+    if window[KEY_CONF_LOCK].ButtonText == LOCK:
+        if url_option == KEY_CUSTOM:
+            disable_elements(window[KEY_BASE_URL], False)
+        elif url_option == KEY_TUE:
+            disable_elements(window[KEY_BASE_URL], True)
 
 def update_courses_list(window:sg.Window, courses_list:list):
     window[KEY_COURSES].update(values=courses_list)
@@ -373,8 +402,7 @@ def enable_all_buttons(window: sg.Window):
     for bt in buttons:
         disable_elements(window[bt], False)
 
-def update_option_state(window: sg.Window, key: str):
-    state = (window[key].ButtonText == LOCK)
+def update_option_state(window: sg.Window, key: str, state: bool):
     if state:
         window[key].update(text=UNLOCK)
         window[key+"_state"].update(value=LOCKED)
@@ -382,8 +410,7 @@ def update_option_state(window: sg.Window, key: str):
         window[key].update(text=LOCK)
         window[key+"_state"].update(value=UNLOCKED)
 
-    for key in (KEY_BASE_URL, KEY_GROUP_CATEGORY):
-        disable_elements(window[key], state)
+    # disable_elements(window[KEY_GROUP_CATEGORY], state)
 
 def update_column_height(element, wh, last_screen_height):
     ch = element.Widget.canvas.winfo_height()
@@ -410,8 +437,8 @@ def Radio(text:str, key:str, default_val: bool) -> sg.Radio:
 def Folder_Button(key, disable) -> sg.Button:
     return sg.B("Browse", k=key, pad=((3, 0), 2))
 
-def Combo(values:list, key:str, default:str) -> sg.Combo:
-    return sg.Combo(values, k=key, default_value=default, pad=DEFAULT_INPUT_PAD, enable_events=True, readonly=True, expand_x=True)
+def Combo(values:list, key:str, default:str, expand_x:bool=True) -> sg.Combo:
+    return sg.Combo(values, k=key, default_value=default, pad=DEFAULT_INPUT_PAD, enable_events=True, readonly=True, expand_x=expand_x)
 
 def Frame(title:str, layout:list, pad:(int, int)=None) -> sg.Frame:
     return sg.Frame(layout=layout, title=title, relief=sg.RELIEF_SUNKEN, expand_x=True, pad=pad)
@@ -535,6 +562,7 @@ def make_window():
             ],
             [
                 Text('Base URL'),
+                Combo(URL_OPTIONS, KEY_URL_OPTION, default=course[KEY_URL_OPTION], expand_x=False),
                 InputText(KEY_BASE_URL, course[KEY_BASE_URL]),
                 help_button('base_url_tip', base_url_tip)
             ],

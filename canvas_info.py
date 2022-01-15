@@ -29,7 +29,10 @@ if __name__ == '__main__':
                 file_path = os.path.splitext(file_path)[0]
                 set_update_course_info(window, KEY_XLSX_INFO_FILE, file_path+".xlsx")
 
-        elif event in (CSV, XLSX, YAML, KEY_BASE_URL, KEY_GROUP_CATEGORY, KEY_STU_FILE):
+        elif event ==  KEY_BASE_URL:
+            set_course_url(values[KEY_URL_OPTION], values[event])
+
+        elif event in (CSV, XLSX, YAML, KEY_GROUP_CATEGORY, KEY_STU_FILE):
             set_course_info(event, values[event])
 
         elif event == KEY_XLSX_INFO_FILE_FOLDER:
@@ -48,7 +51,10 @@ if __name__ == '__main__':
             set_course_info(KEY_MEMBER_OPTION, event)
 
         elif event == KEY_CONF_LOCK:
-            update_option_state(window, event)
+            state = (window[KEY_CONF_LOCK].ButtonText == LOCK)
+            if values[KEY_URL_OPTION] == KEY_CUSTOM:
+                disable_elements(window[KEY_BASE_URL], state)
+            update_option_state(window, event, state)
 
         elif event in (KEY_INC_GROUP, KEY_INC_MEMBER, KEY_INC_INITIAL):
             set_course_info(event, values[event])
@@ -91,6 +97,11 @@ if __name__ == '__main__':
             res = sg.popup_ok_cancel('Are you sure: this will remove the course ' + window[KEY_COURSES].DefaultValue + ' from the Canvas Info app?', keep_on_top=True)
             if res == "OK":
                 delete_course_id(window)
+
+        elif event == KEY_URL_OPTION:
+            set_course_info(KEY_URL_OPTION, values[event])
+            set_update_course_info(window, KEY_BASE_URL, gui.course_info.course[KEY_URL_OPTIONS][values[event]])
+            check_url_lock(window, values[KEY_URL_OPTION])
 
         elif event in (KEY_EXECUTE, KEY_VERIFY):
             access_token = values[KEY_ACCESS_TOKEN]
