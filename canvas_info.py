@@ -17,10 +17,16 @@ if __name__ == '__main__':
         if event in (KEY_EXIT, sg.WIN_CLOSED): # if user closes window
             break
 
-        elif event == 'token_bt':
+        elif event == KEY_EDIT_TOKEN:
             text = sg.popup_get_text('Access Token', default_text=window[KEY_ACCESS_TOKEN].DefaultText, size=(80, 1))
             if text is not None:
                 set_update_course_info(window, KEY_ACCESS_TOKEN, text)
+
+        elif event == KEY_EDIT_URL:
+            text = sg.popup_get_text('Base URL', default_text=window[KEY_BASE_URL].DefaultText)
+            if text is not None:
+                window[KEY_BASE_URL].update(value=text)
+                set_course_url(values[KEY_URL_OPTION], text)
 
         elif event == KEY_CSV_INFO_FILE_FOLDER:
             file_path = update_browse(values[KEY_CSV_INFO_FILE], True, ((TYPE_CSV),)) #, CSV)
@@ -28,9 +34,6 @@ if __name__ == '__main__':
                 set_update_course_info(window, KEY_CSV_INFO_FILE, file_path)
                 file_path = os.path.splitext(file_path)[0]
                 set_update_course_info(window, KEY_XLSX_INFO_FILE, file_path+".xlsx")
-
-        elif event ==  KEY_BASE_URL:
-            set_course_url(values[KEY_URL_OPTION], values[event])
 
         elif event in (CSV, XLSX, YAML, KEY_GROUP_CATEGORY, KEY_STU_FILE):
             set_course_info(event, values[event])
@@ -95,7 +98,7 @@ if __name__ == '__main__':
         elif event == KEY_URL_OPTION:
             set_course_info(KEY_URL_OPTION, values[event])
             set_update_course_info(window, KEY_BASE_URL, gui.course_info.course[KEY_URL_OPTIONS][values[event]])
-            check_url_lock(window, values[KEY_URL_OPTION])
+            check_url_lock(window[KEY_EDIT_URL], values[KEY_URL_OPTION])
 
         elif event in (KEY_EXECUTE, KEY_VERIFY):
             access_token = values[KEY_ACCESS_TOKEN]
