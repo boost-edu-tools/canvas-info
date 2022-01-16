@@ -1,15 +1,15 @@
 """Create a students info file from a Canvas course.
 
 """
-from ..canvas_api.api           import CanvasAPI
+from ..canvas_api.api import CanvasAPI
 
-from ..common                   import inform, fault
-from typing                     import Tuple, Optional
+from ..common import inform, fault
+from typing import Tuple, Optional
+
 
 def VerifyCourseByID(
-    canvas_base_url: str,
-    canvas_access_token: str,
-    canvas_course_id: str)->Tuple[Optional[str], Optional[list]]:
+    canvas_base_url: str, canvas_access_token: str, canvas_course_id: str
+) -> Tuple[Optional[str], Optional[list]]:
     """Command to create a Canvas-Git mapping table and write it to a file."""
     CanvasAPI().setup(canvas_base_url, canvas_access_token)
 
@@ -19,7 +19,8 @@ def VerifyCourseByID(
     group_set = getGroupCategories(canvas_course_id)
     return course_name, group_set
 
-def getCourseName(canvas_course_id: int)->str:
+
+def getCourseName(canvas_course_id: int) -> str:
     try:
         courses = CanvasAPI().courses()
     except Exception as e:
@@ -39,7 +40,8 @@ def getCourseName(canvas_course_id: int)->str:
         fault("Verifying Course ID: Failed")
         return None
 
-def getGroupCategories(canvas_course_id: str)->list:
+
+def getGroupCategories(canvas_course_id: str) -> list:
     try:
         group_info = CanvasAPI().group_categories_per_course(canvas_course_id)
     except Exception as e:

@@ -1,17 +1,18 @@
 """Create a students info file from a Canvas course.
 
 """
-from pathlib                    import Path
+from pathlib import Path
 
-from ..canvas_api.api           import CanvasAPI
-from ..canvas_api.course        import Course
+from ..canvas_api.api import CanvasAPI
+from ..canvas_api.course import Course
 
-from ..canvas_git_map           import canvas_git_map_table_wizard
+from ..canvas_git_map import canvas_git_map_table_wizard
 
-from ..common                   import inform, warn, fault
+from ..common import inform, warn, fault
 
-GROUP                           = "group"
-EMAIL2GIT                       = "email2git"
+GROUP = "group"
+EMAIL2GIT = "email2git"
+
 
 def CreateStudentsFiles(
     canvas_base_url: str,
@@ -24,7 +25,8 @@ def CreateStudentsFiles(
     student_member_option: str,
     include_group: bool,
     include_member: bool,
-    include_initials: bool):
+    include_initials: bool,
+):
     """Command to create a Canvas-Git mapping table and write it to a file."""
     CanvasAPI().setup(canvas_base_url, canvas_access_token)
     inform("Loading course...")
@@ -42,18 +44,24 @@ def CreateStudentsFiles(
         for course in courses:
             if course["id"] == int(canvas_course_id):
                 course = Course.load(canvas_course_id)
-                canvas_git_mapping_table = canvas_git_map_table_wizard(course, group_category_name)
+                canvas_git_mapping_table = canvas_git_map_table_wizard(
+                    course, group_category_name
+                )
 
                 if canvas_git_mapping_table.empty():
                     warn("No students found.")
                 else:
                     if student_csv_info_file:
                         canvas_git_mapping_table.write(Path(student_csv_info_file))
-                        inform(f"Created students info CSV file::  {student_csv_info_file}")
+                        inform(
+                            f"Created students info CSV file::  {student_csv_info_file}"
+                        )
 
                     if student_xlsx_info_file:
                         canvas_git_mapping_table.writeExcel(student_xlsx_info_file)
-                        inform(f"Created students info Excel file:  {student_xlsx_info_file}")
+                        inform(
+                            f"Created students info Excel file:  {student_xlsx_info_file}"
+                        )
 
                     if students_yaml_file:
                         group_submissions = {}
@@ -62,7 +70,9 @@ def CreateStudentsFiles(
                             group = info[GROUP]
                             if group:
                                 if group in group_submissions:
-                                    group_submissions[group][EMAIL2GIT].update(info[EMAIL2GIT])
+                                    group_submissions[group][EMAIL2GIT].update(
+                                        info[EMAIL2GIT]
+                                    )
                                 else:
                                     group_submissions[group] = info
                             else:
@@ -75,29 +85,53 @@ def CreateStudentsFiles(
                         # include_groupless_students, you can override this default behavior.
                         if len(group_submissions) == 0:
                             warn(
-                                ("No group submissions found for this group assignment. "
-                                "Please run command 'repobee canvas prepare-assignment' to "
-                                "resolve this issue. Or configure this assignment as an "
-                                "individual assignment."))
+                                (
+                                    "No group submissions found for this group assignment. "
+                                    "Please run command 'repobee canvas prepare-assignment' to "
+                                    "resolve this issue. Or configure this assignment as an "
+                                    "individual assignment."
+                                )
+                            )
 
                         inform("Create students YAML file...")
 
                         if student_member_option == "email":
-                            member_as_email(students_yaml_file, group_submissions, include_group, include_member, include_initials)
+                            member_as_email(
+                                students_yaml_file,
+                                group_submissions,
+                                include_group,
+                                include_member,
+                                include_initials,
+                            )
 
                         elif student_member_option == "git_id":
-                            member_as_gitid(students_yaml_file, group_submissions, include_group, include_member, include_initials)
+                            member_as_gitid(
+                                students_yaml_file,
+                                group_submissions,
+                                include_group,
+                                include_member,
+                                include_initials,
+                            )
 
                         inform(f"Created students YAML file: {students_yaml_file}.")
 
-                        inform("The following students were not in a group (prefixes from @student.tue.nl):")
+                        inform(
+                            "The following students were not in a group (prefixes from @student.tue.nl):"
+                        )
                         for submission in groupless_submissions:
                             email = list(submission[EMAIL2GIT].keys())
                             inform(email[0])
                 return
         fault("Non-existing Course ID")
 
-def member_as_email(students_yaml_file: str, group_submissions: dict, include_group: bool, include_member: bool, include_initials: bool):
+
+def member_as_email(
+    students_yaml_file: str,
+    group_submissions: dict,
+    include_group: bool,
+    include_member: bool,
+    include_initials: bool,
+):
     with Path(students_yaml_file).open("w") as outfile:
         for submission in group_submissions.values():
             if include_group:
@@ -111,17 +145,24 @@ def member_as_email(students_yaml_file: str, group_submissions: dict, include_gr
                 if include_member:
                     email = email[:-15]
                     if include_initials:
-                        team += '_' + email.replace('.', '')
+                        team += "_" + email.replace(".", "")
                     else:
-                        team += '_' + email.split(".")[-1]
+                        team += "_" + email.split(".")[-1]
 
-            if team[0] == '_':
+            if team[0] == "_":
                 team = team[1:]
-            outfile.write(team +":\n")
-            outfile.write("\tmembers:["+ ', '.join(group))
+            outfile.write(team + ":\n")
+            outfile.write("\tmembers:[" + ", ".join(group))
             outfile.write("]\n")
 
-def member_as_gitid(students_yaml_file: str, group_submissions: dict, include_group: bool, include_member: bool, include_initials: bool):
+
+def member_as_gitid(
+    students_yaml_file: str,
+    group_submissions: dict,
+    include_group: bool,
+    include_member: bool,
+    include_initials: bool,
+):
     with Path(students_yaml_file).open("w") as outfile:
         for submission in group_submissions.values():
             if include_group:
@@ -135,12 +176,12 @@ def member_as_gitid(students_yaml_file: str, group_submissions: dict, include_gr
                 if include_member:
                     email = email[:-15]
                     if include_initials:
-                        team += '_' + email.replace('.', '')
+                        team += "_" + email.replace(".", "")
                     else:
-                        team += '_' + email.split(".")[-1]
+                        team += "_" + email.split(".")[-1]
 
-            if team[0] == '_':
+            if team[0] == "_":
                 team = team[1:]
-            outfile.write(team +":\n")
-            outfile.write("\tmembers:["+ ', '.join(group))
+            outfile.write(team + ":\n")
+            outfile.write("\tmembers:[" + ", ".join(group))
             outfile.write("]\n")
