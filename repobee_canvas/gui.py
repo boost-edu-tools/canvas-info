@@ -1,8 +1,9 @@
 import PySimpleGUI as sg
 import os
 import base64
-from sys import platform
+import sys
 from pathlib import Path
+from typing import Tuple
 
 WINDOW_SIZE_X = 750
 WINDOW_SIZE_Y = 770
@@ -95,7 +96,7 @@ COURSE_SETTINGS_KEYS = TEXT_SETTINGS_KEY + BOOL_SETTINGS_KEY
 course_info = None
 course_title = "ID: {0}  Name: {1}"
 
-if platform == "darwin":
+if sys.platform == "darwin":
     sg.set_options(font = ("Any", 12))
 
 settings = sg.UserSettings()
@@ -424,7 +425,7 @@ def Folder_Button(key, disable) -> sg.Button:
 def Combo(values:list, key:str, default:str, expand_x:bool=True) -> sg.Combo:
     return sg.Combo(values, k=key, default_value=default, pad=DEFAULT_INPUT_PAD, enable_events=True, readonly=True, expand_x=expand_x)
 
-def Frame(title:str, layout:list, pad=None) -> sg.Frame:
+def Frame(title:str, layout:list, pad:Tuple[int, int]=None) -> sg.Frame:
     return sg.Frame(layout=layout, title=title, relief=sg.RELIEF_SUNKEN, expand_x=True, pad=pad)
 
 def Column(layout:list, key:str=None):

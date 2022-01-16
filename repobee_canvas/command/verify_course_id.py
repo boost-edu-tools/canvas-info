@@ -2,14 +2,14 @@
 
 """
 from ..canvas_api.api           import CanvasAPI
-from ..canvas_api.course        import Course
 
 from ..common                   import inform, fault
+from typing                     import Tuple, Optional
 
 def VerifyCourseByID(
     canvas_base_url: str,
     canvas_access_token: str,
-    canvas_course_id: str):
+    canvas_course_id: str)->Tuple[Optional[str], Optional[list]]:
     """Command to create a Canvas-Git mapping table and write it to a file."""
     CanvasAPI().setup(canvas_base_url, canvas_access_token)
 
