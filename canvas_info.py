@@ -1,12 +1,12 @@
 import PySimpleGUI as sg
 import os
-from urllib.parse                                 import urlparse
-from repobee_canvas.gui                           import *
-from repobee_canvas                               import gui
+from urllib.parse import urlparse
+from repobee_canvas.gui import *
+from repobee_canvas import gui
 from repobee_canvas.command.create_students_files import CreateStudentsFiles
-from repobee_canvas.command.verify_course_id      import VerifyCourseByID
+from repobee_canvas.command.verify_course_id import VerifyCourseByID
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     set_default_entries()
     window = make_window()
     last_screen_height = window.Size[1]
@@ -14,39 +14,51 @@ if __name__ == '__main__':
     while True:
         event, values = window.read()
 
-        if event in (KEY_EXIT, sg.WIN_CLOSED): # if user closes window
+        if event in (KEY_EXIT, sg.WIN_CLOSED):  # if user closes window
             break
 
         elif event == KEY_EDIT_TOKEN:
-            text = sg.popup_get_text('Access Token', default_text=window[KEY_ACCESS_TOKEN].DefaultText, size=(80, 1))
+            text = sg.popup_get_text(
+                "Access Token",
+                default_text=window[KEY_ACCESS_TOKEN].DefaultText,
+                size=(80, 1),
+            )
             if text is not None:
                 set_update_course_info(window, KEY_ACCESS_TOKEN, text)
 
         elif event == KEY_EDIT_URL:
-            text = sg.popup_get_text('Base URL', default_text=window[KEY_BASE_URL].DefaultText)
+            text = sg.popup_get_text(
+                "Base URL", default_text=window[KEY_BASE_URL].DefaultText
+            )
             if text is not None:
                 window[KEY_BASE_URL].update(value=text)
                 set_course_url(values[KEY_URL_OPTION], text)
 
         elif event == KEY_CSV_INFO_FILE_FOLDER:
-            file_path = update_browse(values[KEY_CSV_INFO_FILE], True, ((TYPE_CSV),)) #, CSV)
+            file_path = update_browse(
+                values[KEY_CSV_INFO_FILE], True, ((TYPE_CSV),)
+            )  # , CSV)
             if file_path != "":
                 set_update_course_info(window, KEY_CSV_INFO_FILE, file_path)
                 file_path = os.path.splitext(file_path)[0]
-                set_update_course_info(window, KEY_XLSX_INFO_FILE, file_path+".xlsx")
+                set_update_course_info(window, KEY_XLSX_INFO_FILE, file_path + ".xlsx")
 
         elif event in (CSV, XLSX, YAML, KEY_GROUP_CATEGORY, KEY_STU_FILE):
             set_course_info(event, values[event])
 
         elif event == KEY_XLSX_INFO_FILE_FOLDER:
-            file_path = update_browse(values[KEY_XLSX_INFO_FILE], True, ((TYPE_XLSX),)) #, XLSX)
+            file_path = update_browse(
+                values[KEY_XLSX_INFO_FILE], True, ((TYPE_XLSX),)
+            )  # , XLSX)
             if file_path != "":
                 set_update_course_info(window, KEY_XLSX_INFO_FILE, file_path)
                 file_path = os.path.splitext(file_path)[0]
-                set_update_course_info(window, KEY_CSV_INFO_FILE, file_path+".csv")
+                set_update_course_info(window, KEY_CSV_INFO_FILE, file_path + ".csv")
 
         elif event == KEY_STU_FILE_FOLDER:
-            file_path = update_browse(values[KEY_STU_FILE], True, (TYPE_YAML,)) #, YAML)
+            file_path = update_browse(
+                values[KEY_STU_FILE], True, (TYPE_YAML,)
+            )  # , YAML)
             if file_path != "":
                 set_update_course_info(window, KEY_STU_FILE, file_path)
 
@@ -62,17 +74,25 @@ if __name__ == '__main__':
             update_col_percent(window, last_screen_height, values[event])
 
         elif event == KEY_CLONE_COURSE:
-            course_id = get_input_course_id(window[KEY_COURSES].Values, DEFAULT_COURSE_ID)
+            course_id = get_input_course_id(
+                window[KEY_COURSES].Values, DEFAULT_COURSE_ID
+            )
             if course_id:
-                update_course_settings(window, course_id, get_entry(gui.course_id), MODE_CLONE)
+                update_course_settings(
+                    window, course_id, get_entry(gui.course_id), MODE_CLONE
+                )
 
         elif event == KEY_RENAME_COURSE:
             course_id = get_input_course_id(window[KEY_COURSES].Values, gui.course_id)
             if course_id:
-                update_course_settings(window, course_id, get_entry(gui.course_id), MODE_RENAME)
+                update_course_settings(
+                    window, course_id, get_entry(gui.course_id), MODE_RENAME
+                )
 
         elif event == KEY_NEW_COURSE:
-            course_id = course_id = get_input_course_id(window[KEY_COURSES].Values, DEFAULT_COURSE_ID)
+            course_id = course_id = get_input_course_id(
+                window[KEY_COURSES].Values, DEFAULT_COURSE_ID
+            )
             if course_id:
                 update_course_settings(window, course_id, None, MODE_CREATE)
 
@@ -91,13 +111,22 @@ if __name__ == '__main__':
             last_screen_height = wh
 
         elif event == KEY_DELETE:
-            res = sg.popup_ok_cancel('Are you sure: this will remove the course ' + window[KEY_COURSES].DefaultValue + ' from the Canvas Info app?', keep_on_top=True)
+            res = sg.popup_ok_cancel(
+                "Are you sure: this will remove the course "
+                + window[KEY_COURSES].DefaultValue
+                + " from the Canvas Info app?",
+                keep_on_top=True,
+            )
             if res == "OK":
                 delete_course_id(window)
 
         elif event == KEY_URL_OPTION:
             set_course_info(KEY_URL_OPTION, values[event])
-            set_update_course_info(window, KEY_BASE_URL, gui.course_info.course[KEY_URL_OPTIONS][values[event]])
+            set_update_course_info(
+                window,
+                KEY_BASE_URL,
+                gui.course_info.course[KEY_URL_OPTIONS][values[event]],
+            )
             check_url_lock(window[KEY_EDIT_URL], values[KEY_URL_OPTION])
 
         elif event in (KEY_EXECUTE, KEY_VERIFY):
@@ -114,8 +143,13 @@ if __name__ == '__main__':
                 courses_list = window[KEY_COURSES].Values
                 ind = courses_list.index(course_title)
                 sg.cprint("Verifying...")
-                course_name, group_set = VerifyCourseByID(urlparse(base_url), access_token, gui.course_id)
-                if course_name and gui.course_info.course[KEY_COURSE_NAME] != course_name:
+                course_name, group_set = VerifyCourseByID(
+                    urlparse(base_url), access_token, gui.course_id
+                )
+                if (
+                    course_name
+                    and gui.course_info.course[KEY_COURSE_NAME] != course_name
+                ):
                     set_course_info(KEY_COURSE_NAME, course_name)
                     course_title = gui.course_info.get_course_title()
                     courses_list[ind] = course_title
@@ -145,19 +179,25 @@ if __name__ == '__main__':
             stu_csv_info_file = None
             if csv:
                 stu_csv_info_file = values[KEY_CSV_INFO_FILE]
-                if is_empty(stu_csv_info_file, "Students Info CSV File") or is_path_invalid(stu_csv_info_file, "Info"):
+                if is_empty(
+                    stu_csv_info_file, "Students Info CSV File"
+                ) or is_path_invalid(stu_csv_info_file, "Info"):
                     continue
 
             stu_xlsx_info_file = None
             if xlsx:
                 stu_xlsx_info_file = values[KEY_XLSX_INFO_FILE]
-                if is_empty(stu_xlsx_info_file, "Students Info Excel File") or is_path_invalid(stu_xlsx_info_file, "Info"):
+                if is_empty(
+                    stu_xlsx_info_file, "Students Info Excel File"
+                ) or is_path_invalid(stu_xlsx_info_file, "Info"):
                     continue
 
             students_yaml_file = None
             if yaml:
                 students_yaml_file = values[KEY_STU_FILE]
-                if is_empty(students_yaml_file, "Students YAML File") or is_path_invalid(students_yaml_file, "YAML"):
+                if is_empty(
+                    students_yaml_file, "Students YAML File"
+                ) or is_path_invalid(students_yaml_file, "YAML"):
                     continue
 
             include_group = values[KEY_INC_GROUP]
@@ -174,8 +214,21 @@ if __name__ == '__main__':
             sg.cprint("Executing the Execute command...")
             disable_all_buttons(window)
             window.perform_long_operation(
-                lambda:CreateStudentsFiles(urlparse(base_url), access_token, gui.course_id, group_category_name, stu_csv_info_file, stu_xlsx_info_file, students_yaml_file, gui.course_info.course[KEY_MEMBER_OPTION], include_group, include_member, include_initials),
-                KEY_END)
+                lambda: CreateStudentsFiles(
+                    urlparse(base_url),
+                    access_token,
+                    gui.course_id,
+                    group_category_name,
+                    stu_csv_info_file,
+                    stu_xlsx_info_file,
+                    students_yaml_file,
+                    gui.course_info.course[KEY_MEMBER_OPTION],
+                    include_group,
+                    include_member,
+                    include_initials,
+                ),
+                KEY_END,
+            )
 
         elif event == KEY_END:
             enable_all_buttons(window)
@@ -196,7 +249,7 @@ if __name__ == '__main__':
             sg.cprint(window[event].TooltipObject.text)
 
         elif event == KEY_CLEAR:
-            window[KEY_ML].update('')
+            window[KEY_ML].update("")
             update_progress(0, 100)
 
     window.close()
