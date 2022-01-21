@@ -17,7 +17,7 @@ EMAIL2GIT = "email2git"
 def CreateStudentsFiles(
     canvas_base_url: str,
     canvas_access_token: str,
-    canvas_course_id: str,
+    canvas_course_id: int,
     group_category_name: str,
     student_csv_info_file: str,
     student_xlsx_info_file: str,
@@ -39,10 +39,10 @@ def CreateStudentsFiles(
         elif "Unauthorized" in str(e):
             fault("Erroneous Access Token")
         else:
-            fault(e)
+            fault(str(e))
     else:
         for course in courses:
-            if course["id"] == int(canvas_course_id):
+            if course["id"] == canvas_course_id:
                 course = Course.load(canvas_course_id)
                 canvas_git_mapping_table = canvas_git_map_table_wizard(
                     course, group_category_name

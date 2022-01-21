@@ -144,7 +144,7 @@ if __name__ == "__main__":
                 ind = courses_list.index(course_title)
                 sg.cprint("Verifying...")
                 course_name, group_set = VerifyCourseByID(
-                    urlparse(base_url), access_token, gui.course_id
+                    base_url, access_token, int(gui.course_id)
                 )
                 if (
                     course_name
@@ -215,13 +215,13 @@ if __name__ == "__main__":
             disable_all_buttons(window)
             window.perform_long_operation(
                 lambda: CreateStudentsFiles(
-                    urlparse(base_url),
+                    base_url,
                     access_token,
                     gui.course_id,
                     group_category_name,
-                    stu_csv_info_file,
-                    stu_xlsx_info_file,
-                    students_yaml_file,
+                    str(stu_csv_info_file),
+                    str(stu_xlsx_info_file),
+                    str(students_yaml_file),
                     gui.course_info.course[KEY_MEMBER_OPTION],
                     include_group,
                     include_member,
@@ -237,16 +237,22 @@ if __name__ == "__main__":
             sg.cprint(help_info)
 
         elif event == "token_tip":
-            window[event].TooltipObject.showtip()
+            tooltip = window[event].TooltipObject
+            assert tooltip is not None
+            tooltip.showtip()
             sg.cprint(token_tip_ml)
 
         elif event in ("info_file_tip", "info_file_excel_tip"):
-            window[event].TooltipObject.showtip()
+            tooltip = window[event].TooltipObject
+            assert tooltip is not None
+            tooltip.showtip()
             sg.cprint(info_file_tip_ml)
 
         elif event.endswith("_tip"):
-            window[event].TooltipObject.showtip()
-            sg.cprint(window[event].TooltipObject.text)
+            tooltip = window[event].TooltipObject
+            assert tooltip is not None
+            tooltip.showtip()
+            sg.cprint(tooltip.text)
 
         elif event == KEY_CLEAR:
             window[KEY_ML].update("")

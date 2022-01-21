@@ -3,7 +3,7 @@ import os
 import base64
 import sys
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Optional, Any
 
 WINDOW_SIZE_X = 750
 WINDOW_SIZE_Y = 770
@@ -155,7 +155,7 @@ def create_template_course():
 
 
 class Course:
-    def __init__(self, course_id: str, course: dict = None, mode: int = MODE_PARSE):
+    def __init__(self, course_id: Optional[str], course: dict = None, mode: int = MODE_PARSE):
         self.course = {}
         self.course_id = course_id
         self.course[KEY_COURSE_ID] = self.course_id
@@ -163,6 +163,7 @@ class Course:
             self.create_course()
             self.save()
         else:
+            assert course is not None
             self.course[KEY_URL_OPTIONS] = course[KEY_URL_OPTIONS]
             for key in COURSE_SETTINGS_KEYS:
                 self.course[key] = course[key]
@@ -200,6 +201,7 @@ class Course:
         return course_title.format(self.course_id, self.course[KEY_COURSE_NAME])
 
     def save(self):
+        assert self.course_id is not None
         set_entry(self.course_id, self.course)
 
     def get(self):
@@ -220,7 +222,7 @@ def set_update_course_info(window: sg.Window, key: str, value: str):
     window[key].update(value=value)
 
 
-def set_course_info(key: str, value: str):
+def set_course_info(key: str, value: Any):
     global course_info
     if course_info:
         course_info.update(key, value)
@@ -232,7 +234,7 @@ def set_course_url(key: str, value: str):
         course_info.update_url(key, value)
 
 
-def get_input_course_id(course_list: list, default_course: str) -> str:
+def get_input_course_id(course_list: list, default_course: str) -> Optional[str]:
     course_id = sg.popup_get_text(
         "New Course ID", default_text=default_course, keep_on_top=True
     )
@@ -266,7 +268,8 @@ def valid_course_id(course_list: list, course_id: str) -> bool:
     return True
 
 
-def update_course_ui(window: sg.Window, course_id: str, course: dict):
+def update_course_ui(window: sg.Window, course: dict):
+    assert course_info is not None
     window[KEY_COURSES].update(value=course_info.get_course_title())
     window[KEY_GROUP_CATEGORY].update(values=course[KEY_GROUP_CATEGORIES])
 
@@ -279,10 +282,11 @@ def update_course_ui(window: sg.Window, course_id: str, course: dict):
     check_url_lock(window[KEY_EDIT_URL], course[KEY_URL_OPTION])
 
 
-def update_course_settings(window: sg.Window, id: str, course: dict, mode: int):
+def update_course_settings(window: sg.Window, id: str, course: Optional[dict], mode: int):
     global course_info, course_id
     courses_list = window[KEY_COURSES].Values
     if mode == MODE_RENAME:
+        assert course_info is not None
         courses_list.remove(course_info.get_course_title())
         sg.user_settings_delete_entry(course_id)
     course_id = id
@@ -296,7 +300,7 @@ def update_course_settings(window: sg.Window, id: str, course: dict, mode: int):
         update_courses_list(window, courses_list)
 
     settings.set(KEY_COURSE_ID, course_id)
-    update_course_ui(window, course_id, course_info.get())
+    update_course_ui(window, course_info.get())
 
 
 def delete_course_id(window: sg.Window):
@@ -312,12 +316,13 @@ def delete_course_id(window: sg.Window):
     if len(courses_list) == 0:
         create_template_course()
         courses_list = settings[KEY_COURSES]
+    assert courses_list is not None
     update_courses_list(window, courses_list)
     course_id = courses_list[ind].split(" ")[1]
     settings.set(KEY_COURSE_ID, course_id)
     course_info = Course(course_id, settings[course_id])
     window[KEY_COURSES].update(set_to_index=ind)
-    update_course_ui(window, course_id, course_info.get())
+    update_course_ui(window, course_info.get())
 
 
 def check_url_lock(button: sg.Button, url_option: str):
@@ -360,11 +365,11 @@ with open(icon, "rb") as file:
     icon = base64.b64encode(file.read())
 
 
-def set_entry(key: str, val: str):
+def set_entry(key: str, val: Any):
     sg.user_settings_set_entry(key, val)
 
 
-def get_entry(key: str) -> str:
+def get_entry(key: str) -> Any:
     return sg.user_settings_get_entry(key)
 
 
@@ -378,7 +383,7 @@ def progressBar(bar: sg.ProgressBar, text: sg.Text):
     progress_text = text
 
 
-def update_browse(file_path: str, save_as: bool, file_types: str) -> str:
+def update_browse(file_path: str, save_as: bool, file_types: Tuple[Tuple[str, str]]) -> str:
     (folder, filename) = os.path.split(file_path)
     return sg.popup_get_file(
         "",
@@ -389,10 +394,6 @@ def update_browse(file_path: str, save_as: bool, file_types: str) -> str:
         initial_folder=folder,
         history=True,
     )  # default_extension=extension,
-
-
-def split_file(path: str) -> list:
-    os.path.splitext(path)
 
 
 def popup(message: str):
@@ -448,6 +449,8 @@ def help_button(key: str, tooltip: str) -> sg.Button:
 def update_progress(pos: int, length: int):
     global progress_bar, progress_text
     percent = int(100 * pos / length)
+    assert progress_bar is not None
+    assert progress_text is not None
     progress_bar.UpdateBar(percent)
     progress_text.update("{}%".format(percent))
 
@@ -517,7 +520,7 @@ def Folder_Button(key, disable) -> sg.Button:
     return sg.B("Browse", k=key, pad=((3, 0), 2))
 
 
-def Combo(values: list, key: str, default: str, expand_x: bool = True) -> sg.Combo:
+def Combo(values: Optional[list], key: str, default: str, expand_x: bool = True) -> sg.Combo:
     return sg.Combo(
         values,
         k=key,
@@ -816,9 +819,11 @@ def make_window():
     )
     progressBar(window[KEY_PRO_BAR], window[KEY_PRO_TEXT])
     col = window[KEY_CONFIG_COL]
-    frame_id = col.Widget.frame_id
-    frame = col.Widget.TKFrame
-    canvas = col.Widget.canvas
+    widget = col.Widget
+    assert widget is not None
+    frame_id = widget.frame_id
+    frame = widget.TKFrame
+    canvas = widget.canvas
     canvas.bind(
         "<Configure>",
         lambda event, canvas=canvas, frame_id=frame_id: configure_canvas(
