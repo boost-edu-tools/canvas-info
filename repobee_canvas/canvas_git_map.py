@@ -33,8 +33,6 @@ from .canvas_api.course import Course
 from .canvas_api.user   import PUBLIC_USER_FIELDS
 from .common            import warn, inform
 import xlsxwriter
-from openpyxl import load_workbook, Workbook
-from openpyxl.worksheet import table
 
 CANVAS_ID               = "canvas_id"
 CANVAS_LOGIN_ID         = "login_id"
