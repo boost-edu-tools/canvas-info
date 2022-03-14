@@ -89,9 +89,7 @@ class Table:
         for row in self.rows():
             rows.append(list(row.values()))
 
-        worksheet.add_table(
-            "A1:F" + str(len(rows) + 1), {"data": rows, "columns": headers}
-        )
+        worksheet.add_table(0, 0, len(rows), 5, {"data": rows, "columns": headers})
 
         workbook.close()
 
