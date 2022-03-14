@@ -254,7 +254,7 @@ if __name__ == "__main__":
             sg.cprint(tooltip.text)
 
         elif event == KEY_CLEAR:
-            window[KEY_ML].update("")
+            window[KEY_ML].update(value="")
             update_progress(0, 100)
 
     window.close()
