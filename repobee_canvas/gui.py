@@ -1,5 +1,4 @@
 import PySimpleGUI as sg
-import os
 import base64
 import sys
 from pathlib import Path
@@ -352,12 +351,12 @@ def resource_path(relative_path=None):
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except Exception:
-        base_path = os.path.abspath(".")
+        base_path = Path(".").resolve()
 
     if relative_path is None:
         return base_path
 
-    return os.path.join(base_path, relative_path)
+    return Path.joinpath(base_path, relative_path)
 
 
 icon = resource_path("icon.png")
@@ -384,14 +383,14 @@ def progressBar(bar: sg.ProgressBar, text: sg.Text):
 
 
 def update_browse(file_path: str, save_as: bool, file_types: Tuple[Tuple[str, str]]) -> str:
-    (folder, filename) = os.path.split(file_path)
+    file = Path(file_path)
     return sg.popup_get_file(
         "",
         save_as=save_as,
         file_types=file_types,
         no_window=True,
-        default_path=filename,
-        initial_folder=folder,
+        default_path=file.name,
+        initial_folder=str(file.parent),
         history=True,
     )  # default_extension=extension,
 
@@ -433,8 +432,7 @@ def is_invalid(string: str) -> bool:
 
 
 def is_path_invalid(path: str, file_type: str):
-    parent = os.path.dirname(path)
-    if os.path.exists(parent):
+    if Path(path).parent.exists():
         return False
 
     sg.popup("Error", "Invalid " + file_type + " file path.")
