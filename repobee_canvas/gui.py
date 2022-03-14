@@ -289,6 +289,7 @@ def update_course_settings(window: sg.Window, id: str, course: Optional[dict], m
         courses_list.remove(course_info.get_course_title())
         sg.user_settings_delete_entry(course_id)
     course_id = id
+    assert course is not None
     course_info = Course(course_id, course=course, mode=mode)
     if mode in (MODE_RENAME, MODE_CLONE, MODE_CREATE):
         course = course_info.get()
