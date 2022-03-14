@@ -241,7 +241,7 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
 
 
 # Private functions
-def _check_id(service: str, service_id: str, service_map: str) -> bool:
+def _check_id(service: str, service_id: str, service_map: dict):
     if not service_id:
         raise ValueError(f"The {service} ID cannot be empty.")
 
