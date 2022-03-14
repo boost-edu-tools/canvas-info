@@ -1,6 +1,5 @@
 import PySimpleGUI as sg
 import os
-from urllib.parse import urlparse
 from repobee_canvas.gui import *
 from repobee_canvas import gui
 from repobee_canvas.command.create_students_files import CreateStudentsFiles
