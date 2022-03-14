@@ -1,13 +1,14 @@
 import PySimpleGUI as sg
 import os
-from repobee_canvas.gui import *
+from repobee_canvas.gui import KEY_EXIT, KEY_EDIT_TOKEN, KEY_ACCESS_TOKEN, KEY_BASE_URL, KEY_EDIT_URL, KEY_URL_OPTION, KEY_CSV_INFO_FILE_FOLDER, KEY_CSV_INFO_FILE, TYPE_CSV, TYPE_XLSX, TYPE_YAML, KEY_XLSX_INFO_FILE,  KEY_GROUP_CATEGORY, CSV, XLSX, YAML, KEY_XLSX_INFO_FILE_FOLDER, KEY_STU_FILE_FOLDER, KEY_STU_FILE, KEY_GIT_ID, KEY_EMAIL, KEY_MEMBER_OPTION, KEY_INC_GROUP, KEY_INC_MEMBER, KEY_INC_INITIAL, KEY_COL_PERCENT, KEY_COURSES, KEY_CLONE_COURSE, DEFAULT_COURSE_ID, MODE_CLONE, MODE_RENAME, MODE_CREATE, MODE_PARSE, KEY_CONFIG_COL, KEY_EXECUTE, KEY_VERIFY, KEY_COURSE_NAME, KEY_RENAME_COURSE, KEY_NEW_COURSE, KEY_GROUP_CATEGORIES, KEY_DELETE, KEY_URL_OPTIONS, KEY_END, KEY_HELP, KEY_ML, KEY_CLEAR
+from repobee_canvas.gui import set_update_course_info, update_browse, set_course_info, get_input_course_id, update_course_settings, get_entry, is_empty, popup, is_path_invalid
 from repobee_canvas import gui
 from repobee_canvas.command.create_students_files import CreateStudentsFiles
 from repobee_canvas.command.verify_course_id import VerifyCourseByID
 
 if __name__ == "__main__":
-    set_default_entries()
-    window = make_window()
+    gui.set_default_entries()
+    window = gui.make_window()
     last_screen_height = window.Size[1]
 
     while True:
@@ -31,7 +32,7 @@ if __name__ == "__main__":
             )
             if text is not None:
                 window[KEY_BASE_URL].update(value=text)
-                set_course_url(values[KEY_URL_OPTION], text)
+                gui.set_course_url(values[KEY_URL_OPTION], text)
 
         elif event == KEY_CSV_INFO_FILE_FOLDER:
             file_path = update_browse(
@@ -70,7 +71,7 @@ if __name__ == "__main__":
                 window[KEY_INC_INITIAL].update(disabled=not values[KEY_INC_MEMBER])
 
         elif event == KEY_COL_PERCENT:
-            update_col_percent(window, last_screen_height, values[event])
+            gui.update_col_percent(window, last_screen_height, values[event])
 
         elif event == KEY_CLONE_COURSE:
             course_id = get_input_course_id(
@@ -97,7 +98,7 @@ if __name__ == "__main__":
 
         elif event == KEY_COURSES:
             course_id = values[event].split(" ")[1]
-            update_course_settings(window, course_id, settings[course_id], MODE_PARSE)
+            update_course_settings(window, course_id, gui.settings[course_id], MODE_PARSE)
 
         elif event == KEY_GROUP_CATEGORIES:
             set_update_course_info(window, KEY_GROUP_CATEGORY, values[event])
@@ -106,7 +107,7 @@ if __name__ == "__main__":
             wh = window.Size[1]
             if wh == last_screen_height:
                 continue
-            update_column_height(window[KEY_CONFIG_COL], wh, last_screen_height)
+            gui.update_column_height(window[KEY_CONFIG_COL], wh, last_screen_height)
             last_screen_height = wh
 
         elif event == KEY_DELETE:
@@ -117,7 +118,7 @@ if __name__ == "__main__":
                 keep_on_top=True,
             )
             if res == "OK":
-                delete_course_id(window)
+                gui.delete_course_id(window)
 
         elif event == KEY_URL_OPTION:
             set_course_info(KEY_URL_OPTION, values[event])
@@ -126,7 +127,7 @@ if __name__ == "__main__":
                 KEY_BASE_URL,
                 gui.course_info.course[KEY_URL_OPTIONS][values[event]],
             )
-            check_url_lock(window[KEY_EDIT_URL], values[KEY_URL_OPTION])
+            gui.check_url_lock(window[KEY_EDIT_URL], values[KEY_URL_OPTION])
 
         elif event in (KEY_EXECUTE, KEY_VERIFY):
             access_token = values[KEY_ACCESS_TOKEN]
@@ -152,7 +153,7 @@ if __name__ == "__main__":
                     set_course_info(KEY_COURSE_NAME, course_name)
                     course_title = gui.course_info.get_course_title()
                     courses_list[ind] = course_title
-                    update_courses_list(window, courses_list)
+                    gui.update_courses_list(window, courses_list)
                     window[KEY_COURSES].update(value=course_title)
                 if group_set and group_set != window[KEY_GROUP_CATEGORY].Values:
                     set_course_info(KEY_GROUP_CATEGORIES, group_set)
@@ -171,7 +172,7 @@ if __name__ == "__main__":
                 continue
 
             group_category_name = values[KEY_GROUP_CATEGORY]
-            if is_invalid(group_category_name):
+            if gui.is_invalid(group_category_name):
                 popup("Please verify first, and select the group category")
                 continue
 
@@ -211,7 +212,7 @@ if __name__ == "__main__":
                 continue
 
             sg.cprint("Executing the Execute command...")
-            disable_all_buttons(window)
+            gui.disable_all_buttons(window)
             window.perform_long_operation(
                 lambda: CreateStudentsFiles(
                     base_url,
@@ -230,22 +231,22 @@ if __name__ == "__main__":
             )
 
         elif event == KEY_END:
-            enable_all_buttons(window)
+            gui.enable_all_buttons(window)
 
         elif event == KEY_HELP:
-            sg.cprint(help_info)
+            sg.cprint(gui.help_info)
 
         elif event == "token_tip":
             tooltip = window[event].TooltipObject
             assert tooltip is not None
             tooltip.showtip()
-            sg.cprint(token_tip_ml)
+            sg.cprint(gui.token_tip_ml)
 
         elif event in ("info_file_tip", "info_file_excel_tip"):
             tooltip = window[event].TooltipObject
             assert tooltip is not None
             tooltip.showtip()
-            sg.cprint(info_file_tip_ml)
+            sg.cprint(gui.info_file_tip_ml)
 
         elif event.endswith("_tip"):
             tooltip = window[event].TooltipObject
@@ -255,6 +256,6 @@ if __name__ == "__main__":
 
         elif event == KEY_CLEAR:
             window[KEY_ML].update(value="")
-            update_progress(0, 100)
+            gui.update_progress(0, 100)
 
     window.close()
