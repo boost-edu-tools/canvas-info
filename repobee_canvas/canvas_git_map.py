@@ -26,46 +26,47 @@ functionality to deal with a table, like access to its column names, its rows,
 and reading from and writing to CSV files.
 """
 import csv
-from pathlib            import Path
-from typing             import List
+from pathlib import Path
+from typing import List
 
 from .canvas_api.course import Course
-from .common            import warn, inform
+from .common import warn, inform
 import xlsxwriter
 
-CANVAS_ID               = "canvas_id"
-CANVAS_LOGIN_ID         = "login_id"
-FIELD_SEP               = ","
-GIT_ID                  = "GitID"
-SHORT_NAME              = 'short_name'
-FULL_NAME               = 'FullName'
-GROUP                   = 'Group'
-ID                      = 'ID'
-EMAIL                   = 'Mail'
-NAME                    = 'Name'
-HEAD                    = 5
+CANVAS_ID = "canvas_id"
+CANVAS_LOGIN_ID = "login_id"
+FIELD_SEP = ","
+GIT_ID = "GitID"
+SHORT_NAME = "short_name"
+FULL_NAME = "FullName"
+GROUP = "Group"
+ID = "ID"
+EMAIL = "Mail"
+NAME = "Name"
+HEAD = 5
+
 
 class Table:
     """Table"""
 
-    def __init__(self, data : List):
+    def __init__(self, data: List):
         self._data = data
 
     @classmethod
-    def load(cls, path : Path):
+    def load(cls, path: Path):
         """Load Table from a csv file."""
         with path.open() as csv_file:
-            return cls(csv.DictReader(csv_file, delimiter = FIELD_SEP))
+            return cls(csv.DictReader(csv_file, delimiter=FIELD_SEP))
 
-    def write(self, path : Path):
+    def write(self, path: Path):
         # """Write this Canvas-Git map to csv file."""
-        with path.open("w", encoding='utf-8-sig', newline='') as csv_file:
+        with path.open("w", encoding="utf-8-sig", newline="") as csv_file:
 
             csv_writer = csv.DictWriter(
-                    csv_file,
-                    delimiter   = FIELD_SEP,
-                    fieldnames  = list(self.columns()),
-                    )
+                csv_file,
+                delimiter=FIELD_SEP,
+                fieldnames=list(self.columns()),
+            )
 
             csv_writer.writeheader()
 
@@ -76,23 +77,20 @@ class Table:
         headers = []
         columns = self.columns()
         for col in columns:
-            headers.append({'header': col})
+            headers.append({"header": col})
 
         workbook = xlsxwriter.Workbook(path)
         worksheet = workbook.add_worksheet()
-        worksheet.set_column('B:B', 15) #name column 15
-        worksheet.set_column('C:C', 25) #full name column 25
-        worksheet.set_column('F:F', 45) #set email column_width 45
+        worksheet.set_column("B:B", 15)  # name column 15
+        worksheet.set_column("C:C", 25)  # full name column 25
+        worksheet.set_column("F:F", 45)  # set email column_width 45
 
         rows = []
         for row in self.rows():
             rows.append(list(row.values()))
 
-        worksheet.add_table('A1:F'+str(len(rows)+1),
-            {
-                'data': rows,
-                'columns': headers
-            }
+        worksheet.add_table(
+            "A1:F" + str(len(rows) + 1), {"data": rows, "columns": headers}
         )
 
         workbook.close()
@@ -118,9 +116,12 @@ class Table:
     def get_stu_info(self) -> list:
         student_info = []
         for row in self.rows():
-            student_info.append({"group":row[GROUP], "email2git": {row[EMAIL]:row[GIT_ID]}})
+            student_info.append(
+                {"group": row[GROUP], "email2git": {row[EMAIL]: row[GIT_ID]}}
+            )
 
         return student_info
+
 
 class CanvasGitMap(Table):
     """Map Canvas IDs to Git IDs and vice versa. The CanvasGitMap uses a
@@ -129,47 +130,53 @@ class CanvasGitMap(Table):
 
     """Added: Map Canvas IDs to Email (column "email") for student YAML file"""
 
-    def __init__(self, data : List):
+    def __init__(self, data: List):
         super().__init__(data)
 
         self._canvas2git = {}
         self._git2canvas = {}
 
         for row in self.rows():
-            canvas_id   = row[CANVAS_ID]
-            git_id      = row[GIT_ID]
+            canvas_id = row[CANVAS_ID]
+            git_id = row[GIT_ID]
 
             _check_id("Canvas", canvas_id, self._canvas2git)
             _check_id("Git", git_id, self._git2canvas)
 
             self._canvas2git[canvas_id] = row[GIT_ID]
-            self._git2canvas[git_id]    = row[CANVAS_ID]
+            self._git2canvas[git_id] = row[CANVAS_ID]
 
-    def canvas2git(self, canvas_id : str) -> str:
+    def canvas2git(self, canvas_id: str) -> str:
         """Convert a Canvas ID to the correspondibg Git ID."""
         if canvas_id in self._canvas2git:
             return self._canvas2git[canvas_id]
 
         raise ValueError(f"Canvas ID '{canvas_id}' not mapped to a Git ID.")
 
-    def git2canvas(self, git_id : str) -> str:
+    def git2canvas(self, git_id: str) -> str:
         """Convert a Git ID to the corresponding Canvas ID."""
         if git_id in self._git2canvas:
             return self._git2canvas[git_id]
 
         raise ValueError(f"Git ID '{git_id}' not mapped to a Canvas ID.")
 
+
 # Guide the user in creating a potential Canvas-Git mapping table for a
 # Canvas course.
 
-ASK_GIT_ID          = ("Which column do you want to use as the students' "
-                        "Git ID in the Canvas-Git mapping table?")
-ASK_EXTRA_COLUMNS   = ("Which extra columns to you want to add to the "
-                        "Canvas-Git mapping table? "
-                        "Press SPACE to select an item; multiple items "
-                        "can be selected. Press ENTER to confirm your choice.")
+ASK_GIT_ID = (
+    "Which column do you want to use as the students' "
+    "Git ID in the Canvas-Git mapping table?"
+)
+ASK_EXTRA_COLUMNS = (
+    "Which extra columns to you want to add to the "
+    "Canvas-Git mapping table? "
+    "Press SPACE to select an item; multiple items "
+    "can be selected. Press ENTER to confirm your choice."
+)
 
-def canvas_git_map_table_wizard(course : Course, group_category : str = None) -> Table:
+
+def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> Table:
     """Create a Canvas-Git map CSV file."""
     inform("Getting the students' infomation...")
     students = course.students()
@@ -185,9 +192,9 @@ def canvas_git_map_table_wizard(course : Course, group_category : str = None) ->
 
     canvas_id_key = CANVAS_LOGIN_ID
 
-    git_id_key = 'sis_user_id'
-    email_key = 'email'
-    student_id = 'id'
+    git_id_key = "sis_user_id"
+    email_key = "email"
+    student_id = "id"
 
     data = []
 
@@ -234,8 +241,9 @@ def canvas_git_map_table_wizard(course : Course, group_category : str = None) ->
 
     return Table(data)
 
+
 # Private functions
-def _check_id(service : str, service_id : str, service_map : str) -> bool:
+def _check_id(service: str, service_id: str, service_map: str) -> bool:
     if not service_id:
         raise ValueError(f"The {service} ID cannot be empty.")
 
