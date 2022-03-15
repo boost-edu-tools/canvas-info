@@ -117,7 +117,7 @@ class CanvasAPI:
         self._session = requests.Session()
 
         if api_url:
-            self._api_url = api_url.geturl()
+            self._api_url = api_url
 
         if access_token:
             self._session.headers.update(
