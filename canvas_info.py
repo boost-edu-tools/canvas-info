@@ -217,7 +217,7 @@ if __name__ == "__main__":
                 lambda: CreateStudentsFiles(
                     base_url,
                     access_token,
-                    gui.course_id,
+                    int(gui.course_id),
                     group_category_name,
                     str(stu_csv_info_file),
                     str(stu_xlsx_info_file),
