@@ -53,7 +53,7 @@ class Course(CanvasObject):
 
         return self._students
 
-    def group_members(self, name: str) -> dict():
+    def group_members(self, name: str) -> dict:
         """The groups with memberships in this course.
 
         Returns:
