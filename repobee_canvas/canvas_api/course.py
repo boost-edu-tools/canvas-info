@@ -13,9 +13,8 @@
 """Wrapper for a Canvas course API object."""
 from typing             import List
 
-from .api               import CanvasAPI, ID, SECTIONS, ASSIGNMENTS
+from .api               import CanvasAPI, ID
 from .canvas_object     import CanvasObject
-from .section           import Section
 from .user              import User
 from .group             import Group
 from ..                 import gui
@@ -39,37 +38,6 @@ class Course (CanvasObject):
         :param int course_id: The course id
         """
         return Course(CanvasAPI().course(course_id))
-
-    def assignments(self):
-        """The assignments of this course.
-        """
-        if not self._assignments:
-            from .assignment import Assignment
-            self._assignments = [
-                                    Assignment.load(self.id, a[ID]) for a in
-                                    CanvasAPI().assignments_per_course(self.id)
-                                ]
-
-        return self._assignments
-
-    def sections(self, names : List[str] = []) -> List[Section]:
-        """The sections of this course.
-
-        Args:
-        - names: List of section names. If names is not empty, only those
-          sections with a name in the list are returned.
-
-        Returns:
-        A list of Canvas section objects for this course.
-        """
-        if not self._sections:
-            sections = [Section.load(self.id, s[ID]) for s in self._data[SECTIONS]]
-            self._sections = self.unique(sections, lambda s: s.id)
-
-        if len(names) > 0:
-            return [s for s in self._sections if s.name in names]
-
-        return self._sections
 
     def students(self) -> List[User]:
         """The students in this course.
