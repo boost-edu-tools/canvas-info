@@ -11,27 +11,28 @@
 # for the specific language governing permissions and limitations under the
 # licence.
 """Wrapper for a Canvas course API object."""
-from typing             import List
+from typing import List
 
-from .api               import CanvasAPI, ID
-from .canvas_object     import CanvasObject
-from .user              import User
-from .group             import Group
-from ..                 import gui
+from .api import CanvasAPI, ID
+from .canvas_object import CanvasObject
+from .user import User
+from .group import Group
+from .. import gui
 
-ID                      = "id"
-NAME                    = "name"
-GROUP_CATEGORY_ID       = "group_category_id"
-NAME                    = "name"
+ID = "id"
+NAME = "name"
+GROUP_CATEGORY_ID = "group_category_id"
+NAME = "name"
 
-class Course (CanvasObject):
+
+class Course(CanvasObject):
     """Canvas course.
 
     See https://canvas.instructure.com/doc/api/courses.html
     """
 
     @staticmethod
-    def load(course_id : int):
+    def load(course_id: int):
         """
         Load a Canvas course object.
 
