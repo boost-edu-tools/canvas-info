@@ -16,10 +16,7 @@ with open(
 
 test_requirements = ["pytest"]
 required = [
-        "repobee>=3.6.0",
-        "requests>=2.25",
-        "bullet>=2.2",
-        "tabulate>=0.8.9",
+        "requests>=2.25"
         ]
 
 setup(
