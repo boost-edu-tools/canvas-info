@@ -20,13 +20,20 @@ def CreateStudentsFiles(
     canvas_course_id: int,
     group_category_name: str,
     student_csv_info_file: str,
-    student_xlsx_info_file: str,
-    students_yaml_file: str,
-    student_member_option: str,
-    include_group: bool,
-    include_member: bool,
-    include_initials: bool,
+    student_xlsx_info_file: str = None,
+    students_yaml_file: str = None,
+    student_member_option: str = "email",
+    include_group: bool = False,
+    include_member: bool = False,
+    include_initials: bool = False,
 ):
+    if (
+        not student_csv_info_file
+        and not student_xlsx_info_file
+        and not students_yaml_file
+    ):
+        return
+
     """Command to create a Canvas-Git mapping table and write it to a file."""
     CanvasAPI().setup(canvas_base_url, canvas_access_token)
     inform("Loading course...")
@@ -112,6 +119,10 @@ def CreateStudentsFiles(
                                 include_member,
                                 include_initials,
                             )
+
+                        else:
+                            fault("Invalid member option.")
+                            return
 
                         inform(f"Created students YAML file: {students_yaml_file}.")
 
