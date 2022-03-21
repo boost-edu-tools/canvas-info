@@ -447,6 +447,8 @@ def help_button(key: str, tooltip: str) -> sg.Button:
 
 def update_progress(pos: int, length: int):
     global progress_bar, progress_text
+    if not progress_bar and not progress_text:
+        return
     percent = int(100 * pos / length)
     assert progress_bar is not None
     assert progress_text is not None
