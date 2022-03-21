@@ -2,11 +2,12 @@ import PySimpleGUI as sg
 import os
 from repobee_canvas.gui import KEY_EXIT, KEY_EDIT_TOKEN, KEY_ACCESS_TOKEN, KEY_BASE_URL, KEY_EDIT_URL, KEY_URL_OPTION, KEY_CSV_INFO_FILE_FOLDER, KEY_CSV_INFO_FILE, TYPE_CSV, TYPE_XLSX, TYPE_YAML, KEY_XLSX_INFO_FILE,  KEY_GROUP_CATEGORY, CSV, XLSX, YAML, KEY_XLSX_INFO_FILE_FOLDER, KEY_STU_FILE_FOLDER, KEY_STU_FILE, KEY_GIT_ID, KEY_EMAIL, KEY_MEMBER_OPTION, KEY_INC_GROUP, KEY_INC_MEMBER, KEY_INC_INITIAL, KEY_COL_PERCENT, KEY_COURSES, KEY_CLONE_COURSE, DEFAULT_COURSE_ID, MODE_CLONE, MODE_RENAME, MODE_CREATE, MODE_PARSE, KEY_CONFIG_COL, KEY_EXECUTE, KEY_VERIFY, KEY_COURSE_NAME, KEY_RENAME_COURSE, KEY_NEW_COURSE, KEY_GROUP_CATEGORIES, KEY_DELETE, KEY_URL_OPTIONS, KEY_END, KEY_HELP, KEY_ML, KEY_CLEAR
 from repobee_canvas.gui import set_update_course_info, update_browse, set_course_info, get_input_course_id, update_course_settings, get_entry, is_empty, popup, is_path_invalid
-from repobee_canvas import gui
+from repobee_canvas import gui, common
 from repobee_canvas.command.create_students_files import CreateStudentsFiles
 from repobee_canvas.command.verify_course_id import VerifyCourseByID
 
 if __name__ == "__main__":
+    common.CLI = False
     gui.set_default_entries()
     window = gui.make_window()
     last_screen_height = window.Size[1]
@@ -142,7 +143,7 @@ if __name__ == "__main__":
                 course_title = window[KEY_COURSES].DefaultValue
                 courses_list = window[KEY_COURSES].Values
                 ind = courses_list.index(course_title)
-                sg.cprint("Verifying...")
+                common.inform("Verifying...")
                 course_name, group_set = VerifyCourseByID(
                     base_url, access_token, int(gui.course_id)
                 )
@@ -161,7 +162,7 @@ if __name__ == "__main__":
                     set_update_course_info(window, KEY_GROUP_CATEGORY, group_set[0])
 
                 if course_name and group_set:
-                    sg.cprint("All settings successfully verified")
+                    common.inform("All settings successfully verified")
                 continue
 
             csv = values[CSV]
@@ -211,7 +212,7 @@ if __name__ == "__main__":
                 popup("Please select at least 1 option.")
                 continue
 
-            sg.cprint("Executing the Execute command...")
+            common.inform("Executing the Execute command...")
             gui.disable_all_buttons(window)
             window.perform_long_operation(
                 lambda: CreateStudentsFiles(
@@ -234,25 +235,25 @@ if __name__ == "__main__":
             gui.enable_all_buttons(window)
 
         elif event == KEY_HELP:
-            sg.cprint(gui.help_info)
+            common.inform(gui.help_info)
 
         elif event == "token_tip":
             tooltip = window[event].TooltipObject
             assert tooltip is not None
             tooltip.showtip()
-            sg.cprint(gui.token_tip_ml)
+            common.inform(gui.token_tip_ml)
 
         elif event in ("info_file_tip", "info_file_excel_tip"):
             tooltip = window[event].TooltipObject
             assert tooltip is not None
             tooltip.showtip()
-            sg.cprint(gui.info_file_tip_ml)
+            common.inform(gui.info_file_tip_ml)
 
         elif event.endswith("_tip"):
             tooltip = window[event].TooltipObject
             assert tooltip is not None
             tooltip.showtip()
-            sg.cprint(tooltip.text)
+            common.inform(tooltip.text)
 
         elif event == KEY_CLEAR:
             window[KEY_ML].update(value="")
