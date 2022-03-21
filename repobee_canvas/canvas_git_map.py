@@ -18,12 +18,6 @@ at least two columns: canvas_id and git_id. Furthermore, for readability, you
 can have more columns in the table. For example, an email address or student
 name is convenient.
 
-A CanvasGitMap is valid if each student has both a Canvas ID and a Git ID, and
-both IDs are unique in the map.
-
-The CanvasGitMap extends the Table class. The Table class offers basic
-functionality to deal with a table, like access to its column names, its rows,
-and reading from and writing to CSV files.
 """
 import csv
 from pathlib import Path
@@ -34,7 +28,6 @@ from .common import warn, inform
 import xlsxwriter
 
 CANVAS_ID = "canvas_id"
-CANVAS_LOGIN_ID = "login_id"
 FIELD_SEP = ","
 GIT_ID = "GitID"
 SHORT_NAME = "short_name"
@@ -121,59 +114,6 @@ class Table:
         return student_info
 
 
-class CanvasGitMap(Table):
-    """Map Canvas IDs to Git IDs and vice versa. The CanvasGitMap uses a
-    data table with at least two columns, "git_id" and "canvas_id", to perform
-    the mapping."""
-
-    """Added: Map Canvas IDs to Email (column "email") for student YAML file"""
-
-    def __init__(self, data: List):
-        super().__init__(data)
-
-        self._canvas2git = {}
-        self._git2canvas = {}
-
-        for row in self.rows():
-            canvas_id = row[CANVAS_ID]
-            git_id = row[GIT_ID]
-
-            _check_id("Canvas", canvas_id, self._canvas2git)
-            _check_id("Git", git_id, self._git2canvas)
-
-            self._canvas2git[canvas_id] = row[GIT_ID]
-            self._git2canvas[git_id] = row[CANVAS_ID]
-
-    def canvas2git(self, canvas_id: str) -> str:
-        """Convert a Canvas ID to the correspondibg Git ID."""
-        if canvas_id in self._canvas2git:
-            return self._canvas2git[canvas_id]
-
-        raise ValueError(f"Canvas ID '{canvas_id}' not mapped to a Git ID.")
-
-    def git2canvas(self, git_id: str) -> str:
-        """Convert a Git ID to the corresponding Canvas ID."""
-        if git_id in self._git2canvas:
-            return self._git2canvas[git_id]
-
-        raise ValueError(f"Git ID '{git_id}' not mapped to a Canvas ID.")
-
-
-# Guide the user in creating a potential Canvas-Git mapping table for a
-# Canvas course.
-
-ASK_GIT_ID = (
-    "Which column do you want to use as the students' "
-    "Git ID in the Canvas-Git mapping table?"
-)
-ASK_EXTRA_COLUMNS = (
-    "Which extra columns to you want to add to the "
-    "Canvas-Git mapping table? "
-    "Press SPACE to select an item; multiple items "
-    "can be selected. Press ENTER to confirm your choice."
-)
-
-
 def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> Table:
     """Create a Canvas-Git map CSV file."""
     inform("Getting the students' infomation...")
@@ -187,8 +127,6 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
 
     inform("Getting the information of groups...")
     group_members = course.group_members(group_category)
-
-    canvas_id_key = CANVAS_LOGIN_ID
 
     git_id_key = "sis_user_id"
     email_key = "email"
@@ -221,11 +159,6 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
         else:
             row[FULL_NAME] = ""
 
-        if canvas_id_key in fields:
-            row[ID] = fields[canvas_id_key]
-        else:
-            row[ID] = ""
-
         if git_id_key in fields:
             row[GIT_ID] = fields[git_id_key]
         else:
@@ -238,12 +171,3 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
     data = sorted(data, key=lambda d: d[GROUP])
 
     return Table(data)
-
-
-# Private functions
-def _check_id(service: str, service_id: str, service_map: dict):
-    if not service_id:
-        raise ValueError(f"The {service} ID cannot be empty.")
-
-    if service_id in service_map:
-        raise ValueError(f"The {service} ID '{service_id}' is not unique.")

@@ -11,11 +11,9 @@
 # for the specific language governing permissions and limitations under the
 # licence.
 """Wrapper for a Canvas group API object."""
-from typing import List
 
 from .canvas_object import CanvasObject
 from .api import CanvasAPI
-from .user import User
 
 class Group (CanvasObject):
     """Canvas group.
@@ -33,15 +31,7 @@ class Group (CanvasObject):
         """
         return Group(CanvasAPI().group(group_id))
 
-    def members(self) -> List[User]:
-        """Group members."""
-        if not self._members:
-            memberships = CanvasAPI().group_memberships(self.id)
-            self._members = [User.load(m["user_id"]) for m in memberships]
-
-        return self._members
-
-    def members_userid(self, name: str) -> dict():
+    def members_userid(self, name: str) -> dict:
         """Group members."""
         if not self._members_userid:
             memberships = CanvasAPI().group_memberships(self.id)
