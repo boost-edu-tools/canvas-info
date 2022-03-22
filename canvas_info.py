@@ -1,7 +1,64 @@
 import PySimpleGUI as sg
 import os
-from repobee_canvas.gui import KEY_EXIT, KEY_EDIT_TOKEN, KEY_ACCESS_TOKEN, KEY_BASE_URL, KEY_EDIT_URL, KEY_URL_OPTION, KEY_CSV_INFO_FILE_FOLDER, KEY_CSV_INFO_FILE, TYPE_CSV, TYPE_XLSX, TYPE_YAML, KEY_XLSX_INFO_FILE,  KEY_GROUP_CATEGORY, CSV, XLSX, YAML, KEY_XLSX_INFO_FILE_FOLDER, KEY_STU_FILE_FOLDER, KEY_STU_FILE, KEY_GIT_ID, KEY_EMAIL, KEY_MEMBER_OPTION, KEY_INC_GROUP, KEY_INC_MEMBER, KEY_INC_INITIAL, KEY_COL_PERCENT, KEY_COURSES, KEY_CLONE_COURSE, DEFAULT_COURSE_ID, MODE_CLONE, MODE_RENAME, MODE_CREATE, MODE_PARSE, KEY_CONFIG_COL, KEY_EXECUTE, KEY_VERIFY, KEY_COURSE_NAME, KEY_RENAME_COURSE, KEY_NEW_COURSE, KEY_GROUP_CATEGORIES, KEY_DELETE, KEY_URL_OPTIONS, KEY_END, KEY_HELP, KEY_ML, KEY_CLEAR
-from repobee_canvas.gui import set_update_course_info, update_browse, set_course_info, get_input_course_id, update_course_settings, get_entry, is_empty, popup, is_path_invalid
+from repobee_canvas.gui import (
+    KEY_EXIT,
+    KEY_EDIT_TOKEN,
+    KEY_ACCESS_TOKEN,
+    KEY_BASE_URL,
+    KEY_EDIT_URL,
+    KEY_URL_OPTION,
+    KEY_CSV_INFO_FILE_FOLDER,
+    KEY_CSV_INFO_FILE,
+    TYPE_CSV,
+    TYPE_XLSX,
+    TYPE_YAML,
+    KEY_XLSX_INFO_FILE,
+    KEY_GROUP_CATEGORY,
+    CSV,
+    XLSX,
+    YAML,
+    KEY_XLSX_INFO_FILE_FOLDER,
+    KEY_STU_FILE_FOLDER,
+    KEY_STU_FILE,
+    KEY_GIT_ID,
+    KEY_EMAIL,
+    KEY_MEMBER_OPTION,
+    KEY_INC_GROUP,
+    KEY_INC_MEMBER,
+    KEY_INC_INITIAL,
+    KEY_COL_PERCENT,
+    KEY_COURSES,
+    KEY_CLONE_COURSE,
+    DEFAULT_COURSE_ID,
+    MODE_CLONE,
+    MODE_RENAME,
+    MODE_CREATE,
+    MODE_PARSE,
+    KEY_CONFIG_COL,
+    KEY_EXECUTE,
+    KEY_VERIFY,
+    KEY_COURSE_NAME,
+    KEY_RENAME_COURSE,
+    KEY_NEW_COURSE,
+    KEY_GROUP_CATEGORIES,
+    KEY_DELETE,
+    KEY_URL_OPTIONS,
+    KEY_END,
+    KEY_HELP,
+    KEY_ML,
+    KEY_CLEAR,
+)
+from repobee_canvas.gui import (
+    set_update_course_info,
+    update_browse,
+    set_course_info,
+    get_input_course_id,
+    update_course_settings,
+    get_entry,
+    is_empty,
+    popup,
+    is_path_invalid,
+)
 from repobee_canvas import gui, common
 from repobee_canvas.command.create_students_files import CreateStudentsFiles
 from repobee_canvas.command.verify_course_id import VerifyCourseByID
@@ -99,7 +156,9 @@ if __name__ == "__main__":
 
         elif event == KEY_COURSES:
             course_id = values[event].split(" ")[1]
-            update_course_settings(window, course_id, gui.settings[course_id], MODE_PARSE)
+            update_course_settings(
+                window, course_id, gui.settings[course_id], MODE_PARSE
+            )
 
         elif event == KEY_GROUP_CATEGORIES:
             set_update_course_info(window, KEY_GROUP_CATEGORY, values[event])
