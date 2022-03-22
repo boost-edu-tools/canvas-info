@@ -60,7 +60,6 @@ def main():
             sys.argv[1:],
             "ht:g:o:GMI",
             [
-                "action=",
                 "access_token=",
                 "base_url=",
                 "bu=",
@@ -73,6 +72,17 @@ def main():
             ],
         )
 
+        if len(args):
+            action = args[0]
+            if not action in (KEY_VERIFY, KEY_INFO):
+                raise InvalidArgument(
+                    "Invalid action. verify or info is available."
+                )
+        else:
+            raise InvalidArgument(
+                "Invalid action. verify or info is available."
+            )
+
         for o, a in opts:
             if o in ("-h", "--help"):
                 # TODO
@@ -81,12 +91,6 @@ def main():
                 access_token = a
             elif o in ("--base_url"):
                 base_url = a
-            elif o in ("--action"):
-                if not (a in (KEY_VERIFY, KEY_INFO)):
-                    raise InvalidArgument(
-                        "Invalid action. verify or info is available."
-                    )
-                action = a
             elif o in ("--course_id"):
                 try:
                     course_id = int(a)
