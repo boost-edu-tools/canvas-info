@@ -13,3 +13,5 @@ build
 *.csv
 *.yaml
 *.xlsx
+*.app
+*.exe
