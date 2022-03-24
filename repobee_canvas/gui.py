@@ -154,7 +154,9 @@ def create_template_course():
 
 
 class Course:
-    def __init__(self, course_id: Optional[str], course: dict = None, mode: int = MODE_PARSE):
+    def __init__(
+        self, course_id: Optional[str], course: dict = None, mode: int = MODE_PARSE
+    ):
         self.course = {}
         self.course_id = course_id
         self.course[KEY_COURSE_ID] = self.course_id
@@ -281,7 +283,9 @@ def update_course_ui(window: sg.Window, course: dict):
     check_url_lock(window[KEY_EDIT_URL], course[KEY_URL_OPTION])
 
 
-def update_course_settings(window: sg.Window, id: str, course: Optional[dict], mode: int):
+def update_course_settings(
+    window: sg.Window, id: str, course: Optional[dict], mode: int
+):
     global course_info, course_id
     courses_list = window[KEY_COURSES].Values
     if mode == MODE_RENAME:
@@ -383,7 +387,9 @@ def progressBar(bar: sg.ProgressBar, text: sg.Text):
     progress_text = text
 
 
-def update_browse(file_path: str, save_as: bool, file_types: Tuple[Tuple[str, str]]) -> str:
+def update_browse(
+    file_path: str, save_as: bool, file_types: Tuple[Tuple[str, str]]
+) -> str:
     file = Path(file_path)
     return sg.popup_get_file(
         "",
@@ -521,7 +527,9 @@ def Folder_Button(key, disable) -> sg.Button:
     return sg.B("Browse", k=key, pad=((3, 0), 2))
 
 
-def Combo(values: Optional[list], key: str, default: str, expand_x: bool = True) -> sg.Combo:
+def Combo(
+    values: Optional[list], key: str, default: str, expand_x: bool = True
+) -> sg.Combo:
     return sg.Combo(
         values,
         k=key,
