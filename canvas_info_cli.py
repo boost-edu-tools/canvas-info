@@ -72,21 +72,11 @@ def main():
             ],
         )
 
-        if len(args):
-            action = args[0]
-            if not action in (KEY_VERIFY, KEY_INFO):
-                raise InvalidArgument(
-                    "Invalid action. verify or info is available."
-                )
-        else:
-            raise InvalidArgument(
-                "Invalid action. verify or info is available."
-            )
-
         for o, a in opts:
             if o in ("-h", "--help"):
                 # TODO
                 print("help message")
+                sys.exit(0)
             elif o in ("-t", "--access_token"):
                 access_token = a
             elif o in ("--base_url"):
@@ -114,6 +104,22 @@ def main():
                 include_initials = True
             elif o in ("--inc_initial"):
                 include_initials = get_boolean_argument(a)
+            elif o in ("--info_file"):
+                stu_csv_info_file = a + ".csv"
+                stu_xlsx_info_file = a + ".xlsx"
+            elif o in ("--yaml_file"):
+                students_yaml_file = a + ".yaml"
+
+        if len(args):
+            action = args[0]
+            if not action in (KEY_VERIFY, KEY_INFO):
+                raise InvalidArgument(
+                    "Invalid action. verify or info is available."
+                )
+        else:
+            raise InvalidArgument(
+                "Invalid action. verify or info is available."
+            )
 
         course = None
         settings = sg.UserSettings("canvas_info.json")
