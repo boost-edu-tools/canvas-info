@@ -361,7 +361,7 @@ def resource_path(relative_path=None):
     if relative_path is None:
         return base_path
 
-    return Path.joinpath(base_path, relative_path)
+    return Path(base_path) / relative_path
 
 
 icon = resource_path("icon.png")
