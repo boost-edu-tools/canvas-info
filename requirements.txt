@@ -1,0 +1,4 @@
+PySimpleGUI
+xlsxwriter
+pyinstaller
+requests>=2.25
