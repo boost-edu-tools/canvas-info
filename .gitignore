@@ -17,3 +17,6 @@ build
 *.xlsx
 *.app
 *.exe
+
+dist/*
+app
