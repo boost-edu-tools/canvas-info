@@ -19,7 +19,7 @@ def CreateStudentsFiles(
     canvas_access_token: str,
     canvas_course_id: int,
     group_category_name: str,
-    student_csv_info_file: str,
+    student_csv_info_file: str = None,
     student_xlsx_info_file: str = None,
     students_yaml_file: str = None,
     student_member_option: str = "email",
