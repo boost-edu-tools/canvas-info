@@ -194,6 +194,7 @@ def main():
                 include_member,
                 include_initials,
             )
+            common.inform("Done")
         else:
             common.fault("Invalid action.")
             sys.exit(1)

@@ -291,6 +291,7 @@ if __name__ == "__main__":
             )
 
         elif event == KEY_END:
+            common.inform("Done")
             gui.enable_all_buttons(window)
 
         elif event == KEY_HELP:
