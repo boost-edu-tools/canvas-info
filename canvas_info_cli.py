@@ -30,6 +30,7 @@ class InvalidArgument(Exception):
         super(InvalidArgument, self).__init__(msg)
         self.msg = msg
 
+
 def get_boolean_argument(arg):
     if isinstance(arg, bool):
         return arg
@@ -113,13 +114,9 @@ def main():
         if len(args):
             action = args[0]
             if not action in (KEY_VERIFY, KEY_INFO):
-                raise InvalidArgument(
-                    "Invalid action. verify or info is available."
-                )
+                raise InvalidArgument("Invalid action. verify or info is available.")
         else:
-            raise InvalidArgument(
-                "Invalid action. verify or info is available."
-            )
+            raise InvalidArgument("Invalid action. verify or info is available.")
 
         course = None
         settings = sg.UserSettings("canvas_info.json")
@@ -146,15 +143,11 @@ def main():
             raise InvalidArgument("Invalid base url. Please finish the settings")
 
         if not access_token:
-            raise InvalidArgument(
-                "Invalid access token. Please finish the settings"
-            )
+            raise InvalidArgument("Invalid access token. Please finish the settings")
 
         if action == KEY_VERIFY:
             # course_name, group_set =
-            VerifyCourseByID(
-                base_url, access_token, int(course_id)
-            )
+            VerifyCourseByID(base_url, access_token, int(course_id))
         elif action == KEY_INFO:
             if not group_category_name and course:
                 group_category_name = course[KEY_GROUP_CATEGORY]
