@@ -25,7 +25,7 @@ pyinstaller --distpath=app/mac app-spec-cli-bundle.spec
 echo
 echo "Creating GUI apps canvas-info"
 echo
-pyinstaller --distpath=app/mac app-spec-mac-gui.spec
+pyinstaller --distpath=app/mac app-spec-gui.spec
 echo
 echo "Done, GUI apps and CLI executables are in directory app/mac:"
 echo "CanvasInfoGUI.app     : macOS GUI app."
