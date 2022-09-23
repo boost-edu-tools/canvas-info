@@ -14,6 +14,7 @@ echo Creating GUI apps and CLI executables for macOS
 echo "Deleting old app directories"
 rm -rf app
 rm -rf build
+echo
 echo "Creating CLI executable canvas-info"
 echo
 pyinstaller --distpath=app/mac app-spec-cli-file.spec
