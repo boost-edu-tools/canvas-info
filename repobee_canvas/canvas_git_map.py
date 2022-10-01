@@ -76,13 +76,15 @@ class Table:
         worksheet = workbook.add_worksheet()
         worksheet.set_column("B:B", 15)  # name column 15
         worksheet.set_column("C:C", 25)  # full name column 25
-        worksheet.set_column("F:F", 45)  # set email column_width 45
+        worksheet.set_column("E:E", 45)  # set email column_width 45
 
         rows = []
         for row in self.rows():
             rows.append(list(row.values()))
 
-        worksheet.add_table(0, 0, len(rows), 5, {"data": rows, "columns": headers})
+        worksheet.add_table(
+            0, 0, len(rows) - 1, len(columns) - 1, {"data": rows, "columns": headers}
+        )
 
         workbook.close()
 
