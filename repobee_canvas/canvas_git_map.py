@@ -83,7 +83,8 @@ class Table:
             rows.append(list(row.values()))
 
         worksheet.add_table(
-            0, 0, len(rows) - 1, len(columns) - 1, {"data": rows, "columns": headers}
+            "A1:E" + str(len(rows) + 1),
+            {"data": rows, "columns": headers},
         )
 
         workbook.close()
