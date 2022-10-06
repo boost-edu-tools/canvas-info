@@ -28,6 +28,7 @@ KEY_PRO_TEXT = "progress"
 KEY_MEMBER_OPTION = "member_option"
 KEY_GIT_ID = "git_id"
 KEY_EMAIL = "email"
+KEY_MEM_BOTH = "(email, gitid)"
 KEY_REPO_NAME_OPTION = "repo_name_options"
 KEY_INC_GROUP = "include_group"
 KEY_INC_MEMBER = "include_member"
@@ -185,7 +186,7 @@ class Course:
             self.course[key] = ""
         for key in BOOL_SETTINGS_KEY:
             self.course[key] = False
-        self.course[KEY_MEMBER_OPTION] = KEY_EMAIL
+        self.course[KEY_MEMBER_OPTION] = KEY_MEM_BOTH
         self.course[KEY_COURSE_NAME] = "Unverified"
         self.course[KEY_BASE_URL] = TUE_API_URL
         self.course[KEY_STU_FILE] = home + "/students.yaml"
@@ -280,6 +281,7 @@ def update_course_ui(window: sg.Window, course: dict):
     member_option = course[KEY_MEMBER_OPTION]
     window[KEY_EMAIL].update(value=(KEY_EMAIL == member_option))
     window[KEY_GIT_ID].update(value=(KEY_GIT_ID == member_option))
+    window[KEY_MEM_BOTH].update(value=(KEY_MEM_BOTH == member_option))
     check_url_lock(window[KEY_EDIT_URL], course[KEY_URL_OPTION])
 
 
@@ -637,6 +639,11 @@ def make_window():
                                 "Members",
                                 layout=[
                                     [
+                                        Radio(
+                                            "(Email, ID)",
+                                            KEY_MEM_BOTH,
+                                            KEY_MEM_BOTH == member_option,
+                                        ),
                                         Radio(
                                             "Email",
                                             KEY_EMAIL,

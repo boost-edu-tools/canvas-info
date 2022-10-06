@@ -22,6 +22,7 @@ from repobee_canvas.gui import (
     KEY_STU_FILE,
     KEY_GIT_ID,
     KEY_EMAIL,
+    KEY_MEM_BOTH,
     KEY_MEMBER_OPTION,
     KEY_INC_GROUP,
     KEY_INC_MEMBER,
@@ -120,7 +121,7 @@ if __name__ == "__main__":
             if file_path != "":
                 set_update_course_info(window, KEY_STU_FILE, file_path)
 
-        elif event in [KEY_GIT_ID, KEY_EMAIL]:
+        elif event in [KEY_GIT_ID, KEY_EMAIL, KEY_MEM_BOTH]:
             set_course_info(KEY_MEMBER_OPTION, event)
 
         elif event in (KEY_INC_GROUP, KEY_INC_MEMBER, KEY_INC_INITIAL):
