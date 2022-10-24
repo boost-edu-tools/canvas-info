@@ -76,14 +76,14 @@ class Table:
         worksheet = workbook.add_worksheet()
         worksheet.set_column("B:B", 15)  # name column 15
         worksheet.set_column("C:C", 25)  # full name column 25
-        worksheet.set_column("E:E", 45)  # set email column_width 45
+        worksheet.set_column("F:F", 45)  # set email column_width 45
 
         rows = []
         for row in self.rows():
             rows.append(list(row.values()))
 
         worksheet.add_table(
-            "A1:E" + str(len(rows) + 1),
+            "A1:F" + str(len(rows) + 1),
             {"data": rows, "columns": headers},
         )
 
@@ -134,6 +134,7 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
     git_id_key = "sis_user_id"
     email_key = "email"
     student_id = "id"
+    canvas_id_key = "login_id"
 
     data = []
 
@@ -161,6 +162,11 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
             row[FULL_NAME] = fields[SHORT_NAME]
         else:
             row[FULL_NAME] = ""
+
+        if canvas_id_key in fields:
+            row[ID] = fields[canvas_id_key]
+        else:
+            row[ID] = ""
 
         if git_id_key in fields:
             row[GIT_ID] = fields[git_id_key]
