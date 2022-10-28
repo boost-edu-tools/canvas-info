@@ -144,7 +144,7 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
         if student_id in fields:
             user_id = fields[student_id]
             if user_id in group_members:
-                row[GROUP] = group_members[user_id]
+                row[GROUP] = int(group_members[user_id])
             else:
                 row[GROUP] = ""
         else:
@@ -163,7 +163,7 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
             row[FULL_NAME] = ""
 
         if git_id_key in fields:
-            row[GIT_ID] = fields[git_id_key]
+            row[GIT_ID] = int(fields[git_id_key])
         else:
             row[GIT_ID] = ""
 
@@ -171,6 +171,6 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
 
         data.append(row)
 
-    data = sorted(data, key=lambda d: d[GROUP])
+    data = sorted(data, key=lambda d: d[GROUP] if d[GROUP] != "" else 0)
 
     return Table(data)
