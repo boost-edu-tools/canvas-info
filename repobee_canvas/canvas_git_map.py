@@ -135,6 +135,7 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
     git_id_key = "sis_user_id"
     email_key = "email"
     student_id = "id"
+    canvas_id_key = "login_id"
 
     data = []
 
@@ -162,6 +163,11 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
             row[FULL_NAME] = fields[SHORT_NAME]
         else:
             row[FULL_NAME] = ""
+
+        if canvas_id_key in fields:
+            row[ID] = fields[canvas_id_key]
+        else:
+            row[ID] = ""
 
         if git_id_key in fields:
             row[ID] = int(fields[git_id_key])
