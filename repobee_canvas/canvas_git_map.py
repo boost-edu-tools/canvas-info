@@ -90,6 +90,35 @@ class Table:
 
         workbook.close()
 
+    def reformatTeammates(self):
+        rows = [["Section", "Team", "Name", "Email", "Comments"]]
+        section = 0
+        group = 0
+        for row in self.rows():
+            if group != row[GROUP]:
+                group = row[GROUP]
+                section += 1
+            rows.append([section, row[GROUP], row[FULL_NAME], row[EMAIL], row[ID]])
+        return rows
+
+    def writeTeammatesExcel(self, path: str):
+        rows = self.reformatTeammates()
+
+        workbook = xlsxwriter.Workbook(path)
+        worksheet = workbook.add_worksheet()
+        worksheet.set_column("C:C", 25)  # full name column 25
+        worksheet.set_column("D:D", 40)  # set email column_width 45
+        
+        row = 0
+        # Iterate over the data and write it out row by row.
+        for data in rows:
+            for col, d in enumerate(data):
+                worksheet.write(row, col, d)
+                print((row, col, d))
+            row += 1
+        
+        workbook.close()
+
     def columns(self):
         """Generator for the column names of this Table."""
         columns = []
