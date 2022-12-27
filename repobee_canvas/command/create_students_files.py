@@ -23,6 +23,7 @@ def CreateStudentsFiles(
     student_csv_info_file: str = None,
     student_xlsx_info_file: str = None,
     students_yaml_file: str = None,
+    students_teammates_file: str = None,
     student_member_option: str = "email",
     include_group: bool = False,
     include_member: bool = False,
@@ -32,6 +33,7 @@ def CreateStudentsFiles(
         not student_csv_info_file
         and not student_xlsx_info_file
         and not students_yaml_file
+        and not students_teammates_file
     ):
         return
 
@@ -59,6 +61,7 @@ def CreateStudentsFiles(
                 if canvas_git_mapping_table.empty():
                     warn("No students found.")
                 else:
+                    canvas_git_mapping_table.writeTeammatesExcel(Path(student_xlsx_info_file))
                     if student_csv_info_file:
                         canvas_git_mapping_table.write(Path(student_csv_info_file))
                         inform(
@@ -141,6 +144,13 @@ def CreateStudentsFiles(
                         for submission in groupless_submissions:
                             email = list(submission[EMAIL2GIT].keys())
                             inform(email[0])
+
+                    if students_teammates_file:
+                        canvas_git_mapping_table.writeExcel(students_teammates_file)
+                        inform(
+                            f"Created students info Teammates Excel file:  {students_teammates_file}"
+                        )
+
                 return
         fault("Non-existing Course ID")
 
