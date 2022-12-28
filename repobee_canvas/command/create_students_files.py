@@ -61,7 +61,6 @@ def CreateStudentsFiles(
                 if canvas_git_mapping_table.empty():
                     warn("No students found.")
                 else:
-                    canvas_git_mapping_table.writeTeammatesExcel(Path(student_xlsx_info_file))
                     if student_csv_info_file:
                         canvas_git_mapping_table.write(Path(student_csv_info_file))
                         inform(
@@ -146,7 +145,9 @@ def CreateStudentsFiles(
                             inform(email[0])
 
                     if students_teammates_file:
-                        canvas_git_mapping_table.writeExcel(students_teammates_file)
+                        canvas_git_mapping_table.writeTeammatesExcel(
+                            Path(students_teammates_file)
+                        )
                         inform(
                             f"Created students info Teammates Excel file:  {students_teammates_file}"
                         )
