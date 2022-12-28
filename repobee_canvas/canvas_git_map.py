@@ -29,7 +29,7 @@ import xlsxwriter
 
 CANVAS_ID = "canvas_id"
 FIELD_SEP = ","
-# GIT_ID = "GitID"
+GIT_ID = "GitID"
 SHORT_NAME = "short_name"
 FULL_NAME = "FullName"
 GROUP = "Group"
@@ -77,14 +77,14 @@ class Table:
         worksheet = workbook.add_worksheet()
         worksheet.set_column("B:B", 15)  # name column 15
         worksheet.set_column("C:C", 25)  # full name column 25
-        worksheet.set_column("F:F", 45)  # set email column_width 45
+        worksheet.set_column("G:G", 45)  # set email column_width 45
 
         rows = []
         for row in self.rows():
             rows.append(list(row.values()))
 
         worksheet.add_table(
-            "A1:F" + str(len(rows) + 1),
+            "A1:G" + str(len(rows) + 1),
             {"data": rows, "columns": headers},
         )
 
@@ -92,12 +92,10 @@ class Table:
 
     def reformatTeammates(self):
         rows = [["Section", "Team", "Name", "Email", "Comments"]]
-        section = 0
-        group = 0
         for row in self.rows():
-            if group != row[GROUP]:
-                group = row[GROUP]
-                section += 1
+            section = ""
+            if row[GROUP] != "":
+                section = int(row[GROUP] / 100)
             rows.append([section, row[GROUP], row[FULL_NAME], row[EMAIL], row[ID]])
         return rows
 
@@ -203,6 +201,11 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
         else:
             row[ID] = ""
             row[IDTXT] = ""
+
+        if git_id_key in fields:
+            row[GIT_ID] = int(fields[git_id_key])
+        else:
+            row[GIT_ID] = ""
 
         row[EMAIL] = email
 
