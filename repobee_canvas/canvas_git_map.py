@@ -108,15 +108,14 @@ class Table:
         worksheet = workbook.add_worksheet()
         worksheet.set_column("C:C", 25)  # full name column 25
         worksheet.set_column("D:D", 40)  # set email column_width 45
-        
+
         row = 0
         # Iterate over the data and write it out row by row.
         for data in rows:
             for col, d in enumerate(data):
                 worksheet.write(row, col, d)
-                print((row, col, d))
             row += 1
-        
+
         workbook.close()
 
     def columns(self):
