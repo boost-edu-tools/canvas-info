@@ -803,13 +803,20 @@ def make_window():
     layout = [
         [sg.Menu(menu)],
         [
-            sg.Column([[Button(KEY_EXECUTE, KEY_EXECUTE)]], pad=(0, (4, 0))),
             sg.Column(
                 [
                     [
-                        Button(KEY_HELP, KEY_HELP),
+                        Button(KEY_EXECUTE, KEY_EXECUTE),
                         Button(KEY_CLEAR, KEY_CLEAR),
+                        Button(KEY_HELP, KEY_HELP),
                         Button(KEY_EXIT, KEY_EXIT),
+                    ]
+                ],
+                pad=(0, (4, 0)),
+            ),
+            sg.Column(
+                [
+                    [
                         sg.Spin(
                             [i for i in range(20, 90, 10)],
                             initial_value=COL_PERCENT,
