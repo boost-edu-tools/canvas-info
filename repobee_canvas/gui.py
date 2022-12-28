@@ -19,9 +19,10 @@ KEY_GROUP_CATEGORIES = "group_categories"
 KEY_STU_FILE = "students_file"
 KEY_CSV_INFO_FILE = "stu_csv_info_file"
 KEY_XLSX_INFO_FILE = "stu_xlsx_info_file"
+KEY_TEAMMATES_INFO_FILE = "stu_teammates_info_file"
+KEY_INFO_FILE_FOLDER = "info_file_folder"
+KEY_INFO_FILE_FOLDER_FB = "info_file_folder_fb"  # folder browse
 KEY_STU_FILE_FOLDER = "students_file_folder"
-KEY_CSV_INFO_FILE_FOLDER = "stu_csv_info_file_folder"
-KEY_XLSX_INFO_FILE_FOLDER = "stu_xlsx_info_file_folder"
 KEY_ML = "-ML-"
 KEY_PRO_BAR = "progressbar"
 KEY_PRO_TEXT = "progress"
@@ -55,7 +56,7 @@ KEY_EDIT_TOKEN = "token_bt"
 KEY_EDIT_URL = "url_bt"
 
 DEFAULT_INPUT_PAD = ((3, 5), 2)
-TEXT_CB_SIZE = 8
+TEXT_CB_SIZE = 11
 INPUT_CB_PAD = ((0, 5), 2)
 
 token_tip = "Canvas > Account > Settings > New access token > Generate Token"
@@ -73,11 +74,9 @@ help_info = "help info"
 CSV = "csv"
 YAML = "yaml"
 XLSX = "xlsx"
+TEAMMATES = "teammates"
 
-TYPE_CSV = ("Text Files", "*.csv")
 TYPE_YAML = ("Text Files", "*.yaml")
-TYPE_XLSX = ("Excel Workbook", "*.xlsx")
-TYPE_ALL = ("ALL Files", "*.* *")
 
 DEFAULT_COURSE_ID = "00001"
 
@@ -89,15 +88,17 @@ MODE_CREATE = 3
 URL_OPTIONS = [KEY_TUE, KEY_CUSTOM]
 TUE_API_URL = "https://canvas.tue.nl/api/v1"
 
+NABLED_COLOR = ("white", "#082567")
+DISABLED_COLOR = ("grey", "#082567")
+
 buttons = [
     KEY_VERIFY,
     "token_bt",
     KEY_EDIT_URL,
     KEY_RENAME_COURSE,
     KEY_EXECUTE,
-    KEY_CSV_INFO_FILE_FOLDER,
-    KEY_XLSX_INFO_FILE_FOLDER,
     KEY_STU_FILE_FOLDER,
+    KEY_INFO_FILE_FOLDER_FB,
     KEY_CLONE_COURSE,
     KEY_NEW_COURSE,
     KEY_HELP,
@@ -108,12 +109,20 @@ TEXT_SETTINGS_KEY = [
     KEY_BASE_URL,
     KEY_ACCESS_TOKEN,
     KEY_GROUP_CATEGORY,
-    KEY_CSV_INFO_FILE,
-    KEY_XLSX_INFO_FILE,
+    KEY_INFO_FILE_FOLDER,
     KEY_STU_FILE,
     KEY_URL_OPTION,
 ]
-BOOL_SETTINGS_KEY = [CSV, XLSX, YAML, KEY_INC_INITIAL, KEY_INC_GROUP, KEY_INC_MEMBER]
+INFO_FILE_KEY = [KEY_CSV_INFO_FILE, KEY_XLSX_INFO_FILE, KEY_TEAMMATES_INFO_FILE]
+BOOL_SETTINGS_KEY = [
+    CSV,
+    XLSX,
+    TEAMMATES,
+    YAML,
+    KEY_INC_INITIAL,
+    KEY_INC_GROUP,
+    KEY_INC_MEMBER,
+]
 COURSE_SETTINGS_KEYS = TEXT_SETTINGS_KEY + BOOL_SETTINGS_KEY
 course_info = None
 course_title = "ID: {0}  Name: {1}"
@@ -167,7 +176,7 @@ class Course:
         else:
             assert course is not None
             self.course[KEY_URL_OPTIONS] = course[KEY_URL_OPTIONS]
-            for key in COURSE_SETTINGS_KEYS:
+            for key in COURSE_SETTINGS_KEYS + INFO_FILE_KEY:
                 self.course[key] = course[key]
             self.course[KEY_MEMBER_OPTION] = course[KEY_MEMBER_OPTION]
 
@@ -191,8 +200,10 @@ class Course:
         self.course[KEY_BASE_URL] = TUE_API_URL
         self.course[KEY_STU_FILE] = home + "/students.yaml"
         self.course[KEY_STU_FILE_FOLDER] = home
-        self.course[KEY_CSV_INFO_FILE] = home + "/students_info.csv"
-        self.course[KEY_XLSX_INFO_FILE] = home + "/students_info.xlsx"
+        self.course[KEY_INFO_FILE_FOLDER] = home
+        self.course[KEY_CSV_INFO_FILE] = "student-info.csv"
+        self.course[KEY_XLSX_INFO_FILE] = "student-info.xlsx"
+        self.course[KEY_TEAMMATES_INFO_FILE] = "teammates-students.xlsx"
         self.course[KEY_INC_GROUP] = True
         self.course[KEY_INC_MEMBER] = True
         self.course[KEY_GROUP_CATEGORIES] = []
@@ -388,13 +399,20 @@ def progressBar(bar: sg.ProgressBar, text: sg.Text):
     progress_text = text
 
 
-def update_browse(
-    file_path: str, save_as: bool, file_types: Tuple[Tuple[str, str]]
-) -> str:
+def update_browse(file_path: str) -> str:
+    return sg.popup_get_folder(
+        "",
+        no_window=True,
+        initial_folder=str(Path(file_path).parent),
+        history=True,
+    )  # default_extension=extension,
+
+
+def save_as(file_path: str, file_types: Tuple[Tuple[str, str]]) -> str:
     file = Path(file_path)
     return sg.popup_get_file(
         "",
-        save_as=save_as,
+        save_as=True,
         file_types=file_types,
         no_window=True,
         default_path=file.name,
@@ -508,9 +526,17 @@ def InputText(
     )
 
 
-def Checkbox(key, default, text: str = "", disabled: bool = False) -> sg.Checkbox:
+def Checkbox(
+    key, default, text: str = "", disabled: bool = False, size=(None, None)
+) -> sg.Checkbox:
     return sg.Checkbox(
-        text, k=key, default=default, enable_events=True, pad=(0, 2), disabled=disabled
+        text,
+        k=key,
+        default=default,
+        enable_events=True,
+        pad=(0, 2),
+        disabled=disabled,
+        s=size,
     )
 
 
@@ -525,7 +551,13 @@ def Radio(text: str, key: str, default_val: bool) -> sg.Radio:
 
 
 def Folder_Button(key, disable) -> sg.Button:
-    return sg.B("Browse", k=key, pad=((3, 0), 2))
+    return sg.B(
+        "Browse",
+        k=key,
+        pad=((3, 0), 2),
+        disabled=disable,
+        disabled_button_color=DISABLED_COLOR,
+    )
 
 
 def Combo(
@@ -578,42 +610,50 @@ def make_window():
     global course_info
     course_info = Course(course_id, course=settings[course_id])
     course = course_info.get()
-    csv_checked = course[CSV]
     xlsx_checked = course[XLSX]
-    yaml_checked = course[YAML]
     member_option = course[KEY_MEMBER_OPTION]
 
     menu = [["Course", KEY_DELETE]]
     local_config_frame = Frame(
-        "Local computer configuration",
+        "Output configuration",
         layout=[
             [
                 Frame(
                     "",
                     layout=[
                         [
-                            Text("Info File", sz=TEXT_CB_SIZE),
-                            Checkbox(CSV, csv_checked),
+                            Text("Output Folder", sz=TEXT_CB_SIZE),
                             InputText(
-                                KEY_CSV_INFO_FILE,
-                                course[KEY_CSV_INFO_FILE],
+                                KEY_INFO_FILE_FOLDER,
+                                course[KEY_INFO_FILE_FOLDER],
                                 pad=INPUT_CB_PAD,
                                 enable_events=False,
                             ),
-                            Folder_Button(KEY_CSV_INFO_FILE_FOLDER, not csv_checked),
-                            help_button("info_file_tip", info_file_tip),
+                            Folder_Button(KEY_INFO_FILE_FOLDER_FB, False),
+                            help_button("info_folder_tip", info_file_tip),
                         ],
                         [
-                            Text("", sz=TEXT_CB_SIZE),
-                            Checkbox(XLSX, xlsx_checked),
-                            InputText(
-                                KEY_XLSX_INFO_FILE,
-                                course[KEY_XLSX_INFO_FILE],
-                                pad=INPUT_CB_PAD,
-                                enable_events=False,
+                            Text("Output Files", sz=TEXT_CB_SIZE),
+                            Checkbox(
+                                CSV,
+                                course[CSV],
+                                course[KEY_CSV_INFO_FILE],
+                                size=(20, 0),
                             ),
-                            Folder_Button(KEY_XLSX_INFO_FILE_FOLDER, not xlsx_checked),
-                            help_button("info_file_excel_tip", info_file_tip),
+                            Checkbox(
+                                XLSX,
+                                xlsx_checked,
+                                course[KEY_XLSX_INFO_FILE],
+                                size=(20, 0),
+                            ),
+                            Checkbox(
+                                TEAMMATES,
+                                course[TEAMMATES],
+                                course[KEY_TEAMMATES_INFO_FILE],
+                                size=(20, 0),
+                            ),
+                            sg.Text("", expand_x=True),
+                            help_button("info_file_teammates_tip", info_file_tip),
                         ],
                     ],
                 )
@@ -624,7 +664,7 @@ def make_window():
                     layout=[
                         [
                             Text("YAML File", sz=TEXT_CB_SIZE),
-                            Checkbox(YAML, yaml_checked),
+                            Checkbox(YAML, course[YAML]),
                             InputText(
                                 KEY_STU_FILE,
                                 course[KEY_STU_FILE],
@@ -721,7 +761,7 @@ def make_window():
                             help_button("course_id_tip", course_id_tip),
                         ],
                         [
-                            Button("Rename Course ID", KEY_RENAME_COURSE),
+                            Button("Add New Course ID", KEY_RENAME_COURSE),
                             Button("Clone Course", KEY_CLONE_COURSE),
                             Button("New Course", KEY_NEW_COURSE),
                         ],

@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-import os
+from pathlib import Path
 from repobee_canvas.gui import (
     KEY_EXIT,
     KEY_EDIT_TOKEN,
@@ -7,17 +7,17 @@ from repobee_canvas.gui import (
     KEY_BASE_URL,
     KEY_EDIT_URL,
     KEY_URL_OPTION,
-    KEY_CSV_INFO_FILE_FOLDER,
     KEY_CSV_INFO_FILE,
-    TYPE_CSV,
-    TYPE_XLSX,
     TYPE_YAML,
     KEY_XLSX_INFO_FILE,
+    KEY_TEAMMATES_INFO_FILE,
     KEY_GROUP_CATEGORY,
     CSV,
     XLSX,
     YAML,
-    KEY_XLSX_INFO_FILE_FOLDER,
+    TEAMMATES,
+    KEY_INFO_FILE_FOLDER,
+    KEY_INFO_FILE_FOLDER_FB,
     KEY_STU_FILE_FOLDER,
     KEY_STU_FILE,
     KEY_GIT_ID,
@@ -59,6 +59,7 @@ from repobee_canvas.gui import (
     is_empty,
     popup,
     is_path_invalid,
+    save_as,
 )
 from repobee_canvas import gui, common
 from repobee_canvas.command.create_students_files import CreateStudentsFiles
@@ -93,31 +94,17 @@ if __name__ == "__main__":
                 window[KEY_BASE_URL].update(value=text)
                 gui.set_course_url(values[KEY_URL_OPTION], text)
 
-        elif event == KEY_CSV_INFO_FILE_FOLDER:
-            file_path = update_browse(
-                values[KEY_CSV_INFO_FILE], True, ((TYPE_CSV),)
-            )  # , CSV)
+        elif event == KEY_INFO_FILE_FOLDER_FB:
+            file_path = update_browse(values[KEY_INFO_FILE_FOLDER])
             if file_path != "":
-                set_update_course_info(window, KEY_CSV_INFO_FILE, file_path)
-                file_path = os.path.splitext(file_path)[0]
-                set_update_course_info(window, KEY_XLSX_INFO_FILE, file_path + ".xlsx")
+                set_course_info(KEY_INFO_FILE_FOLDER, file_path)
+                window[KEY_INFO_FILE_FOLDER].update(value=file_path)
 
-        elif event in (CSV, XLSX, YAML, KEY_GROUP_CATEGORY, KEY_STU_FILE):
+        elif event in (CSV, XLSX, YAML, TEAMMATES, KEY_GROUP_CATEGORY, KEY_STU_FILE):
             set_course_info(event, values[event])
 
-        elif event == KEY_XLSX_INFO_FILE_FOLDER:
-            file_path = update_browse(
-                values[KEY_XLSX_INFO_FILE], True, ((TYPE_XLSX),)
-            )  # , XLSX)
-            if file_path != "":
-                set_update_course_info(window, KEY_XLSX_INFO_FILE, file_path)
-                file_path = os.path.splitext(file_path)[0]
-                set_update_course_info(window, KEY_CSV_INFO_FILE, file_path + ".csv")
-
         elif event == KEY_STU_FILE_FOLDER:
-            file_path = update_browse(
-                values[KEY_STU_FILE], True, (TYPE_YAML,)
-            )  # , YAML)
+            file_path = save_as(values[KEY_STU_FILE], (TYPE_YAML,))  # , YAML)
             if file_path != "":
                 set_update_course_info(window, KEY_STU_FILE, file_path)
 
@@ -228,7 +215,8 @@ if __name__ == "__main__":
             csv = values[CSV]
             xlsx = values[XLSX]
             yaml = values[YAML]
-            if not csv and not xlsx and not yaml:
+            teammates = values[TEAMMATES]
+            if not csv and not xlsx and not yaml and not teammates:
                 popup("Please at least select one file to create.")
                 continue
 
@@ -237,21 +225,29 @@ if __name__ == "__main__":
                 popup("Please verify first, and select the group category")
                 continue
 
+            current_course = gui.course_info.get()
             stu_csv_info_file = None
-            if csv:
-                stu_csv_info_file = values[KEY_CSV_INFO_FILE]
-                if is_empty(
-                    stu_csv_info_file, "Students Info CSV File"
-                ) or is_path_invalid(stu_csv_info_file, "Info"):
+            stu_xlsx_info_file = None
+            stu_teammates_file = None
+            if csv or xlsx or teammates:
+                homepath = values[KEY_INFO_FILE_FOLDER]
+                if is_path_invalid(homepath, "Info"):
                     continue
 
-            stu_xlsx_info_file = None
-            if xlsx:
-                stu_xlsx_info_file = values[KEY_XLSX_INFO_FILE]
-                if is_empty(
-                    stu_xlsx_info_file, "Students Info Excel File"
-                ) or is_path_invalid(stu_xlsx_info_file, "Info"):
-                    continue
+                if csv:
+                    stu_csv_info_file = str(
+                        Path(homepath, current_course[KEY_CSV_INFO_FILE])
+                    )
+
+                if xlsx:
+                    stu_xlsx_info_file = str(
+                        Path(homepath, current_course[KEY_XLSX_INFO_FILE])
+                    )
+
+                if teammates:
+                    stu_teammates_file = str(
+                        Path(homepath, current_course[KEY_TEAMMATES_INFO_FILE])
+                    )
 
             students_yaml_file = None
             if yaml:
@@ -283,6 +279,7 @@ if __name__ == "__main__":
                     stu_csv_info_file,
                     stu_xlsx_info_file,
                     students_yaml_file,
+                    stu_teammates_file,
                     gui.course_info.course[KEY_MEMBER_OPTION],
                     include_group,
                     include_member,
