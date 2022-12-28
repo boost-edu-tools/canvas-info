@@ -32,17 +32,15 @@ from repobee_canvas.gui import (
     KEY_CLONE_COURSE,
     DEFAULT_COURSE_ID,
     MODE_CLONE,
-    MODE_RENAME,
     MODE_CREATE,
     MODE_PARSE,
     KEY_CONFIG_COL,
     KEY_EXECUTE,
     KEY_VERIFY,
     KEY_COURSE_NAME,
-    KEY_RENAME_COURSE,
+    KEY_DELETE_COURSE,
     KEY_NEW_COURSE,
     KEY_GROUP_CATEGORIES,
-    KEY_DELETE,
     KEY_URL_OPTIONS,
     KEY_END,
     KEY_HELP,
@@ -128,13 +126,6 @@ if __name__ == "__main__":
                     window, course_id, get_entry(gui.course_id), MODE_CLONE
                 )
 
-        elif event == KEY_RENAME_COURSE:
-            course_id = get_input_course_id(window[KEY_COURSES].Values, gui.course_id)
-            if course_id:
-                update_course_settings(
-                    window, course_id, get_entry(gui.course_id), MODE_RENAME
-                )
-
         elif event == KEY_NEW_COURSE:
             course_id = course_id = get_input_course_id(
                 window[KEY_COURSES].Values, DEFAULT_COURSE_ID
@@ -158,7 +149,7 @@ if __name__ == "__main__":
             gui.update_column_height(window[KEY_CONFIG_COL], wh, last_screen_height)
             last_screen_height = wh
 
-        elif event == KEY_DELETE:
+        elif event == KEY_DELETE_COURSE:
             res = sg.popup_ok_cancel(
                 "Are you sure: this will remove the course "
                 + window[KEY_COURSES].DefaultValue
