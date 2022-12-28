@@ -41,10 +41,9 @@ KEY_EXIT = "Exit"
 KEY_CLEAR = "Clear"
 KEY_CONFIG_COL = "config_column"
 KEY_VERIFY = "Verify"
-KEY_DELETE = "Delete Course"
 KEY_COURSE_NAME = "course_name"
 KEY_COURSES = "courses"
-KEY_RENAME_COURSE = "rename_course"
+KEY_DELETE_COURSE = "delete_course"
 KEY_CLONE_COURSE = "clone_course"
 KEY_NEW_COURSE = "new_course"
 KEY_END = "end"
@@ -81,7 +80,6 @@ TYPE_YAML = ("Text Files", "*.yaml")
 DEFAULT_COURSE_ID = "00001"
 
 MODE_PARSE = 0
-MODE_RENAME = 1
 MODE_CLONE = 2
 MODE_CREATE = 3
 
@@ -95,7 +93,7 @@ buttons = [
     KEY_VERIFY,
     "token_bt",
     KEY_EDIT_URL,
-    KEY_RENAME_COURSE,
+    KEY_DELETE_COURSE,
     KEY_EXECUTE,
     KEY_STU_FILE_FOLDER,
     KEY_INFO_FILE_FOLDER_FB,
@@ -301,13 +299,9 @@ def update_course_settings(
 ):
     global course_info, course_id
     courses_list = window[KEY_COURSES].Values
-    if mode == MODE_RENAME:
-        assert course_info is not None
-        courses_list.remove(course_info.get_course_title())
-        sg.user_settings_delete_entry(course_id)
     course_id = id
     course_info = Course(course_id, course=course, mode=mode)
-    if mode in (MODE_RENAME, MODE_CLONE, MODE_CREATE):
+    if mode in (MODE_CLONE, MODE_CREATE):
         course = course_info.get()
         window[KEY_COURSES].update(value=course_info.get_course_title())
         # update course_list
@@ -613,7 +607,7 @@ def make_window():
     xlsx_checked = course[XLSX]
     member_option = course[KEY_MEMBER_OPTION]
 
-    menu = [["Course", KEY_DELETE]]
+    menu = [["Course"]]
     local_config_frame = Frame(
         "Output configuration",
         layout=[
@@ -761,9 +755,9 @@ def make_window():
                             help_button("course_id_tip", course_id_tip),
                         ],
                         [
-                            Button("Add New Course ID", KEY_RENAME_COURSE),
-                            Button("Clone Course", KEY_CLONE_COURSE),
                             Button("New Course", KEY_NEW_COURSE),
+                            Button("Copy Course", KEY_CLONE_COURSE),
+                            Button("Delete Course", KEY_DELETE_COURSE),
                         ],
                     ],
                 )
