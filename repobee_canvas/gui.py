@@ -260,9 +260,11 @@ def get_input_course_id(course_list: list, default_course: str) -> Optional[str]
 
 def valid_course_id(course_list: list, course_id: str) -> bool:
     for course_title in course_list:
-        if course_id in course_title:
-            popup("The course exists")
-            return False
+        info = course_title.split(" ")
+        if len(info) > 1:
+            if course_id == info[1]:
+                popup("The course exists")
+                return False
 
     if course_id == "00000":
         popup("Course ID 00000 cannot be added.")
