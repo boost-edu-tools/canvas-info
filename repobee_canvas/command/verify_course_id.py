@@ -1,6 +1,7 @@
 """Create a students info file from a Canvas course.
 
 """
+
 from ..canvas_api.api import CanvasAPI
 
 from ..common import inform, fault

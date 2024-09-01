@@ -1,6 +1,7 @@
 """Create a students info file from a Canvas course.
 
 """
+
 from pathlib import Path
 
 from ..canvas_api.api import CanvasAPI

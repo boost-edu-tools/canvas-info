@@ -12,13 +12,13 @@
 # licence.
 """Base object for all Canvas API objects."""
 
+
 class CanvasObject:
     """Base class for Canvas API objects"""
 
-    def __init__(self, data = {}):
+    def __init__(self, data={}):
         """Create a new CanvasObject"""
         self._data = data
-
 
     def __getattr__(self, name):
         """Return value of named attribubte if it exists, None otherwise."""
@@ -27,12 +27,10 @@ class CanvasObject:
 
         return None
 
-
     def has_field(self, name):
         """Return True if this Canvas object has a field named 'name'. Return
         False otherwise."""
         return name in self._data
-
 
     def unique(self, elts, prop):
         """Return a list of unique elements from the properties."""

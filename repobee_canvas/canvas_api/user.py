@@ -14,18 +14,27 @@
 from .api import CanvasAPI
 from .canvas_object import CanvasObject
 
-TEST_STUDENT_NAME  = "test student"
-PUBLIC_USER_FIELDS = ["name", "sortable_name", "short_name", "sis_user_id",
-        "integration_id", "login_id", "email", "id"]
+TEST_STUDENT_NAME = "test student"
+PUBLIC_USER_FIELDS = [
+    "name",
+    "sortable_name",
+    "short_name",
+    "sis_user_id",
+    "integration_id",
+    "login_id",
+    "email",
+    "id",
+]
 
-class User (CanvasObject):
+
+class User(CanvasObject):
     """Canvas user
 
     See https://canvas.instructure.com/doc/api/users.html
     """
 
     @staticmethod
-    def load(user_id : int):
+    def load(user_id: int):
         """
         Load a Canvas user object.
 

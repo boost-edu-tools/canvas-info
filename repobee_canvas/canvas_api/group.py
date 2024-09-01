@@ -15,14 +15,15 @@
 from .canvas_object import CanvasObject
 from .api import CanvasAPI
 
-class Group (CanvasObject):
+
+class Group(CanvasObject):
     """Canvas group.
 
     See https://canvas.instructure.com/doc/api/groups.html
     """
 
     @staticmethod
-    def load(group_id : int):
+    def load(group_id: int):
         """
         Load a Canvas group object.
 

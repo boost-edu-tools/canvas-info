@@ -15,9 +15,7 @@ with open(
     assert re.match(r"^\d+(\.\d+){2}(-(alpha|beta|rc)(\.\d+)?)?$", __version__)
 
 test_requirements = ["pytest"]
-required = [
-        "requests>=2.25"
-        ]
+required = ["requests>=2.25"]
 
 setup(
     name="repobee-canvas",

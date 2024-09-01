@@ -113,7 +113,7 @@ def main():
 
         if len(args):
             action = args[0]
-            if not action in (KEY_VERIFY, KEY_INFO):
+            if action not in (KEY_VERIFY, KEY_INFO):
                 raise InvalidArgument("Invalid action. verify or info is available.")
         else:
             raise InvalidArgument("Invalid action. verify or info is available.")

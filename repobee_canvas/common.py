@@ -5,6 +5,7 @@ Functions:
 - warn: Show a warning.
 - fault: Show an error message.
 """
+
 import PySimpleGUI as sg
 
 CLI = True
