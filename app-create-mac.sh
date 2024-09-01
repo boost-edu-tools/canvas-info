@@ -17,17 +17,17 @@ rm -rf build
 echo
 echo "Creating CLI executable canvas-info"
 echo
-pyinstaller --distpath=app/mac app-spec-cli-file.spec
+pyinstaller --distpath=app app-spec-cli-file.spec
 echo
 echo "Creating CLI bundle canvas-info"
 echo
-pyinstaller --distpath=app/mac app-spec-cli-bundle.spec
+pyinstaller --distpath=app app-spec-cli-bundle.spec
 echo
 echo "Creating GUI apps canvas-info"
 echo
-pyinstaller --distpath=app/mac app-spec-gui.spec
+pyinstaller --distpath=app app-spec-gui.spec
 echo
-echo "Done, GUI apps and CLI executables are in directory app/mac:"
+echo "Done, GUI apps and CLI executables are in directory app:"
 echo "CanvasInfoGUI.app     : macOS GUI app."
 echo "canvas-info-cli       : macOS CLI executable for CLI input and output."
 echo "canvas-info-cli2gui   : macOS CLI executable that starts up the GUI app, normally not needed."
