@@ -6,11 +6,9 @@ from pathlib import Path
 
 from ..canvas_api.api import CanvasAPI
 from ..canvas_api.course import Course
-
 from ..canvas_git_map import canvas_git_map_table_wizard
-
-from ..common import inform, warn, fault
-from ..gui import KEY_MEM_BOTH, KEY_EMAIL, KEY_GIT_ID
+from ..common import fault, inform, warn
+from ..gui import KEY_EMAIL, KEY_GIT_ID, KEY_MEM_BOTH
 
 GROUP = "group"
 EMAIL2GIT = "email2git"

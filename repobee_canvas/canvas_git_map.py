@@ -23,9 +23,10 @@ import csv
 from pathlib import Path
 from typing import List
 
-from .canvas_api.course import Course
-from .common import warn, inform
 import xlsxwriter
+
+from .canvas_api.course import Course
+from .common import inform, warn
 
 CANVAS_ID = "canvas_id"
 FIELD_SEP = ","
