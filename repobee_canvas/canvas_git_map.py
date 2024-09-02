@@ -139,7 +139,8 @@ class Table:
         student_info = []
         for row in self.rows():
             student_info.append(
-                {"group": row[GROUP], "email2git": {row[EMAIL]: row[IDTXT]}}
+                # {"group": row[GROUP], "email2git": {row[EMAIL]: row[IDTXT]}}
+                {"group": row[GROUP], "email2git": {row[EMAIL]: str(row[GIT_ID])}}
             )
 
         return student_info
