@@ -165,7 +165,7 @@ def member_as_email(
     with Path(students_yaml_file).open("w") as outfile:
         for submission in group_submissions.values():
             if include_group:
-                team = submission[GROUP]
+                team = str(submission[GROUP])
             else:
                 team = ""
 
@@ -196,7 +196,7 @@ def member_as_gitid(
     with Path(students_yaml_file).open("w") as outfile:
         for submission in group_submissions.values():
             if include_group:
-                team = submission[GROUP]
+                team = str(submission[GROUP])
             else:
                 team = ""
 
