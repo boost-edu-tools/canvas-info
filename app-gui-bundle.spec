@@ -3,7 +3,7 @@
 block_cipher = None
 
 a = Analysis(
-    ['canvas_info.py'],
+    ['canvas_info_gui.py'],
     pathex=[],
     binaries=[],
     datas=
@@ -48,5 +48,5 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='CanvasInfoGUI.app',
-    icon='./icon.icns',  # Optionally set the path to your .icns icon file
+    icon='./icon.icns',
 )

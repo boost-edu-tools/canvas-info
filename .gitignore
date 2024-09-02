@@ -18,5 +18,10 @@ build
 *.app
 *.exe
 
-dist/*
-app
+dist/ 
+
+build-old/
+app-old/
+
+build/
+app/
