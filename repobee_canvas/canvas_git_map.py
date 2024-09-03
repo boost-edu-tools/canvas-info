@@ -35,7 +35,6 @@ SHORT_NAME = "short_name"
 FULL_NAME = "FullName"
 GROUP = "Group"
 ID = "ID"
-IDTXT = "IDText"
 EMAIL = "Mail"
 NAME = "Name"
 HEAD = 5
@@ -139,7 +138,6 @@ class Table:
         student_info = []
         for row in self.rows():
             student_info.append(
-                # {"group": row[GROUP], "email2git": {row[EMAIL]: row[IDTXT]}}
                 {"group": row[GROUP], "email2git": {row[EMAIL]: str(row[GIT_ID])}}
             )
 
@@ -174,7 +172,7 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
         if student_id in fields:
             user_id = fields[student_id]
             if user_id in group_members:
-                row[GROUP] = int(group_members[user_id])
+                row[GROUP] = group_members[user_id]
             else:
                 row[GROUP] = ""
         else:
@@ -194,10 +192,8 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
 
         if canvas_id_key in fields:
             row[ID] = int(fields[canvas_id_key])
-            row[IDTXT] = fields[canvas_id_key]
         else:
             row[ID] = ""
-            row[IDTXT] = ""
 
         if git_id_key in fields:
             row[GIT_ID] = int(fields[git_id_key])
@@ -208,6 +204,6 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
 
         data.append(row)
 
-    data = sorted(data, key=lambda d: d[GROUP] if d[GROUP] != "" else 0)
+    data = sorted(data, key=lambda d: d[GROUP])
 
     return Table(data)
