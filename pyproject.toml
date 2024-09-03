@@ -15,7 +15,7 @@ profile = "black"
 skip_gitignore = true
 
 [tool.poetry]
-name = "canvas-info-gui"
+name = "canvasinfo"
 version = "0.1"
 description = "Install with all dependencies: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gitinspectorgui"
 authors = ["Bert van Beek, Jingjing Wang <d.a.v.beek@tue.nl>"]

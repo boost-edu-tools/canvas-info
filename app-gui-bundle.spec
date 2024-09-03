@@ -3,7 +3,7 @@
 block_cipher = None
 
 a = Analysis(
-    ['canvas_info_gui.py'],
+    ['canvasinfo.py'],
     pathex=[],
     binaries=[],
     datas=

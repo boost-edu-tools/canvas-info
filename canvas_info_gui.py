@@ -1,69 +1,70 @@
-import PySimpleGUI as sg
 from pathlib import Path
+
+import PySimpleGUI as sg
+
+from repobee_canvas import common, gui
+from repobee_canvas.command.create_students_files import CreateStudentsFiles
+from repobee_canvas.command.verify_course_id import VerifyCourseByID
 from repobee_canvas.gui import (
-    KEY_EXIT,
-    KEY_EDIT_TOKEN,
+    CSV,
+    DEFAULT_COURSE_ID,
     KEY_ACCESS_TOKEN,
     KEY_BASE_URL,
-    KEY_EDIT_URL,
-    KEY_URL_OPTION,
+    KEY_CLEAR,
+    KEY_CLONE_COURSE,
+    KEY_COL_PERCENT,
+    KEY_CONFIG_COL,
+    KEY_COURSE_NAME,
+    KEY_COURSES,
     KEY_CSV_INFO_FILE,
-    TYPE_YAML,
-    KEY_XLSX_INFO_FILE,
-    KEY_TEAMMATES_INFO_FILE,
+    KEY_DELETE_COURSE,
+    KEY_EDIT_TOKEN,
+    KEY_EDIT_URL,
+    KEY_EMAIL,
+    KEY_END,
+    KEY_EXECUTE,
+    KEY_EXIT,
+    KEY_GIT_ID,
+    KEY_GROUP_CATEGORIES,
     KEY_GROUP_CATEGORY,
-    CSV,
-    XLSX,
-    YAML,
-    TEAMMATES,
+    KEY_HELP,
+    KEY_INC_GROUP,
+    KEY_INC_INITIAL,
+    KEY_INC_MEMBER,
     KEY_INFO_FILE_FOLDER,
     KEY_INFO_FILE_FOLDER_FB,
-    KEY_STU_FILE_FOLDER,
-    KEY_STU_FILE,
-    KEY_GIT_ID,
-    KEY_EMAIL,
     KEY_MEM_BOTH,
     KEY_MEMBER_OPTION,
-    KEY_INC_GROUP,
-    KEY_INC_MEMBER,
-    KEY_INC_INITIAL,
-    KEY_COL_PERCENT,
-    KEY_COURSES,
-    KEY_CLONE_COURSE,
-    DEFAULT_COURSE_ID,
+    KEY_ML,
+    KEY_NEW_COURSE,
+    KEY_STU_FILE,
+    KEY_STU_FILE_FOLDER,
+    KEY_TEAMMATES_INFO_FILE,
+    KEY_URL_OPTION,
+    KEY_URL_OPTIONS,
+    KEY_VERIFY,
+    KEY_XLSX_INFO_FILE,
     MODE_CLONE,
     MODE_CREATE,
     MODE_PARSE,
-    KEY_CONFIG_COL,
-    KEY_EXECUTE,
-    KEY_VERIFY,
-    KEY_COURSE_NAME,
-    KEY_DELETE_COURSE,
-    KEY_NEW_COURSE,
-    KEY_GROUP_CATEGORIES,
-    KEY_URL_OPTIONS,
-    KEY_END,
-    KEY_HELP,
-    KEY_ML,
-    KEY_CLEAR,
-)
-from repobee_canvas.gui import (
+    TEAMMATES,
+    TYPE_YAML,
+    XLSX,
+    YAML,
+    get_entry,
+    get_input_course_id,
+    is_empty,
+    is_path_invalid,
+    popup,
+    save_as,
+    set_course_info,
     set_update_course_info,
     update_browse,
-    set_course_info,
-    get_input_course_id,
     update_course_settings,
-    get_entry,
-    is_empty,
-    popup,
-    is_path_invalid,
-    save_as,
 )
-from repobee_canvas import gui, common
-from repobee_canvas.command.create_students_files import CreateStudentsFiles
-from repobee_canvas.command.verify_course_id import VerifyCourseByID
 
-if __name__ == "__main__":
+
+def main():
     common.CLI = False
     gui.set_default_entries()
     window = gui.make_window()
