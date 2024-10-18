@@ -1,28 +1,40 @@
-import sys
 import getopt
-import PySimpleGUI as sg
-from repobee_canvas import common
-from repobee_canvas.gui import (
-    KEY_BASE_URL,
-    KEY_ACCESS_TOKEN,
-    KEY_COURSE_ID,
-    KEY_COURSES,
-    KEY_EMAIL,
-    KEY_GROUP_CATEGORY,
-    KEY_MEMBER_OPTION,
-    KEY_CSV_INFO_FILE,
-    KEY_XLSX_INFO_FILE,
-    KEY_STU_FILE,
-    KEY_INC_GROUP,
-    KEY_INC_MEMBER,
-    KEY_INC_INITIAL,
+import sys
+from argparse import (
+    ArgumentParser,
+    BooleanOptionalAction,
+    RawDescriptionHelpFormatter,
 )
+from math import fabs
+from tkinter.font import names
+
+import PySimpleGUI as sg
+
+from repobee_canvas import common
 from repobee_canvas.command.create_students_files import CreateStudentsFiles
 from repobee_canvas.command.verify_course_id import VerifyCourseByID
-
+from repobee_canvas.gui import (
+    KEY_ACCESS_TOKEN,
+    KEY_BASE_URL,
+    KEY_COURSE_ID,
+    KEY_COURSES,
+    KEY_CSV_INFO_FILE,
+    KEY_EMAIL,
+    KEY_GIT_ID,
+    KEY_GROUP_CATEGORY,
+    KEY_INC_GROUP,
+    KEY_INC_INITIAL,
+    KEY_INC_MEMBER,
+    KEY_MEMBER_OPTION,
+    KEY_STU_FILE,
+    KEY_XLSX_INFO_FILE,
+)
+from repobee_canvas.tiphelp import Help
 
 KEY_INFO = "info"
 KEY_VERIFY = "verify"
+
+help = Help()
 
 
 class InvalidArgument(Exception):
@@ -57,71 +69,74 @@ def main():
     include_initials = False
 
     try:
-        opts, args = getopt.gnu_getopt(
-            sys.argv[1:],
-            "ht:g:o:GMI",
-            [
-                "access_token=",
-                "base_url=",
-                "bu=",
-                "course_id=",
-                "group=",
-                "option=" "inc_group=",
-                "inc_member=",
-                "inc_initial=",
-                "help",
-            ],
+        parser = ArgumentParser(
+            prog="cavas_info_cli",
+            formatter_class=RawDescriptionHelpFormatter,
+        )
+        parser.add_argument(
+            "-t",
+            "--access_token",
+            help=help.access_token,
+        )
+        parser.add_argument(
+            "--base_url",
+            help=help.base_url,
+        )
+        parser.add_argument(
+            "--course_id",
+            type=int,
+            help=help.course_id,
+        )
+        parser.add_argument("-g", "--group", help=help.group_category_name)
+        parser.add_argument(
+            "-o",
+            "--option",
+            action="append",
+            choices=[KEY_EMAIL, KEY_GIT_ID],
+            help=help.option,
+        )
+        parser.add_argument(
+            "-G",
+            "--inc_group",
+            action=BooleanOptionalAction,
+            default=False,
+            help=help.include_group,
+        )
+        parser.add_argument(
+            "-M",
+            "--inc_member",
+            action=BooleanOptionalAction,
+            default=False,
+            help=help.include_member,
+        )
+        parser.add_argument(
+            "-I",
+            "--inc_initial",
+            action=BooleanOptionalAction,
+            default=False,
+            help=help.include_initial,
+        )
+        parser.add_argument(
+            "--info_file",
+            help=help.info_file,
+        )
+        parser.add_argument(
+            "--yaml_file",
+            help=help.yaml_file,
+        )
+        parser.add_argument(
+            "action",
+            choices=[KEY_INFO, KEY_VERIFY],
+            help=help.action,
         )
 
-        for o, a in opts:
-            if o in ("-h", "--help"):
-                # TODO
-                print("help message")
-                sys.exit(0)
-            elif o in ("-t", "--access_token"):
-                access_token = a
-            elif o in ("--base_url"):
-                base_url = a
-            elif o in ("--course_id"):
-                try:
-                    course_id = int(a)
-                except Exception:
-                    raise InvalidArgument(
-                        "Invalid course ID. Course ID should be a number."
-                    )
-            elif o in ("-g", "--group"):
-                group_category_name = a
-            elif o in ("-o", "--option"):
-                member_option = a
-            elif o in ("-G"):
-                include_group = True
-            elif o in ("--inc_group"):
-                include_group = get_boolean_argument(a)
-            elif o in ("-M"):
-                include_member = True
-            elif o in ("--inc_member"):
-                include_member = get_boolean_argument(a)
-            elif o in ("-I"):
-                include_initials = True
-            elif o in ("--inc_initial"):
-                include_initials = get_boolean_argument(a)
-            elif o in ("--info_file"):
-                stu_csv_info_file = a + ".csv"
-                stu_xlsx_info_file = a + ".xlsx"
-            elif o in ("--yaml_file"):
-                students_yaml_file = a + ".yaml"
-
-        if len(args):
-            action = args[0]
-            if action not in (KEY_VERIFY, KEY_INFO):
-                raise InvalidArgument("Invalid action. verify or info is available.")
-        else:
-            raise InvalidArgument("Invalid action. verify or info is available.")
+        namespace = parser.parse_args()
 
         course = None
         settings = sg.UserSettings("canvas_info.json")
         courses = settings[KEY_COURSES]
 
+        course_id = namespace.course_id
         if not course_id:
             course_id = settings[KEY_COURSE_ID]
             if not course_id:
@@ -132,6 +147,8 @@ def main():
                 if c[4:].startswith(course_id):
                     course = settings[course_id]
 
+        base_url = namespace.base_url
+        access_token = namespace.access_token
         if course:
             if not base_url:
                 base_url = course[KEY_BASE_URL]
@@ -145,16 +162,29 @@ def main():
         if not access_token:
             raise InvalidArgument("Invalid access token. Please finish the settings")
 
-        if action == KEY_VERIFY:
+        if namespace.action == KEY_VERIFY:
             # course_name, group_set =
             VerifyCourseByID(base_url, access_token, int(course_id))
-        elif action == KEY_INFO:
+        elif namespace.action == KEY_INFO:
+            group_category_name = namespace.group
             if not group_category_name and course:
                 group_category_name = course[KEY_GROUP_CATEGORY]
                 if not group_category_name:
                     raise InvalidArgument(
                         "Invalid group category. Please  finish the settings"
                     )
+
+            if namespace.info_file:
+                stu_csv_info_file = namespace.info_file + ".csv"
+                stu_xlsx_info_file = namespace.info_file + ".xlsx"
+
+            if namespace.yaml_file:
+                students_yaml_file = namespace.yaml_file + ".yaml"
+
+            include_group = namespace.inc_group
+            include_member = namespace.inc_member
+            include_initials = namespace.inc_initials
+            member_option = namespace.option
 
             if course:
                 if not stu_csv_info_file:
