@@ -135,9 +135,8 @@ def CreateStudentsFiles(
 
                         inform(f"Created students YAML file: {students_yaml_file}.")
 
-                        inform(
-                            "The following students were not in a group (prefixes from @student.tue.nl):"
-                        )
+                        n = len(groupless_submissions)
+                        inform(f"The following {n} students were not in a group:")
                         for submission in groupless_submissions:
                             email = list(submission[EMAIL2GIT].keys())
                             inform(email[0])
