@@ -84,7 +84,7 @@ MODE_CLONE = 2
 MODE_CREATE = 3
 
 URL_OPTIONS = [KEY_TUE, KEY_CUSTOM]
-TUE_API_URL = "https://canvas.tue.nl/api/v1"
+TUE_API_URL = "https://canvas.tue.nl"
 
 NABLED_COLOR = ("white", "#082567")
 DISABLED_COLOR = ("grey", "#082567")
