@@ -21,13 +21,14 @@ name is convenient.
 """
 import csv
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 
 import xlsxwriter
 
 from canvasapi.course import Course
 from canvasapi.user import User
 from canvasapi.group import Group, GroupMembership
+from canvasapi.enrollment import Enrollment
 from canvasapi.paginated_list import PaginatedList
 from .common import inform, warn
 
@@ -158,16 +159,24 @@ def canvas_git_map_table_wizard(course: Course) -> Table:
     inform((f"Found students for this course."))
 
     inform("Getting the information of groups...")
-    group_members = {}
+    group_members: Dict[str, str] = {}
     groups: PaginatedList[Group] = course.get_groups()
     for group in groups:
         memberships: PaginatedList[GroupMembership] = group.get_memberships()
         for member in memberships:
             group_members[member.user_id] = group.name
 
+    inform("Getting the infomation of enrollments...")
+    user_enrollment: Dict[str, str] = {}
+    enrollments: PaginatedList[Enrollment] = course.get_enrollments()
+    for enrollment in enrollments:
+        user_enrollment[enrollment.user_id] = enrollment.role
+
     data = []
 
     for student in students:
+        if user_enrollment[student.id] != "StudentEnrollment":
+            continue
         row = {}
         if hasattr(student, "id"):
             user_id = student.id
