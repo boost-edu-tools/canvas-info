@@ -25,8 +25,6 @@ from repobee_canvas.gui import (
     KEY_EXECUTE,
     KEY_EXIT,
     KEY_GIT_ID,
-    KEY_GROUP_CATEGORIES,
-    KEY_GROUP_CATEGORY,
     KEY_HELP,
     KEY_INC_GROUP,
     KEY_INC_INITIAL,
@@ -99,7 +97,7 @@ def main():
                 set_course_info(KEY_INFO_FILE_FOLDER, file_path)
                 window[KEY_INFO_FILE_FOLDER].update(value=file_path)
 
-        elif event in (CSV, XLSX, YAML, TEAMMATES, KEY_GROUP_CATEGORY, KEY_STU_FILE):
+        elif event in (CSV, XLSX, YAML, TEAMMATES, KEY_STU_FILE):
             set_course_info(event, values[event])
 
         elif event == KEY_STU_FILE_FOLDER:
@@ -139,9 +137,6 @@ def main():
             update_course_settings(
                 window, course_id, gui.settings[course_id], MODE_PARSE
             )
-
-        elif event == KEY_GROUP_CATEGORIES:
-            set_update_course_info(window, KEY_GROUP_CATEGORY, values[event])
 
         elif event == "Conf":
             wh = window.Size[1]
@@ -195,10 +190,6 @@ def main():
                     courses_list[ind] = course_title
                     gui.update_courses_list(window, courses_list)
                     window[KEY_COURSES].update(value=course_title)
-                if group_set and group_set != window[KEY_GROUP_CATEGORY].Values:
-                    set_course_info(KEY_GROUP_CATEGORIES, group_set)
-                    window[KEY_GROUP_CATEGORY].update(values=group_set)
-                    set_update_course_info(window, KEY_GROUP_CATEGORY, group_set[0])
 
                 if course_name and group_set:
                     common.inform("All settings successfully verified")
@@ -210,11 +201,6 @@ def main():
             teammates = values[TEAMMATES]
             if not csv and not xlsx and not yaml and not teammates:
                 popup("Please at least select one file to create.")
-                continue
-
-            group_category_name = values[KEY_GROUP_CATEGORY]
-            if gui.is_invalid(group_category_name):
-                popup("Please verify first, and select the group category")
                 continue
 
             current_course = gui.course_info.get()
@@ -267,7 +253,6 @@ def main():
                     base_url,
                     access_token,
                     int(gui.course_id),
-                    group_category_name,
                     stu_csv_info_file,
                     stu_xlsx_info_file,
                     students_yaml_file,

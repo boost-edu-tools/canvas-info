@@ -5,6 +5,7 @@
 from pathlib import Path
 
 from canvasapi import Canvas
+
 from ..canvas_git_map import canvas_git_map_table_wizard
 from ..common import fault, inform, warn
 from ..gui import KEY_EMAIL, KEY_GIT_ID, KEY_MEM_BOTH
@@ -17,7 +18,6 @@ def CreateStudentsFiles(
     canvas_base_url: str,
     canvas_access_token: str,
     canvas_course_id: int,
-    group_category_name: str,
     student_csv_info_file: str | None = None,
     student_xlsx_info_file: str | None = None,
     students_yaml_file: str | None = None,
@@ -52,9 +52,7 @@ def CreateStudentsFiles(
         for course in courses:
             if course.id == canvas_course_id:
                 course = canvas.get_course(canvas_course_id)
-                canvas_git_mapping_table = canvas_git_map_table_wizard(
-                    course, group_category_name
-                )
+                canvas_git_mapping_table = canvas_git_map_table_wizard(course)
 
                 if canvas_git_mapping_table.empty():
                     warn("No students found.")

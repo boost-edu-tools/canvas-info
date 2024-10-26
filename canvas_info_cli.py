@@ -21,7 +21,6 @@ from repobee_canvas.gui import (
     KEY_CSV_INFO_FILE,
     KEY_EMAIL,
     KEY_GIT_ID,
-    KEY_GROUP_CATEGORY,
     KEY_INC_GROUP,
     KEY_INC_INITIAL,
     KEY_INC_MEMBER,
@@ -58,8 +57,6 @@ def main():
     base_url = None
     access_token = None
     course_id = None
-    action = None
-    group_category_name = None
     member_option = None
     stu_csv_info_file = None
     stu_xlsx_info_file = None
@@ -87,7 +84,6 @@ def main():
             type=int,
             help=help.course_id,
         )
-        parser.add_argument("-g", "--group", help=help.group_category_name)
         parser.add_argument(
             "-o",
             "--option",
@@ -166,14 +162,6 @@ def main():
             # course_name, group_set =
             VerifyCourseByID(base_url, access_token, int(course_id))
         elif namespace.action == KEY_INFO:
-            group_category_name = namespace.group
-            if not group_category_name and course:
-                group_category_name = course[KEY_GROUP_CATEGORY]
-                if not group_category_name:
-                    raise InvalidArgument(
-                        "Invalid group category. Please  finish the settings"
-                    )
-
             if namespace.info_file:
                 stu_csv_info_file = namespace.info_file + ".csv"
                 stu_xlsx_info_file = namespace.info_file + ".xlsx"
@@ -215,7 +203,6 @@ def main():
                 base_url,
                 access_token,
                 int(course_id),
-                group_category_name,
                 stu_csv_info_file,
                 stu_xlsx_info_file,
                 students_yaml_file,

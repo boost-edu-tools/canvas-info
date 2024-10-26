@@ -14,8 +14,6 @@ INIT_COL_HEIGHT = int((WINDOW_SIZE_Y - WINDOW_HEIGHT_CORR) * COL_PERCENT / 100)
 KEY_ACCESS_TOKEN = "canvas_access_token"
 KEY_BASE_URL = "canvas_base_url"
 KEY_COURSE_ID = "canvas_course_id"
-KEY_GROUP_CATEGORY = "group_category_name"
-KEY_GROUP_CATEGORIES = "group_categories"
 KEY_STU_FILE = "students_file"
 KEY_CSV_INFO_FILE = "stu_csv_info_file"
 KEY_XLSX_INFO_FILE = "stu_xlsx_info_file"
@@ -62,7 +60,6 @@ token_tip = "Canvas > Account > Settings > New access token > Generate Token"
 token_tip_ml = "Generate via: Canvas > Account > Settings > Blue Box '+ New access token' on page > Generate Token"
 base_url_tip = "Default value should be correct for TUe users of Canvas, only change when you know what you are doing."
 course_id_tip = "Number at the end of the Canvas URL for your course"
-group_category_tip = "Name of the Canvas Group Set (see Canvas tab People) that contains the student groups."
 info_file_tip = "Output file with columns: group number, name, Canvas student ID, GitLab student ID, email"
 info_file_tip_ml = "Output path for CSV or Excel file, containing for each student the following columns: group number, last name, Canvas student ID, student ID (used for GitLab login), email"
 yaml_file_tip = "Student info file for Repobee with for each student group: repo name and student IDs"
@@ -106,7 +103,6 @@ buttons = [
 TEXT_SETTINGS_KEY = [
     KEY_BASE_URL,
     KEY_ACCESS_TOKEN,
-    KEY_GROUP_CATEGORY,
     KEY_INFO_FILE_FOLDER,
     KEY_STU_FILE,
     KEY_URL_OPTION,
@@ -163,7 +159,7 @@ def create_template_course():
 
 class Course:
     def __init__(
-        self, course_id: Optional[str], course: dict = None, mode: int = MODE_PARSE
+        self, course_id: Optional[str], course: dict | None = None, mode: int = MODE_PARSE
     ):
         self.course = {}
         self.course_id = course_id
@@ -180,12 +176,9 @@ class Course:
 
             if mode != MODE_PARSE:
                 self.course[KEY_COURSE_NAME] = "Unverified"
-                self.course[KEY_GROUP_CATEGORIES] = []
-                self.course[KEY_GROUP_CATEGORY] = ""
                 self.save()
             else:
                 self.course[KEY_COURSE_NAME] = course[KEY_COURSE_NAME]
-                self.course[KEY_GROUP_CATEGORIES] = course[KEY_GROUP_CATEGORIES]
 
     def create_course(self):
         home = str(Path.home())
@@ -204,7 +197,6 @@ class Course:
         self.course[KEY_TEAMMATES_INFO_FILE] = "teammates-students.xlsx"
         self.course[KEY_INC_GROUP] = True
         self.course[KEY_INC_MEMBER] = True
-        self.course[KEY_GROUP_CATEGORIES] = []
         self.course[KEY_URL_OPTIONS] = {KEY_TUE: TUE_API_URL, KEY_CUSTOM: ""}
         self.course[KEY_URL_OPTION] = KEY_TUE
 
@@ -284,7 +276,6 @@ def valid_course_id(course_list: list, course_id: str) -> bool:
 def update_course_ui(window: sg.Window, course: dict):
     assert course_info is not None
     window[KEY_COURSES].update(value=course_info.get_course_title())
-    window[KEY_GROUP_CATEGORY].update(values=course[KEY_GROUP_CATEGORIES])
 
     for key in COURSE_SETTINGS_KEYS:
         window[key].update(value=course[key])
@@ -734,15 +725,6 @@ def make_window():
         "Canvas configuration",
         layout=[
             [Button(KEY_VERIFY, KEY_VERIFY)],
-            [
-                Text("Group Set"),
-                Combo(
-                    course[KEY_GROUP_CATEGORIES],
-                    KEY_GROUP_CATEGORY,
-                    default=course[KEY_GROUP_CATEGORY],
-                ),
-                help_button("group_category_tip", group_category_tip),
-            ],
             [
                 Frame(
                     "Course IDs",

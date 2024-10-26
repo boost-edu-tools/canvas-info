@@ -143,7 +143,7 @@ class Table:
         return student_info
 
 
-def canvas_git_map_table_wizard(course: Course, group_category: str | None = None) -> Table:
+def canvas_git_map_table_wizard(course: Course) -> Table:
     """Create a Canvas-Git map CSV file."""
     inform("Getting the students' infomation...")
     students = course.get_users()
