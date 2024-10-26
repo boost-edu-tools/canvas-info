@@ -6,7 +6,7 @@ from typing import Tuple, Optional, Any
 
 WINDOW_SIZE_X = 750
 WINDOW_SIZE_Y = 770
-MAX_COL_HEIGHT = 430
+MAX_COL_HEIGHT = 400
 WINDOW_HEIGHT_CORR = 45  # height correction: height of command buttons + title bar
 COL_PERCENT = 60
 INIT_COL_HEIGHT = int((WINDOW_SIZE_Y - WINDOW_HEIGHT_CORR) * COL_PERCENT / 100)
