@@ -191,7 +191,7 @@ def main():
                     gui.update_courses_list(window, courses_list)
                     window[KEY_COURSES].update(value=course_title)
 
-                if course_name and group_set:
+                if course_name:
                     common.inform("All settings successfully verified")
                 continue
 
