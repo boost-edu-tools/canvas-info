@@ -13,6 +13,5 @@ def test_verify_gitlab():
     access_token = course[KEY_ACCESS_TOKEN]
     assert base_url is not None
     assert access_token is not None
-    course_name, group_set = VerifyCourseByID(base_url, access_token, int(course_id))
+    course_name = VerifyCourseByID(base_url, access_token, int(course_id))
     assert course_name is not None
-    assert group_set is not None

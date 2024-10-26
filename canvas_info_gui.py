@@ -178,7 +178,7 @@ def main():
                 courses_list = window[KEY_COURSES].Values
                 ind = courses_list.index(course_title)
                 common.inform("Verifying...")
-                course_name, group_set = VerifyCourseByID(
+                course_name = VerifyCourseByID(
                     base_url, access_token, int(gui.course_id)
                 )
                 if (
