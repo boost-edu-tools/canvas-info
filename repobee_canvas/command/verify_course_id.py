@@ -5,6 +5,8 @@
 from typing import Optional
 
 from canvasapi import Canvas
+from canvasapi.course import Course
+from canvasapi.paginated_list import PaginatedList
 
 from ..common import fault, inform
 
@@ -24,7 +26,7 @@ def VerifyCourseByID(
 
 def getCourseName(canvas: Canvas, canvas_course_id: int) -> Optional[str]:
     try:
-        courses = canvas.get_courses()
+        courses: PaginatedList[Course] = canvas.get_courses()
     except Exception as e:
         if "Not Found" in str(e) or "Failed to establish a new connection" in str(e):
             fault("Verifying Base URL: Failed")

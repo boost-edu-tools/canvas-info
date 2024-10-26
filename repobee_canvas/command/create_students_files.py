@@ -5,6 +5,8 @@
 from pathlib import Path
 
 from canvasapi import Canvas
+from canvasapi.course import Course
+from canvasapi.paginated_list import PaginatedList
 
 from ..canvas_git_map import canvas_git_map_table_wizard
 from ..common import fault, inform, warn
@@ -36,11 +38,11 @@ def CreateStudentsFiles(
         return
 
     """Command to create a Canvas-Git mapping table and write it to a file."""
-    canvas = Canvas(canvas_base_url, canvas_access_token)
+    canvas: Canvas = Canvas(canvas_base_url, canvas_access_token)
     inform("Loading course...")
 
     try:
-        courses = canvas.get_courses()
+        courses: PaginatedList[Course] = canvas.get_courses()
     except Exception as e:
         if "Not Found" in str(e) or "Failed to establish a new connection" in str(e):
             fault("Erroneous Base URL")
@@ -51,7 +53,7 @@ def CreateStudentsFiles(
     else:
         for course in courses:
             if course.id == canvas_course_id:
-                course = canvas.get_course(canvas_course_id)
+                course: Course = canvas.get_course(canvas_course_id)
                 canvas_git_mapping_table = canvas_git_map_table_wizard(course)
 
                 if canvas_git_mapping_table.empty():

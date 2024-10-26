@@ -26,6 +26,9 @@ from typing import List
 import xlsxwriter
 
 from canvasapi.course import Course
+from canvasapi.user import User
+from canvasapi.group import Group, GroupMembership
+from canvasapi.paginated_list import PaginatedList
 from .common import inform, warn
 
 CANVAS_ID = "canvas_id"
@@ -146,7 +149,7 @@ class Table:
 def canvas_git_map_table_wizard(course: Course) -> Table:
     """Create a Canvas-Git map CSV file."""
     inform("Getting the students' infomation...")
-    students = course.get_users()
+    students: PaginatedList[User] = course.get_users()
 
     if not students._is_larger_than(0):
         warn((f"No students found for course '{course.name}'."))
@@ -156,9 +159,9 @@ def canvas_git_map_table_wizard(course: Course) -> Table:
 
     inform("Getting the information of groups...")
     group_members = {}
-    groups = course.get_groups()
+    groups: PaginatedList[Group] = course.get_groups()
     for group in groups:
-        memberships = group.get_memberships()
+        memberships: PaginatedList[GroupMembership] = group.get_memberships()
         for member in memberships:
             group_members[member.user_id] = group.name
 
