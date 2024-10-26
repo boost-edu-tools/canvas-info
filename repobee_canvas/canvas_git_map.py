@@ -25,13 +25,12 @@ from typing import List
 
 import xlsxwriter
 
-from .canvas_api.course import Course
+from canvasapi.course import Course
 from .common import inform, warn
 
 CANVAS_ID = "canvas_id"
 FIELD_SEP = ","
 GIT_ID = "GitID"
-SHORT_NAME = "short_name"
 FULL_NAME = "FullName"
 GROUP = "Group"
 ID = "ID"
@@ -95,7 +94,7 @@ class Table:
         for row in self.rows():
             section = ""
             if row[GROUP] != "":
-                section = int(row[GROUP] / 100)
+                section = int(row[GROUP]) / 100
             rows.append([section, row[GROUP], row[FULL_NAME], row[EMAIL], row[ID]])
         return rows
 
@@ -144,33 +143,31 @@ class Table:
         return student_info
 
 
-def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> Table:
+def canvas_git_map_table_wizard(course: Course, group_category: str | None = None) -> Table:
     """Create a Canvas-Git map CSV file."""
     inform("Getting the students' infomation...")
-    students = course.students()
+    students = course.get_users()
 
-    if len(students) <= 0:
+    if not students._is_larger_than(0):
         warn((f"No students found for course '{course.name}'."))
         return Table([])
 
-    inform((f"Found {len(students)} students for this course. "))
+    inform((f"Found students for this course."))
 
     inform("Getting the information of groups...")
-    group_members = course.group_members(group_category)
-
-    git_id_key = "sis_user_id"
-    email_key = "email"
-    student_id = "id"
-    canvas_id_key = "login_id"
+    group_members = {}
+    groups = course.get_groups()
+    for group in groups:
+        memberships = group.get_memberships()
+        for member in memberships:
+            group_members[member.user_id] = group.name
 
     data = []
 
     for student in students:
         row = {}
-        fields = student.fields()
-
-        if student_id in fields:
-            user_id = fields[student_id]
+        if hasattr(student, "id"):
+            user_id = student.id
             if user_id in group_members:
                 row[GROUP] = group_members[user_id]
             else:
@@ -179,24 +176,30 @@ def canvas_git_map_table_wizard(course: Course, group_category: str = None) -> T
             row[GROUP] = ""
 
         email = ""
-        if email_key in fields:
-            email = fields[email_key]
+        if hasattr(student, "email"):
+            email = student.email
             row[NAME] = email[:-15].split(".")[-1]
         else:
             row[NAME] = ""
 
-        if SHORT_NAME in fields:
-            row[FULL_NAME] = fields[SHORT_NAME]
+        if hasattr(student, "short_name"):
+            row[FULL_NAME] = student.short_name
         else:
             row[FULL_NAME] = ""
 
-        if canvas_id_key in fields:
-            row[ID] = int(fields[canvas_id_key])
+        if hasattr(student, "login_id"):
+            try:
+                row[ID] = int(student.login_id)
+            except:
+                row[ID] = student.login_id
         else:
             row[ID] = ""
 
-        if git_id_key in fields:
-            row[GIT_ID] = int(fields[git_id_key])
+        if hasattr(student, "sis_user_id"):
+            try:
+                row[GIT_ID] = student.sis_user_id
+            except:
+                row[GIT_ID] = student.sis_user_id
         else:
             row[GIT_ID] = ""
 

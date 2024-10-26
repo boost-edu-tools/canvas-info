@@ -4,8 +4,7 @@
 
 from pathlib import Path
 
-from ..canvas_api.api import CanvasAPI
-from ..canvas_api.course import Course
+from canvasapi import Canvas
 from ..canvas_git_map import canvas_git_map_table_wizard
 from ..common import fault, inform, warn
 from ..gui import KEY_EMAIL, KEY_GIT_ID, KEY_MEM_BOTH
@@ -37,11 +36,11 @@ def CreateStudentsFiles(
         return
 
     """Command to create a Canvas-Git mapping table and write it to a file."""
-    CanvasAPI().setup(canvas_base_url, canvas_access_token)
+    canvas = Canvas(canvas_base_url, canvas_access_token)
     inform("Loading course...")
 
     try:
-        courses = CanvasAPI().courses()
+        courses = canvas.get_courses()
     except Exception as e:
         if "Not Found" in str(e) or "Failed to establish a new connection" in str(e):
             fault("Erroneous Base URL")
@@ -51,8 +50,8 @@ def CreateStudentsFiles(
             fault(str(e))
     else:
         for course in courses:
-            if course["id"] == canvas_course_id:
-                course = Course.load(canvas_course_id)
+            if course.id == canvas_course_id:
+                course = canvas.get_course(canvas_course_id)
                 canvas_git_mapping_table = canvas_git_map_table_wizard(
                     course, group_category_name
                 )
@@ -145,7 +144,7 @@ def CreateStudentsFiles(
 
                     if students_teammates_file:
                         canvas_git_mapping_table.writeTeammatesExcel(
-                            Path(students_teammates_file)
+                            students_teammates_file
                         )
                         inform(
                             f"Created students info Teammates Excel file:  {students_teammates_file}"
