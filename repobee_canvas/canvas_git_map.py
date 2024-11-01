@@ -98,7 +98,7 @@ class Table:
         for row in self.rows():
             section = ""
             if row[GROUP] != "":
-                section = int(row[GROUP]) / 100
+                section = int(int(row[GROUP]) / 100)
             rows.append([section, row[GROUP], row[FULL_NAME], row[EMAIL], row[ID]])
         return rows
 
