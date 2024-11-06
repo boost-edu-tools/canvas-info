@@ -178,6 +178,7 @@ def canvas_git_map_table_wizard(course: Course) -> Table:
         if user_enrollment[student.id] != "StudentEnrollment":
             continue
         row = {}
+        profile = student.get_profile()
         if hasattr(student, "id"):
             user_id = student.id
             if user_id in group_members:
@@ -188,8 +189,8 @@ def canvas_git_map_table_wizard(course: Course) -> Table:
             row[GROUP] = ""
 
         email = ""
-        if hasattr(student, "email"):
-            email = student.email
+        if "primary_email" in profile:
+            email = profile['primary_email']
             row[NAME] = email[:-15].split(".")[-1]
         else:
             row[NAME] = ""
@@ -199,19 +200,19 @@ def canvas_git_map_table_wizard(course: Course) -> Table:
         else:
             row[FULL_NAME] = ""
 
-        if hasattr(student, "login_id"):
+        if "login_id" in profile:
             try:
-                row[ID] = int(student.login_id)
+                row[ID] = int(profile['login_id'])
             except:
-                row[ID] = student.login_id
+                row[ID] = profile['login_id']
         else:
             row[ID] = ""
 
-        if hasattr(student, "sis_user_id"):
+        if "sis_user_id" in profile:
             try:
-                row[GIT_ID] = student.sis_user_id
+                row[GIT_ID] = int(profile['sis_user_id'])
             except:
-                row[GIT_ID] = student.sis_user_id
+                row[GIT_ID] = profile['sis_user_id']
         else:
             row[GIT_ID] = ""
 
