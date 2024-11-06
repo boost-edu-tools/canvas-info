@@ -193,6 +193,7 @@ def canvas_git_map_table_wizard(course: Course) -> Table:
             email = profile['primary_email']
             row[NAME] = email[:-15].split(".")[-1]
         else:
+            warn("No email adress found of student. Do you have the 'Teacher' role in Canvas?")
             row[NAME] = ""
 
         if hasattr(student, "short_name"):
