@@ -14,7 +14,7 @@ from ..gui import KEY_EMAIL, KEY_GIT_ID, KEY_MEM_BOTH
 
 GROUP = "group"
 EMAIL2GIT = "email2git"
-
+GROUP_SIZE = 3  # Only groups with this number of students will be included in the YAML file
 
 def CreateStudentsFiles(
     canvas_base_url: str,
@@ -74,6 +74,7 @@ def CreateStudentsFiles(
                     if students_yaml_file:
                         group_submissions = {}
                         groupless_submissions = []
+                        smallgroup_submissions = []
                         for info in canvas_git_mapping_table.get_stu_info():
                             group = info[GROUP]
                             if group:
@@ -100,6 +101,13 @@ def CreateStudentsFiles(
                                     "individual assignment."
                                 )
                             )
+
+                        for key in list(group_submissions.keys()):
+                            if len(group_submissions[key][EMAIL2GIT]) < GROUP_SIZE:
+                                # Group is too small, remove it from the list
+                                for email in list(group_submissions[key][EMAIL2GIT]):
+                                    smallgroup_submissions.append(email)
+                                del group_submissions[key]
 
                         inform("Create students YAML file...")
 
@@ -140,6 +148,11 @@ def CreateStudentsFiles(
                         for submission in groupless_submissions:
                             email = list(submission[EMAIL2GIT].keys())
                             inform(email[0])
+
+                        m = len(smallgroup_submissions)
+                        inform(f"The following {m} students were in too small groups, no repository made for them:")
+                        for student in smallgroup_submissions:
+                            inform(student)
 
                     if students_teammates_file:
                         canvas_git_mapping_table.writeTeammatesExcel(
