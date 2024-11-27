@@ -102,12 +102,12 @@ def CreateStudentsFiles(
                                 )
                             )
 
-                        for key in list(group_submissions.keys()):
-                            if len(group_submissions[key][EMAIL2GIT]) < GROUP_SIZE:
+                        for group in list(group_submissions.keys()):
+                            if group.members_count < group.max_membership:
                                 # Group is too small, remove it from the list
-                                for email in list(group_submissions[key][EMAIL2GIT]):
+                                for email in list(group_submissions[group][EMAIL2GIT]):
                                     smallgroup_submissions.append(email)
-                                del group_submissions[key]
+                                del group_submissions[group]
 
                         inform("Create students YAML file...")
 
@@ -166,6 +166,8 @@ def CreateStudentsFiles(
         fault("Non-existing Course ID")
 
 
+# TODO merge the three function below, as there is a lot of overlap.
+# TODO sort the output of the yaml file
 def member_as_email(
     students_yaml_file: str,
     group_submissions: dict,
@@ -176,7 +178,7 @@ def member_as_email(
     with Path(students_yaml_file).open("w") as outfile:
         for submission in group_submissions.values():
             if include_group:
-                team = str(submission[GROUP])
+                team = str(submission[GROUP].name)
             else:
                 team = ""
 
@@ -207,7 +209,7 @@ def member_as_gitid(
     with Path(students_yaml_file).open("w") as outfile:
         for submission in group_submissions.values():
             if include_group:
-                team = str(submission[GROUP])
+                team = str(submission[GROUP].name)
             else:
                 team = ""
 
@@ -238,7 +240,7 @@ def member_as_both(
     with Path(students_yaml_file).open("w") as outfile:
         for submission in group_submissions.values():
             if include_group:
-                team = str(submission[GROUP])
+                team = str(submission[GROUP].name)
             else:
                 team = ""
 
