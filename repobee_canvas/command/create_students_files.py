@@ -14,7 +14,6 @@ from ..gui import KEY_EMAIL, KEY_GIT_ID, KEY_MEM_BOTH
 
 GROUP = "group"
 EMAIL2GIT = "email2git"
-GROUP_SIZE = 3  # Only groups with this number of students will be included in the YAML file
 
 
 def CreateStudentsFiles(
