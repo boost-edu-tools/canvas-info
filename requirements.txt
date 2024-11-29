@@ -1,4 +1,4 @@
-PySimpleGUI
+pysimplegui-4-foss
 xlsxwriter
 pyinstaller
 requests>=2.25

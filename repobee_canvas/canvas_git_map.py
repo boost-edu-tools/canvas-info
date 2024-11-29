@@ -68,6 +68,9 @@ class Table:
             csv_writer.writeheader()
 
             for row in self.rows():
+                text_to_write = row.copy()
+                if isinstance(row[GROUP], Group):
+                    text_to_write[GROUP] = row[GROUP].name
                 csv_writer.writerow(row)
 
     def writeExcel(self, path: str):
@@ -84,7 +87,10 @@ class Table:
 
         rows = []
         for row in self.rows():
-            rows.append(list(row.values()))
+            text_to_write = row.copy()
+            if isinstance(row[GROUP], Group):
+                text_to_write[GROUP] = row[GROUP].name
+            rows.append(list(text_to_write.values()))
 
         worksheet.add_table(
             "A1:G" + str(len(rows) + 1),
@@ -97,9 +103,11 @@ class Table:
         rows = [["Section", "Team", "Name", "Email", "Comments"]]
         for row in self.rows():
             section = ""
+            team = ""
             if row[GROUP] != "":
-                section = int(int(row[GROUP]) / 100)
-            rows.append([section, row[GROUP], row[FULL_NAME], row[EMAIL], row[ID]])
+                section = int(int(row[GROUP].name) / 100)
+                team = row[GROUP].name
+            rows.append([section, team, row[FULL_NAME], row[EMAIL], row[ID]])
         return rows
 
     def writeTeammatesExcel(self, path: str):
@@ -149,7 +157,7 @@ class Table:
 
 def canvas_git_map_table_wizard(course: Course) -> Table:
     """Create a Canvas-Git map CSV file."""
-    inform("Getting the students' infomation...")
+    inform("Getting the students' information...")
     students: PaginatedList[User] = course.get_users()
 
     if not students._is_larger_than(0):
@@ -159,14 +167,14 @@ def canvas_git_map_table_wizard(course: Course) -> Table:
     inform((f"Found students for this course."))
 
     inform("Getting the information of groups...")
-    group_members: Dict[str, str] = {}
+    group_members: Dict[str, Group] = {}
     groups: PaginatedList[Group] = course.get_groups()
     for group in groups:
         memberships: PaginatedList[GroupMembership] = group.get_memberships()
         for member in memberships:
-            group_members[member.user_id] = group.name
+            group_members[member.user_id] = group
 
-    inform("Getting the infomation of enrollments...")
+    inform("Getting the information of enrollments...")
     user_enrollment: Dict[str, str] = {}
     enrollments: PaginatedList[Enrollment] = course.get_enrollments()
     for enrollment in enrollments:
@@ -221,6 +229,6 @@ def canvas_git_map_table_wizard(course: Course) -> Table:
 
         data.append(row)
 
-    data = sorted(data, key=lambda d: d[GROUP])
+    # data = sorted(data, key=lambda d: d[GROUP])
 
     return Table(data)
