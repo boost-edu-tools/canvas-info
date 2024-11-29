@@ -112,29 +112,35 @@ def CreateStudentsFiles(
                         inform("Create students YAML file...")
 
                         if student_member_option == KEY_MEM_BOTH:
-                            member_as_both(
+                            write_yaml_file(
                                 students_yaml_file,
                                 group_submissions,
                                 include_group,
                                 include_member,
                                 include_initials,
+                                True,
+                                True
                             )
                         elif student_member_option == KEY_EMAIL:
-                            member_as_email(
+                            write_yaml_file(
                                 students_yaml_file,
                                 group_submissions,
                                 include_group,
                                 include_member,
                                 include_initials,
+                                True,
+                                False
                             )
 
                         elif student_member_option == KEY_GIT_ID:
-                            member_as_gitid(
+                            write_yaml_file(
                                 students_yaml_file,
                                 group_submissions,
                                 include_group,
                                 include_member,
                                 include_initials,
+                                False,
+                                True
                             )
 
                         else:
@@ -166,48 +172,18 @@ def CreateStudentsFiles(
         fault("Non-existing Course ID")
 
 
-# TODO merge the three function below, as there is a lot of overlap.
-# TODO sort the output of the yaml file
-def member_as_email(
+def write_yaml_file(
     students_yaml_file: str,
     group_submissions: dict,
     include_group: bool,
     include_member: bool,
     include_initials: bool,
+    by_email: bool,
+    by_gitid: bool,
 ):
+    sorted_group_submissions = {k: v for k, v in sorted(group_submissions.items(), key=lambda x: x[1][GROUP].name)}
     with Path(students_yaml_file).open("w") as outfile:
-        for submission in group_submissions.values():
-            if include_group:
-                team = str(submission[GROUP].name)
-            else:
-                team = ""
-
-            group = []
-            for email in submission[EMAIL2GIT].keys():
-                group.append(email)
-                if include_member:
-                    email = email[:-15]
-                    if include_initials:
-                        team += "_" + email.replace(".", "")
-                    else:
-                        team += "_" + email.split(".")[-1]
-
-            if team[0] == "_":
-                team = team[1:]
-            outfile.write(team + ":\n")
-            outfile.write("\tmembers:[" + ", ".join(group))
-            outfile.write("]\n")
-
-
-def member_as_gitid(
-    students_yaml_file: str,
-    group_submissions: dict,
-    include_group: bool,
-    include_member: bool,
-    include_initials: bool,
-):
-    with Path(students_yaml_file).open("w") as outfile:
-        for submission in group_submissions.values():
+        for submission in sorted_group_submissions.values():
             if include_group:
                 team = str(submission[GROUP].name)
             else:
@@ -215,38 +191,15 @@ def member_as_gitid(
 
             group = []
             for email, git_id in submission[EMAIL2GIT].items():
-                group.append(git_id)
-                if include_member:
-                    email = email[:-15]
-                    if include_initials:
-                        team += "_" + email.replace(".", "")
-                    else:
-                        team += "_" + email.split(".")[-1]
+                if by_email and by_gitid:
+                    group.append("(" + email + ", " + git_id + ")")
+                elif by_email:
+                    group.append(email)
+                elif by_gitid:
+                    group.append(git_id)
+                else:
+                    fault("Invalid member option combination.")
 
-            if team[0] == "_":
-                team = team[1:]
-            outfile.write(team + ":\n")
-            outfile.write("\tmembers:[" + ", ".join(group))
-            outfile.write("]\n")
-
-
-def member_as_both(
-    students_yaml_file: str,
-    group_submissions: dict,
-    include_group: bool,
-    include_member: bool,
-    include_initials: bool,
-):
-    with Path(students_yaml_file).open("w") as outfile:
-        for submission in group_submissions.values():
-            if include_group:
-                team = str(submission[GROUP].name)
-            else:
-                team = ""
-
-            group = []
-            for email, git_id in submission[EMAIL2GIT].items():
-                group.append("(" + email + ", " + git_id + ")")
                 if include_member:
                     email = email[:-15]
                     if include_initials:
