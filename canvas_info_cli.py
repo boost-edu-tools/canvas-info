@@ -222,6 +222,7 @@ def main():
                 include_group,
                 include_member,
                 include_initials,
+                only_full_groups,
             )
             common.inform("Done")
         else:

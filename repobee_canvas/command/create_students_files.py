@@ -28,6 +28,7 @@ def CreateStudentsFiles(
         include_group: bool = False,
         include_member: bool = False,
         include_initials: bool = False,
+        only_full_groups: bool = True,
 ):
     if (
             not student_csv_info_file
@@ -73,7 +74,7 @@ def CreateStudentsFiles(
 
                     if students_yaml_file:
                         create_yaml_file(canvas_git_mapping_table, students_yaml_file, student_member_option,
-                                         include_group, include_member, include_initials)
+                                         include_group, include_member, include_initials, only_full_groups)
 
                     if students_teammates_file:
                         canvas_git_mapping_table.writeTeammatesExcel(
@@ -94,6 +95,7 @@ def create_yaml_file(
         include_group: bool = False,
         include_member: bool = False,
         include_initials: bool = False,
+        only_full_groups: bool = True,
 ):
     group_submissions = {}
     groupless_submissions = []
@@ -125,12 +127,14 @@ def create_yaml_file(
             )
         )
 
-    for group in list(group_submissions.keys()):
-        if group.members_count < group.max_membership:
-            # Group is too small, remove it from the list
-            for email in list(group_submissions[group][EMAIL2GIT]):
-                smallgroup_submissions.append(email)
-            del group_submissions[group]
+    # Filter out the groups that are not full, if requested.
+    if only_full_groups:
+        for group in list(group_submissions.keys()):
+            if group.members_count < group.max_membership:
+                # Group is too small, remove it from the list
+                for email in list(group_submissions[group][EMAIL2GIT]):
+                    smallgroup_submissions.append(email)
+                del group_submissions[group]
 
     inform("Create students YAML file...")
 
@@ -173,13 +177,13 @@ def create_yaml_file(
     inform(f"Created students YAML file: {students_yaml_file}.")
 
     n = len(groupless_submissions)
-    inform(f"The following {n} students were not in a group:")
+    if n > 0: inform(f"The following {n} students were not in a group:")
     for submission in groupless_submissions:
         email = list(submission[EMAIL2GIT].keys())
         inform(email[0])
 
     m = len(smallgroup_submissions)
-    inform(f"The following {m} students were in too small groups, no repository made for them:")
+    if m > 0: inform(f"The following {m} students were in too small groups, no repository made for them:")
     for student in smallgroup_submissions:
         inform(student)
 
