@@ -24,6 +24,7 @@ from repobee_canvas.gui import (
     KEY_END,
     KEY_EXECUTE,
     KEY_EXIT,
+    KEY_FULL_GROUPS,
     KEY_GIT_ID,
     KEY_HELP,
     KEY_INC_GROUP,
@@ -108,7 +109,7 @@ def main():
         elif event in [KEY_GIT_ID, KEY_EMAIL, KEY_MEM_BOTH]:
             set_course_info(KEY_MEMBER_OPTION, event)
 
-        elif event in (KEY_INC_GROUP, KEY_INC_MEMBER, KEY_INC_INITIAL):
+        elif event in (KEY_INC_GROUP, KEY_INC_MEMBER, KEY_INC_INITIAL, KEY_FULL_GROUPS):
             set_course_info(event, values[event])
             if event == KEY_INC_MEMBER:
                 window[KEY_INC_INITIAL].update(disabled=not values[KEY_INC_MEMBER])
@@ -245,6 +246,8 @@ def main():
             if not include_group and not include_member and not include_initials:
                 popup("Please select at least 1 option.")
                 continue
+
+            only_full_groups = values[KEY_FULL_GROUPS]
 
             common.inform("Executing the Execute command...")
             gui.disable_all_buttons(window)

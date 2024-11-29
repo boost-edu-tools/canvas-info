@@ -28,6 +28,7 @@ KEY_MEMBER_OPTION = "member_option"
 KEY_GIT_ID = "git_id"
 KEY_EMAIL = "email"
 KEY_MEM_BOTH = "(email, gitid)"
+KEY_FULL_GROUPS = "full_groups"
 KEY_REPO_NAME_OPTION = "repo_name_options"
 KEY_INC_GROUP = "include_group"
 KEY_INC_MEMBER = "include_member"
@@ -63,6 +64,7 @@ course_id_tip = "Number at the end of the Canvas URL for your course"
 info_file_tip = "Output file with columns: group number, name, Canvas student ID, GitLab student ID, email"
 info_file_tip_ml = "Output path for CSV or Excel file, containing for each student the following columns: group number, last name, Canvas student ID, student ID (used for GitLab login), email"
 yaml_file_tip = "Student info file for Repobee with for each student group: repo name and student IDs"
+full_groups_tip = "Only full groups are included in the generated files"
 member_options_tip = "Options tip"
 yaml_options_tip = "repo option tip"
 help_info = "help info"
@@ -116,6 +118,7 @@ BOOL_SETTINGS_KEY = [
     KEY_INC_INITIAL,
     KEY_INC_GROUP,
     KEY_INC_MEMBER,
+    KEY_FULL_GROUPS,
 ]
 COURSE_SETTINGS_KEYS = TEXT_SETTINGS_KEY + BOOL_SETTINGS_KEY
 course_info = None
@@ -171,7 +174,10 @@ class Course:
             assert course is not None
             self.course[KEY_URL_OPTIONS] = course[KEY_URL_OPTIONS]
             for key in COURSE_SETTINGS_KEYS + INFO_FILE_KEY:
-                self.course[key] = course[key]
+                if key in course:
+                    self.course[key] = course[key]
+                else:
+                    self.course[key] = None
             self.course[KEY_MEMBER_OPTION] = course[KEY_MEMBER_OPTION]
 
             if mode != MODE_PARSE:
@@ -197,6 +203,7 @@ class Course:
         self.course[KEY_TEAMMATES_INFO_FILE] = "teammates-students.xlsx"
         self.course[KEY_INC_GROUP] = True
         self.course[KEY_INC_MEMBER] = True
+        self.course[KEY_FULL_GROUPS] = True
         self.course[KEY_URL_OPTIONS] = {KEY_TUE: TUE_API_URL, KEY_CUSTOM: ""}
         self.course[KEY_URL_OPTION] = KEY_TUE
 
@@ -709,6 +716,23 @@ def make_window():
                                         ),
                                         help_button(
                                             "yamloptions_tip", yaml_options_tip
+                                        ),
+                                    ]
+                                ],
+                            ),
+                        ],
+                        [
+                            Frame(
+                                "Filters",
+                                layout=[
+                                    [
+                                        Checkbox(
+                                            KEY_FULL_GROUPS,
+                                            course[KEY_FULL_GROUPS],
+                                            "Only full groups",
+                                        ),
+                                        help_button(
+                                            "full_groups_tip", full_groups_tip
                                         ),
                                     ]
                                 ],

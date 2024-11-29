@@ -24,6 +24,7 @@ from repobee_canvas.gui import (
     KEY_INC_GROUP,
     KEY_INC_INITIAL,
     KEY_INC_MEMBER,
+    KEY_FULL_GROUPS,
     KEY_MEMBER_OPTION,
     KEY_STU_FILE,
     KEY_XLSX_INFO_FILE,
@@ -113,6 +114,13 @@ def main():
             help=help.include_initial,
         )
         parser.add_argument(
+            "-F",
+            "--full_groups",
+            action=BooleanOptionalAction,
+            default=True,
+            help=help.full_groups,
+        )
+        parser.add_argument(
             "--info_file",
             help=help.info_file,
         )
@@ -172,6 +180,7 @@ def main():
             include_group = namespace.inc_group
             include_member = namespace.inc_member
             include_initials = namespace.inc_initials
+            only_full_groups = namespace.only_full_groups
             member_option = namespace.option
 
             if course:
@@ -192,6 +201,9 @@ def main():
 
                 if not include_initials:
                     include_initials = course[KEY_INC_INITIAL]
+
+                if not only_full_groups:
+                    only_full_groups = course[KEY_FULL_GROUPS]
 
                 if not member_option:
                     member_option = course[KEY_MEMBER_OPTION]
