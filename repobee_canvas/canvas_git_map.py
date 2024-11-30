@@ -31,6 +31,7 @@ from canvasapi.group import Group, GroupMembership
 from canvasapi.enrollment import Enrollment
 from canvasapi.paginated_list import PaginatedList
 from .common import inform, warn
+from .gui import update_progress
 
 CANVAS_ID = "canvas_id"
 FIELD_SEP = ","
@@ -161,10 +162,10 @@ def canvas_git_map_table_wizard(course: Course) -> Table:
     students: PaginatedList[User] = course.get_users()
 
     if not students._is_larger_than(0):
-        warn((f"No students found for course '{course.name}'."))
+        warn(f"No students found for course '{course.name}'.")
         return Table([])
 
-    inform((f"Found students for this course."))
+    inform(f"Found students for this course.")
 
     inform("Getting the information of groups...")
     group_members: Dict[str, Group] = {}
@@ -182,7 +183,12 @@ def canvas_git_map_table_wizard(course: Course) -> Table:
 
     data = []
 
+    inform("Processing students...")
+    i = 0
+    total = len(user_enrollment)
     for student in students:
+        i += 1
+        update_progress(i, total)
         if user_enrollment[student.id] != "StudentEnrollment":
             continue
         row = {}
@@ -201,7 +207,7 @@ def canvas_git_map_table_wizard(course: Course) -> Table:
             email = profile['primary_email']
             row[NAME] = email[:-15].split(".")[-1]
         else:
-            warn("No email adress found of student. Do you have the 'Teacher' role in Canvas?")
+            warn("No email address found of student. Do you have the 'Teacher' role in Canvas?")
             row[NAME] = ""
 
         if hasattr(student, "short_name"):
@@ -229,6 +235,5 @@ def canvas_git_map_table_wizard(course: Course) -> Table:
 
         data.append(row)
 
-    # data = sorted(data, key=lambda d: d[GROUP])
-
+    update_progress(total, total)
     return Table(data)
