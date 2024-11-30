@@ -206,6 +206,7 @@ def write_yaml_file(
                 team = ""
 
             group = []
+            group_names = []
             for email, git_id in submission[EMAIL2GIT].items():
                 if by_email and by_gitid:
                     group.append("(" + email + ", " + git_id + ")")
@@ -219,10 +220,13 @@ def write_yaml_file(
                 if include_member:
                     email = email[:-15]
                     if include_initials:
-                        team += "_" + email.replace(".", "")
+                        group_names.append(email.replace(".", ""))
                     else:
-                        team += "_" + email.split(".")[-1]
+                        group_names.append(email.split(".")[-1])
 
+            group_names.sort()
+            group_names.insert(0, team)
+            team = "_".join(group_names)
             if team[0] == "_":
                 team = team[1:]
             outfile.write(team + ":\n")
