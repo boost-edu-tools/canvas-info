@@ -1,61 +1,74 @@
-# Note: flake8 cannot use pyproject.toml for settings
-
-[tool.pyright]
-# tool.pyright contains the settings for Pylance
-# See https://github.com/microsoft/pyright/blob/main/docs/configuration.md
-#
-# include and exclude settings must be relative to the folder of this toml file
-include = ["*.py", "repobee_canvas/**/*.py"]
-
-[tool.black]
-# force-exclude = "tooltips.py" # exclude and extend-exclude do not work
-
-[tool.isort]
-profile = "black"
-skip_gitignore = true
-
-[tool.poetry]
-name = "canvasinfo"
-version = "0.1"
-description = "Install with all dependencies: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gitinspectorgui"
-authors = ["Bert van Beek, Jingjing Wang <d.a.v.beek@tue.nl>"]
-license = "MIT"
-readme = "README.md"
-keywords = ["canvas"]
-classifiers = [
-    # "Development Status :: 1 - Planning",
-    # "Development Status :: 2 - Pre-Alpha",
-    "Development Status :: 3 - Alpha",
-    # "Development Status :: 4 - Beta",
-    # "Development Status :: 5 - Production/Stable",
-    # "Development Status :: 6 - Mature",
-    "Intended Audience :: Education",
-    "License :: OSI Approved :: MIT License",
-    "Natural Language :: English",
-    "Operating System :: MacOS",
-    "Operating System :: Microsoft :: Windows :: Windows 10",
-    "Operating System :: Microsoft :: Windows :: Windows 11",
-    "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3.12 :: Implementation :: CPython",
-]
-packages = [{ include = "repobee_canvas" }]
-include = ["canvas_info_gui.py"]
-
-[tool.poetry.dependencies]
-# python = "^3.12" does not work and leads to all kinds of problems with versions of
-# other packages and modules being incorrect or unsolvable.
-python = ">=3.12,<3.13"
-pysimplegui-4-foss = "^4.60.4.1"
-xlsxwriter = "*"
-requests = "*"
-
-[tool.poetry.group.dev.dependencies]
-black = ">=22.3"
-flake8 = "*"
-isort = "*"
-pipdeptree = "*"
-pyinstaller = "*"
-
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["briefcase"]
+build-backend = "briefcase"
+
+[project]
+name = "canvasinfo"
+version = "1.0.0"
+description = "Canvas course information manager"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"},
+]
+license = {text = "EUPL-1.2"}
+requires-python = ">=3.8"
+dependencies = [
+    "PySide6>=6.5.0",
+    "xlsxwriter",
+    "requests>=2.25",
+    "canvasapi",
+    "PyYAML",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-username/canvasinfo"
+Repository = "https://github.com/your-username/canvasinfo"
+
+[tool.briefcase]
+project_name = "Canvas Info"
+bundle = "com.example"
+version = "1.0.0"
+url = "https://github.com/your-username/canvasinfo"
+license = "EUPL-1.2"
+author = "Your Name"
+author_email = "your.email@example.com"
+
+[tool.briefcase.app.canvasinfo]
+formal_name = "Canvas Info"
+description = "Canvas course information manager"
+long_description = """A tool for managing Canvas course information and generating student files."""
+icon = "resources/icon"
+sources = ["src/canvasinfo"]
+requires = [
+    "PySide6>=6.5.0",
+    "xlsxwriter",
+    "requests>=2.25",
+    "canvasapi",
+    "PyYAML",
+]
+
+[tool.briefcase.app.canvasinfo.macOS]
+requires = [
+    "PySide6>=6.5.0",
+    "xlsxwriter",
+    "requests>=2.25",
+    "canvasapi",
+    "PyYAML",
+]
+
+[tool.briefcase.app.canvasinfo.linux]
+requires = [
+    "PySide6>=6.5.0",
+    "xlsxwriter",
+    "requests>=2.25",
+    "canvasapi",
+    "PyYAML",
+]
+
+[tool.briefcase.app.canvasinfo.windows]
+requires = [
+    "PySide6>=6.5.0",
+    "xlsxwriter",
+    "requests>=2.25",
+    "canvasapi",
+    "PyYAML",
+]
